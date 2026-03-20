@@ -1,2 +1,34 @@
 # SlipperyPenguin
-The Repo for my Linux Binary Vulnerability Scanner, Slippery Penguin
+
+
+
+
+
+***Slippery Penguin is intended strictly for use on systems you own or have explicit written authorization
+to test. This tool is provided for educational and security research purposes only. The author assumes no liability for misuse or damage caused by this tool. Use responsibly and in accordance with all applicable local, state, and federal laws.***
+
+
+SlipperyPenguin is a local privilege escalation tool
+for Linux Systems. It enumerates SUID binaries, checks
+capabilities, traces execution calls, and analyzes 
+binary strings, checking the results against a ranked 
+list of possible indicators for exploration.
+
+*Features:*\
+-SUID binary enumeration across the filesystem\
+-Capability checking via getcap\
+-Execution call tracing via strace\
+-Binary string analysis against a severity-rated watchlist\
+-Configurable path filtering and timeout handling\
+
+
+*Requirements:*\
+-Linux\
+-Python 3\
+-strace\
+-getcap
+
+*Usage:\
+
+```python
+python3 main.py
