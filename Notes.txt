@@ -1,0 +1,15 @@
+3/18/2026-
+
+I was just exploring some concepts instead of sleeping and I think this little
+script may turn into something I spend more time on for fun in the coming
+future and it may end up on Github eventually, so I thought I'd go ahead and
+start a journal for it. This likely won't be neverending like my other projects
+so this will really probably mostly just be helpful during the creation process,
+but, whatever.
+
+
+3/19/2026-
+
+Thoughts-
+
+We should make the timeout value adjustable
