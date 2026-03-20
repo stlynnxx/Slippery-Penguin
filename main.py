@@ -1,6 +1,8 @@
 import subprocess
 
-watchlist = [
+
+
+flags = [
     {"string": "execve", "severity": "LOW WITH CONTEXT"},
     {"string": "ENCRYPT_METHOD", "severity": "HIGH"},
     {"string": "PASS_MIN_LEN", "severity": "MEDIUM"},
@@ -14,12 +16,14 @@ watchlist = [
     # "tcsetattr\nwrite",
     {"string": "fork", "severity": "LOW WITH CONTEXT"},
     {"string": "getlogin", "severity": "LOW"},]
+border = "-----"
 print("Working")
+
 agg_result = []
 # Enumerates SUIDs and checking capabilites
 result = subprocess.run( ["find", "/", "-perm", "-4000", "-type", "f"], capture_output=True, text=True)
 agg_result = result.stdout.splitlines()
-print(result.stdout)
+print(f"Find result: {result.stdout}")
 print("Working...")
 for b in agg_result:
     if not b.startswith("/usr/bin"):
@@ -45,9 +49,13 @@ for b in agg_result:
 
     s_result = subprocess.run(
         ["strings", "-a", f"{b}"],
+         capture_output=True, text=True
     )
     s_result = s_result.stdout.splitlines()
-    print(s_result)
+    for f in flags:
+        if f["string"] in s_result:
+            print(f"[{f['severity']}] Found: {f['string']}")
+    print(f"Strings: {s_result}\n{border}")
 
 
 

@@ -28,7 +28,7 @@ list of possible indicators for exploration.
 -strace\
 -getcap
 
-*Usage:\
+*Usage:
 
 ```python
 python3 main.py

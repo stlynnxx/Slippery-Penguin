@@ -13,3 +13,11 @@ but, whatever.
 Thoughts-
 
 We should make the timeout value adjustable
+
+3/20/2026-
+
+I haven't been doing great journaling for this so far, all apologies.
+
+Today I've cleaned up output quite a bit and started checking against the flags list.
+The list itself is still in it's most basic form, but, it all works!
+Next I need multi string phrase checking.
