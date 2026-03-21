@@ -14,6 +14,9 @@ os.makedirs(RUN_DIR, exist_ok=True)
 STR_OUT = os.path.join(RUN_DIR, "str-out.json")
 FLAGS = os.path.join(RUN_DIR, "flags.json")
 CAP_OUT = os.path.join(RUN_DIR, "cap-out.json")
+FIND_OUT = os.path.join(RUN_DIR, "find-out.json")
+STRACE_OUT = os.path.join(RUN_DIR, "strace-out.json")
+TIMEOUT_OUT = os.path.join(RUN_DIR, "timeout-out.json")
 
 
 
@@ -33,17 +36,40 @@ flags = [
     {"string": "getlogin", "severity": "LOW"},]
 border = "-----"
 print("Working")
-
+find_append = {}
 agg_result = []
+if os.path.exists(FIND_OUT):
+    with open(FIND_OUT, "r") as f:
+        find_append = json.loads(f.read())
 # Enumerates SUIDs and checking capabilites
 result = subprocess.run( ["find", "/", "-perm", "-4000", "-type", "f"], capture_output=True, text=True)
 agg_result = result.stdout.splitlines()
-print(f"Find result: {result.stdout}")
+
+
+# print(f"Find result: {result.stdout}")
+find_append = agg_result
+with open(FIND_OUT, "w") as f:
+    json.dump(find_append, f)
+
+
 print("Working...")
+
+
 cap_append = {}
+strace_append = {}
+timeout_append = {}
+
 if os.path.exists(CAP_OUT):
     with open(CAP_OUT, "r") as f:
         cap_append = json.loads(f.read())
+
+if os.path.exists(STRACE_OUT):
+       with open(STRACE_OUT, "r") as f:
+           strace_append = json.loads(f.read())
+if os.path.exists(TIMEOUT_OUT):
+       with open(TIMEOUT_OUT, "r") as f:
+           timout_append = json.loads(f.read())
+
 
 for b in agg_result:
     if not b.startswith("/usr/bin"):
@@ -55,13 +81,16 @@ for b in agg_result:
         cap_item = [f"Cap check {b}: {result.stdout}"]
         cap_append[b].append(cap_item)
 
-    print(f"Cap check {b}: {result.stdout}")
-    print(f"cap_append contents: {cap_append}")
+    # print(f"Cap check {b}: {result.stdout}")
+    # print(f"cap_append contents: {cap_append}")
     with open(CAP_OUT, "w", encoding='utf-8') as f:
         json.dump(cap_append, f)
 
+    # This runs strace to track the execve calls
+    # and will write both the strace results and
+    # the timeouts to seperate files
 
-    # tracking execution runs
+
     try:
         r = subprocess.run(
             ["strace", "-e", "execve", f"{b}"],
@@ -69,12 +98,21 @@ for b in agg_result:
         )
         for line in r.stderr.splitlines():
             if "execve" in line:
-                print(f"    {line}")
+                execve_to_print = f"    {line}"
+                strace_append.setdefault(b, [])
+                strace_append[b].append(execve_to_print)
+
     except subprocess.TimeoutExpired:
-        print(f"    [Timeout] {b}")
+        timeout_to_print = f"    [Timeout] {b}"
+        timeout_append.setdefault(b, [])
+        timeout_append[b].append(timeout_to_print)
+    with open(STRACE_OUT, "w") as f:
+        json.dump(strace_append, f)
+    with open(TIMEOUT_OUT, "w") as f:
+        json.dump(timeout_append, f)
 
 
-
+    # This runs strings and then writes the results to the file
     s_result = subprocess.run(
         ["strings", "-a", f"{b}"],
          capture_output=True, text=True
@@ -89,6 +127,8 @@ for b in agg_result:
     with open(STR_OUT, "w", encoding='utf-8') as f:
         json.dump(passer, f)
 
+
+    # This is the logic for writing any flags found to the file
     flags_append = {}
     if os.path.exists(FLAGS):
         with open(FLAGS, "r") as f:

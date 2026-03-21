@@ -39,3 +39,5 @@ But I'm supposed to be taking some time off this weekend and I've been doing
 this instead because it's fun so I'll probably go play some games and leave
 all of that for later tbh.
 
+I came back and added strace_out and timeout_out
+
