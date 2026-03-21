@@ -21,3 +21,21 @@ I haven't been doing great journaling for this so far, all apologies.
 Today I've cleaned up output quite a bit and started checking against the flags list.
 The list itself is still in it's most basic form, but, it all works!
 Next I need multi string phrase checking.
+
+3/21/2026-
+
+I've actually added quite a bit today, more than I even intended, which isn't
+a bad thing!
+
+I cleaned up all of that noisy terminal output and am saving it all in json
+files. The files are generated per run and stored in timestamped dirs in
+the logs dir.
+
+Eventually i'm going to incorporate having the options of only having
+terminal output and no logs, logs and no output (current default because that's
+my preference for while I'm building at least), and output + logs.
+
+But I'm supposed to be taking some time off this weekend and I've been doing
+this instead because it's fun so I'll probably go play some games and leave
+all of that for later tbh.
+

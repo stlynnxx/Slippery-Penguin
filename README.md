@@ -20,6 +20,7 @@ list of possible indicators for exploration.
 -Execution call tracing via strace\
 -Binary string analysis against a severity-rated watchlist\
 -Configurable path filtering and timeout handling\
+-JSON Logging\ 
 
 
 *Requirements:*\
@@ -27,6 +28,10 @@ list of possible indicators for exploration.
 -Python 3\
 -strace\
 -getcap
+
+The JSON files are stored in /SlipperyPenguin/logs, within timestamped directories.
+Each form of output has it's own json file within the timestamped directory. 
+
 
 *Usage:
 
