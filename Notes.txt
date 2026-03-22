@@ -41,3 +41,9 @@ all of that for later tbh.
 
 I came back and added strace_out and timeout_out
 
+3/22/2026-
+
+So far this morning I've added some basic argparse options! A smell step
+but still a meaningful one. I'm still perfecting commands and usage
+and what I have wired up right now is basically a stand in.
+

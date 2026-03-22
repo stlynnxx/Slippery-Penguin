@@ -2,9 +2,23 @@ import subprocess
 import os
 import json
 from datetime import datetime
+import argparse
+
+
+# Setting up argparse
+parser = argparse.ArgumentParser("description=SUID enumeration and"
+                                 "vulnerability scanning")
+parser.add_argument("--output", choices=["terminal", "logs", "both"], default="both", help="Output mode")
+parser.add_argument("--storage", type=str, default="./logs", help="Log storage directory")
+
+
+
+args = parser.parse_args()
+
+
 
 # File handling
-STORAGE_ROOT = os.environ.get("STORAGE_ROOT", "./logs")
+STORAGE_ROOT = args.storage
 # RUN_ID and RUN_DIR are for the individual filesaves in the dirs
 RUN_ID = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 RUN_DIR = os.path.join(STORAGE_ROOT, RUN_ID)
@@ -48,8 +62,11 @@ agg_result = result.stdout.splitlines()
 
 # print(f"Find result: {result.stdout}")
 find_append = agg_result
-with open(FIND_OUT, "w") as f:
-    json.dump(find_append, f)
+if args.output in ("terminal", "both"):
+    print(f"SUIDs: {agg_result}")
+if args.output in ("logs", "both"):
+    with open(FIND_OUT, "w") as f:
+        json.dump(find_append, f)
 
 
 print("Working...")
@@ -83,8 +100,11 @@ for b in agg_result:
 
     # print(f"Cap check {b}: {result.stdout}")
     # print(f"cap_append contents: {cap_append}")
-    with open(CAP_OUT, "w", encoding='utf-8') as f:
-        json.dump(cap_append, f)
+    if args.output in ("terminal", "both"):
+        print(f"getcap: {cap_append}")
+    if args.output in ("logs", "both"):
+        with open(CAP_OUT, "w", encoding='utf-8') as f:
+            json.dump(cap_append, f)
 
     # This runs strace to track the execve calls
     # and will write both the strace results and
@@ -106,10 +126,19 @@ for b in agg_result:
         timeout_to_print = f"    [Timeout] {b}"
         timeout_append.setdefault(b, [])
         timeout_append[b].append(timeout_to_print)
-    with open(STRACE_OUT, "w") as f:
-        json.dump(strace_append, f)
-    with open(TIMEOUT_OUT, "w") as f:
-        json.dump(timeout_append, f)
+
+
+    if args.output in ("terminal", "both"):
+        print(f"strace: {strace_append}")
+        print(f"timeouts: {timeout_append}")
+    if args.output in ("logs", "both"):
+        # strace write to file
+        with open(STRACE_OUT, "w") as f:
+            json.dump(strace_append, f)
+
+        # timeout write to file
+        with open(TIMEOUT_OUT, "w") as f:
+            json.dump(timeout_append, f)
 
 
     # This runs strings and then writes the results to the file
@@ -118,14 +147,17 @@ for b in agg_result:
          capture_output=True, text=True
     )
     s_result = s_result.stdout.splitlines()
-    if os.path.exists(STR_OUT):
-        with open(STR_OUT, "r") as f:
-            passer = json.loads(f.read())
-    else:
-        passer = {}
-    passer[b] = s_result
-    with open(STR_OUT, "w", encoding='utf-8') as f:
-        json.dump(passer, f)
+    if args.output in ("terminal", "both"):
+        print(f"strings: {s_result}")
+    if args.output in ("logs", "both"):
+        if os.path.exists(STR_OUT):
+            with open(STR_OUT, "r") as f:
+                passer = json.loads(f.read())
+        else:
+            passer = {}
+        passer[b] = s_result
+        with open(STR_OUT, "w", encoding='utf-8') as f:
+            json.dump(passer, f)
 
 
     # This is the logic for writing any flags found to the file
@@ -133,15 +165,19 @@ for b in agg_result:
     if os.path.exists(FLAGS):
         with open(FLAGS, "r") as f:
             flags_append = json.loads(f.read())
-    for f in flags:
-        if f["string"] in s_result:
 
+    for flag in flags:
+        if flag["string"] in s_result:
             flags_append.setdefault(b, [])
-            appendItem = f"[{f['severity']}] Found: {f['string']}"
+            appendItem = f"[{flag['severity']}] Found: {flag['string']}"
             flags_append[b].append(appendItem)
 
-    with open(FLAGS, "w", encoding='utf-8') as f:
-        json.dump(flags_append, f)
+    # Then output is gated
+    if args.output in ("terminal", "both"):
+        print(f"flags: {flags_append}")
+    if args.output in ("logs", "both"):
+        with open(FLAGS, "w", encoding='utf-8') as f:
+            json.dump(flags_append, f)
 
 
 

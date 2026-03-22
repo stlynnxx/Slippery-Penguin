@@ -1,0 +1,1 @@
+{"/usr/bin/gpasswd": ["    execve(\"/usr/bin/gpasswd\", [\"/usr/bin/gpasswd\"], 0x7ffe8a70d0d0 /* 76 vars */) = 0"]}

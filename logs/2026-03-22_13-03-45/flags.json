@@ -1,0 +1,1 @@
+{"/usr/bin/gpasswd": ["[LOW WITH CONTEXT] Found: execve", "[HIGH] Found: ENCRYPT_METHOD", "[MEDIUM] Found: PASS_MIN_LEN", "[MEDIUM] Found: PASS_MAX_LEN", "[HIGH] Found: FAKE_SHELL", "[HIGH] Found: SYS_GID_MAX", "[LOW] Found: fchown", "[LOW] Found: fchmod", "[LOW] Found: tcsetattr", "[LOW WITH CONTEXT] Found: fork", "[LOW] Found: getlogin"]}
