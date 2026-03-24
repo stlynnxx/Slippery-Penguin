@@ -47,3 +47,20 @@ So far this morning I've added some basic argparse options! A smell step
 but still a meaningful one. I'm still perfecting commands and usage
 and what I have wired up right now is basically a stand in.
 
+I was getting terminal issues after running with argparse and
+after much mouse chasing it was ptrace in the strace call;
+ptrace operates below capture_output and strace was attached to
+the wrong terminal so we had to fix that but now it's running
+normally again!
+
+3/23/2026&3/242026, 12:47:
+
+The day changed while I was coding hence the dual date entry.
+
+But today I got gtfobins data integrated; one can optionally check against the data and
+also pass an argument to update the data via curl which curls from gtfobins' API.
+
+Good stuff! V1 isn't far away! Tomorrow we need to pick up on saving gtfo findings to logs,
+right now the check against gtfo data is print only. But i'm quite sleepy.
+
+Goodnight!

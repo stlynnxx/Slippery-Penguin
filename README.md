@@ -35,5 +35,16 @@ Each form of output has it's own json file within the timestamped directory.
 
 *Usage:
 
-```python
-python3 main.py
+To write output to log files only-
+ ```bash
+python3 slipperypenguin.py --output logs
+```
+To write output to the terminal only-
+```bash
+python3 slipperypenguin.py --output terminal
+```
+
+To write output to both the log files and the terminal-
+```bash
+python3 slipperypenguin.py --output both
+```
