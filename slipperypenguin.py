@@ -44,11 +44,12 @@ parser.add_argument("-gtfo", action="store_true", help="Enables GTFO Comparison"
 parser.add_argument("-update-gtfobins", action="store_true", help="Download/update GTFOBins database")
 parser.add_argument("-del-logs", action="store_true", help="Delete Logs")
 parser.add_argument("-help", action="store_true", help="Help!")
+parser.add_argument("-timeout", action="store_true", help="Used for changing timeout var, default is 10")
 
 
 args = parser.parse_args()
 sys.stdin = open('/dev/tty')
-
+timeout_var = 10
 
 # Setting up dirs
 STORAGE_ROOT = args.storage
@@ -81,6 +82,7 @@ if args.help:
     print("-gtfo:               Checks results against GTFOBins data, data follows output choice")
     print("-update-gtfobins:    Updates GTFOBins data from the GTFOBins API endpoint")
     print("-del-logs:           Deletes all logs that are currently stored")
+    print("-timeout:            Allows the user to set the timeout value")
     print("-help:               How you got here")
 
     print("An example command:\npython3 slipperypenguin.py --output logs -gtfo -update-gtfo,\n" +
@@ -100,7 +102,8 @@ if args.update_gtfobins:
     ])
     print(f"[+] GTFOBins updated at {GTFO_FILE}")
 
-
+if args.timeout:
+    timeout_var = int(input(f"{YELLOW}Enter custom timeout value: {RESET}"))
 
 
 gtfo_data = {}
@@ -109,7 +112,7 @@ if os.path.exists(GTFO_FILE) and os.path.getsize(GTFO_FILE) > 0:
     with open(GTFO_FILE, "r") as f:
         gtfo_data = json.load(f)
 
-print(f"{GREEN}Sliding Around...{RESET}")
+print(f"{BLUE}Sliding Around...{RESET}")
 
 # RUN_ID and RUN_DIR are for the individual filesaves in the dirs
 RUN_ID = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -128,24 +131,24 @@ GTFO_OUT = os.path.join(RUN_DIR, "gfto-out.json")
 
 # The flags list itself
 flags = [
-    {"string": "execve", "severity": LOW_CON},
-    {"string": "ENCRYPT_METHOD", "severity": HIGH},
-    {"string": "PASS_MIN_LEN", "severity": MED},
-    {"string": "PASS_MAX_LEN", "severity": MED},
-    {"string": "FAIL_DELAY", "severity": MED},
-    {"string": "FAKE_SHELL", "severity": HIGH},
-    {"string": "SYS_GID_MAX", "severity": HIGH},
-    {"string": "fchown", "severity": LOW},
-    {"string": "fchmod", "severity": LOW},
-    {"string": "tcsetattr", "severity": LOW},
+    {"string": "execve", "severity": "LOW WITH CONTEXT"},
+    {"string": "ENCRYPT_METHOD", "severity": "HIGH"},
+    {"string": "PASS_MIN_LEN", "severity": "MEDIUM"},
+    {"string": "PASS_MAX_LEN", "severity": "MEDIUM"},
+    {"string": "FAIL_DELAY", "severity": "MEDIUM"},
+    {"string": "FAKE_SHELL", "severity": "HIGH"},
+    {"string": "SYS_GID_MAX", "severity": "HIGH"},
+    {"string": "fchown", "severity": "LOW"},
+    {"string": "fchmod", "severity": "LOW"},
+    {"string": "tcsetattr", "severity": "LOW"},
     # "tcsetattr\nwrite",
-    {"string": "fork", "severity": LOW_CON},
-    {"string": "getlogin", "severity": LOW},
-    {"string": "%s: failed to drop privileges (%s)", "severity": MED_CON},
-    {"string": "SUDO_ASKPASS", "severity": MED_CON},
-    {"string": "allow_root", "severity": MED},
-    {"string": "/bin/sh", "severity": MED_CON},
-    {"string": "/usr/sbin:/usr/bin:/sbin:/bin:%s/bin", "severity": HIGH_CON},
+    {"string": "fork", "severity": "LOW_CON"},
+    {"string": "getlogin", "severity": "LOW"},
+    {"string": "%s: failed to drop privileges (%s)", "severity": "MED WITH CONTEXT"},
+    {"string": "SUDO_ASKPASS", "severity": "MED WITH CONTEXT"},
+    {"string": "allow_root", "severity": "MEDIUM"},
+    {"string": "/bin/sh", "severity": "MEDIUM WITH CONTEXT"},
+    {"string": "/usr/sbin:/usr/bin:/sbin:/bin:%s/bin", "severity": "HIGH WITH CONTEXT"},
     ]
 
 border = "-----"
@@ -199,6 +202,7 @@ if os.path.exists(GTFO_OUT):
 
 
 for b in agg_result:
+    # b = f"{YELLOW}{b}{RESET}"
     if not b.startswith("/usr/bin"):
         continue
 
@@ -226,7 +230,7 @@ for b in agg_result:
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            timeout=10,
+            timeout=timeout_var,
             start_new_session=True
         )
     except subprocess.TimeoutExpired:
@@ -297,12 +301,14 @@ for b in agg_result:
     for flag in flags:
         if flag["string"] in s_result:
             flags_append.setdefault(b, [])
-            appendItem = f"\n[{flag['severity']}] Found: {flag['string']}"
+            appendItem = f"[flag['severity']] {RED}Found: {flag['string']}{RESET}"
             flags_append[b].append(appendItem)
 
-
     if args.output in ("terminal", "both"):
-        print(f"{YELLOW}flags:{RESET} {GREEN}{flags_append}{RESET}")
+        for binary, findings in flags_append.items():
+            print(f"\n{YELLOW}Flags for {binary}:{RESET}")
+            for finding in findings:
+                print(finding)
     if args.output in ("logs", "both"):
         with open(FLAGS, "w", encoding='utf-8') as f:
             json.dump(flags_append, f)
