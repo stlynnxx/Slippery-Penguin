@@ -74,3 +74,10 @@ and it works fine!
 
 Small progress is still progress.
 
+3/25/2026-
+
+Today so far I've done mostly visual changes, coloring and organizing the text
+printed to the terminal if that argument is passed. I have been thinking over my implementaion of
+deleting the files; I think I may need to set up seperate arguments for deleting logs
+without running the program fully, and for deleting and then running. I would say running and then deleting automatically
+but that's useless and what the terminal option exists for.

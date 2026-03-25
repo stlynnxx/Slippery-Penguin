@@ -7,19 +7,43 @@ import signal
 import sys
 import shutil
 
+
+# Decor
+
+RED = '\033[91m'
+GREEN = '\033[92m'
+YELLOW = '\033[93m'
+BLUE = '\033[94m'
+MAGENTA = '\033[95m'
+CYAN = '\033[96m'
+WHITE = '\033[97m'
+RESET = '\033[0m'
+BLACK = '\033[30m'
+BOLD = '\033[1m'
+UNDERLINE = '\033[4m'
+
+# Warnings
+LOW = f'{YELLOW}LOW{RESET}'
+LOW_CON = f'{YELLOW}LOW WITH CONTEXT{RESET}'
+MED = f'{MAGENTA}MEDIUM{RESET}'
+MED_CON = f'{MAGENTA}MEDIUM WITH CONTEXT{RESET}'
+HIGH = f'{RED}HIGH{RESET}'
+HIGH_CON = f'{RED}HIGH WITH CONTEXT{RESET}'
+
+
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
 with open('art.txt', 'r') as file:
     content = file.read()
-    print(content)
+    print(f"{GREEN}{content}{RESET}")
 
 # Setting up argparse
-parser = argparse.ArgumentParser("description=SUID enumeration and vulnerability scanning")
+parser = argparse.ArgumentParser("SUID enumeration and vulnerability scanning")
 parser.add_argument("--output", choices=["terminal", "logs", "both"], default="both", help="Output mode")
 parser.add_argument("--storage", type=str, default="./logs", help="Log storage directory")
 parser.add_argument("-gtfo", action="store_true", help="Enables GTFO Comparison")
 parser.add_argument("-update-gtfobins", action="store_true", help="Download/update GTFOBins database")
 parser.add_argument("-del-logs", action="store_true", help="Delete Logs")
-
+parser.add_argument("-help", action="store_true", help="Help!")
 
 
 args = parser.parse_args()
@@ -47,6 +71,23 @@ if args.del_logs:
     print("Logs Deleted!")
 
 
+# Help!
+
+if args.help:
+    print("If this is a fresh download, I reccomend running -update-gtfobins for the most up to date data.")
+    print("--output both:       Writes results in the terminal and to logs")
+    print("--output terminal:   Writes results to the terminal only")
+    print("--output logs:       Writes results to the logs only")
+    print("-gtfo:               Checks results against GTFOBins data, data follows output choice")
+    print("-update-gtfobins:    Updates GTFOBins data from the GTFOBins API endpoint")
+    print("-del-logs:           Deletes all logs that are currently stored")
+    print("-help:               How you got here")
+
+    print("An example command:\npython3 slipperypenguin.py --output logs -gtfo -update-gtfo,\n" +
+          "with -gtfo-update being optional if your data is up to date.")
+    sys.exit(0)
+
+
 
 
 # Updating gtfobins logic
@@ -68,7 +109,7 @@ if os.path.exists(GTFO_FILE) and os.path.getsize(GTFO_FILE) > 0:
     with open(GTFO_FILE, "r") as f:
         gtfo_data = json.load(f)
 
-print("Sliding Around...")
+print(f"{GREEN}Sliding Around...{RESET}")
 
 # RUN_ID and RUN_DIR are for the individual filesaves in the dirs
 RUN_ID = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -87,24 +128,24 @@ GTFO_OUT = os.path.join(RUN_DIR, "gfto-out.json")
 
 # The flags list itself
 flags = [
-    {"string": "execve", "severity": "LOW WITH CONTEXT"},
-    {"string": "ENCRYPT_METHOD", "severity": "HIGH"},
-    {"string": "PASS_MIN_LEN", "severity": "MEDIUM"},
-    {"string": "PASS_MAX_LEN", "severity": "MEDIUM"},
-    {"string": "FAIL_DELAY", "severity": "MEDIUM"},
-    {"string": "FAKE_SHELL", "severity": "HIGH"},
-    {"string": "SYS_GID_MAX", "severity": "HIGH"},
-    {"string": "fchown", "severity": "LOW"},
-    {"string": "fchmod", "severity": "LOW"},
-    {"string": "tcsetattr", "severity": "LOW"},
+    {"string": "execve", "severity": LOW_CON},
+    {"string": "ENCRYPT_METHOD", "severity": HIGH},
+    {"string": "PASS_MIN_LEN", "severity": MED},
+    {"string": "PASS_MAX_LEN", "severity": MED},
+    {"string": "FAIL_DELAY", "severity": MED},
+    {"string": "FAKE_SHELL", "severity": HIGH},
+    {"string": "SYS_GID_MAX", "severity": HIGH},
+    {"string": "fchown", "severity": LOW},
+    {"string": "fchmod", "severity": LOW},
+    {"string": "tcsetattr", "severity": LOW},
     # "tcsetattr\nwrite",
-    {"string": "fork", "severity": "LOW WITH CONTEXT"},
-    {"string": "getlogin", "severity": "LOW"},
-    {"string": "%s: failed to drop privileges (%s)", "severity": "MEDIUM WITH CONTEXT"},
-    {"string": "SUDO_ASKPASS", "severity": "MEDIUM WITH CONTEXT"},
-    {"string": "allow_root", "severity": "MEDIUM"},
-    {"string": "/bin/sh", "severity": "MEDIUM WITH CONTEXT"},
-    {"string": "/usr/sbin:/usr/bin:/sbin:/bin:%s/bin", "severity": "HIGH WITH CONTEXT"},
+    {"string": "fork", "severity": LOW_CON},
+    {"string": "getlogin", "severity": LOW},
+    {"string": "%s: failed to drop privileges (%s)", "severity": MED_CON},
+    {"string": "SUDO_ASKPASS", "severity": MED_CON},
+    {"string": "allow_root", "severity": MED},
+    {"string": "/bin/sh", "severity": MED_CON},
+    {"string": "/usr/sbin:/usr/bin:/sbin:/bin:%s/bin", "severity": HIGH_CON},
     ]
 
 border = "-----"
@@ -131,7 +172,7 @@ if args.output in ("logs", "both"):
         json.dump(find_append, f)
 # spinner.stop()
 if args.output in ("terminal", "both"):
-    print(f"SUIDs: {agg_result}")
+    print(f"\n{YELLOW}SUIDs:{RESET} {GREEN}{agg_result}{RESET}")
 
 
 
@@ -170,7 +211,7 @@ for b in agg_result:
     # print(f"Cap check {b}: {result.stdout}")
     # print(f"cap_append contents: {cap_append}")
     if args.output in ("terminal", "both"):
-        print(f"getcap: {cap_append}")
+        print(f"\n{YELLOW}getcap:{RESET} {GREEN}{cap_append}{RESET}")
     if args.output in ("logs", "both"):
         with open(CAP_OUT, "w", encoding='utf-8') as f:
             json.dump(cap_append, f)
@@ -193,8 +234,8 @@ for b in agg_result:
 
 
     if args.output in ("terminal", "both"):
-        print(f"strace: {strace_append}")
-        print(f"timeouts: {timeout_append}")
+        print(f"\n{YELLOW}strace:{RESET} {GREEN}{strace_append}{RESET}")
+        print(f"\ntimeouts: {timeout_append}")
     if args.output in ("logs", "both"):
         # strace write to file
         with open(STRACE_OUT, "w") as f:
@@ -221,16 +262,21 @@ for b in agg_result:
             functions = entry.get("functions", {})
             if "suid" in functions:
                 suid_finding = f"GTFOBins SUID finding {binary_name}"
-                print(f"GTFO Match: {binary_name}")
+                if args.output in ("terminal", "both"):
+                    print(f"\n{YELLOW}GTFO Match:{RESET} {GREEN}{binary_name}{RESET}")
         else:
-            print(f"No GTFOBins entry for {binary_name}")
+            if args.output in ("terminal", "both"):
+                print(f"\n{YELLOW}No GTFOBins entry for {binary_name}{RESET}")
+        if args.output in ("logs", "both"):
+            with open(GTFO_OUT, "w") as f:
+                json.dump(f"GTFO Match: {binary_name}", f)
 
 
 
 
 
     if args.output in ("terminal", "both"):
-        print(f"strings: {s_result}")
+        print(f"{YELLOW}strings:{RESET} {GREEN}{s_result}{RESET}")
     if args.output in ("logs", "both"):
         if os.path.exists(STR_OUT):
             with open(STR_OUT, "r") as f:
@@ -251,16 +297,17 @@ for b in agg_result:
     for flag in flags:
         if flag["string"] in s_result:
             flags_append.setdefault(b, [])
-            appendItem = f"[{flag['severity']}] Found: {flag['string']}"
+            appendItem = f"\n[{flag['severity']}] Found: {flag['string']}"
             flags_append[b].append(appendItem)
 
 
     if args.output in ("terminal", "both"):
-        print(f"flags: {flags_append}")
+        print(f"{YELLOW}flags:{RESET} {GREEN}{flags_append}{RESET}")
     if args.output in ("logs", "both"):
         with open(FLAGS, "w", encoding='utf-8') as f:
             json.dump(flags_append, f)
 
+print(f"{BOLD}{YELLOW}Done!{RESET}")
 
 
 

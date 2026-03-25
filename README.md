@@ -1,14 +1,14 @@
-# SlipperyPenguin
+# Slippery Penguin
 
 
 
 
 
-***Slippery Penguin is intended strictly for use on systems you own or have explicit written authorization
+***Slippery Penguin is intended strictly for use on systems you own or have explicit authorization
 to test. This tool is provided for educational and security research purposes only. The author assumes no liability for misuse or damage caused by this tool. Use responsibly and in accordance with all applicable local, state, and federal laws.***
 
 
-SlipperyPenguin is a local privilege escalation tool
+Slippery Penguin is a local privilege escalation tool
 for Linux Systems. It enumerates SUID binaries, checks
 capabilities, traces execution calls, and analyzes 
 binary strings, checking the results against a ranked 
@@ -20,7 +20,7 @@ list of possible indicators for exploration.
 -Execution call tracing via strace\
 -Binary string analysis against a severity-rated watchlist\
 -Configurable path filtering and timeout handling\
--JSON Logging\ 
+-JSON Logging
 
 
 *Requirements:*\
@@ -33,7 +33,7 @@ The JSON files are stored in /SlipperyPenguin/logs, within timestamped directori
 Each form of output has it's own json file within the timestamped directory. 
 
 
-*Usage:
+Usage:
 
 To write output to log files only-
  ```bash
@@ -47,4 +47,20 @@ python3 slipperypenguin.py --output terminal
 To write output to both the log files and the terminal-
 ```bash
 python3 slipperypenguin.py --output both
+```
+To update the GTFOBins data:
+```bash
+python3 slipperypenguin.py -update-gtfobins
+
+```
+
+Add
+```bash
+-gtfo
+```
+For checking output against GTFOBins data
+
+To Delete Logs-
+```bash
+-del-logs
 ```
