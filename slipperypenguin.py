@@ -5,6 +5,7 @@ from datetime import datetime
 import argparse
 import signal
 import sys
+import shutil
 
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
 with open('art.txt', 'r') as file:
@@ -17,7 +18,7 @@ parser.add_argument("--output", choices=["terminal", "logs", "both"], default="b
 parser.add_argument("--storage", type=str, default="./logs", help="Log storage directory")
 parser.add_argument("-gtfo", action="store_true", help="Enables GTFO Comparison")
 parser.add_argument("-update-gtfobins", action="store_true", help="Download/update GTFOBins database")
-
+parser.add_argument("-del-logs", action="store_true", help="Delete Logs")
 
 
 
@@ -30,7 +31,20 @@ STORAGE_ROOT = args.storage
 GTFODIR = STORAGE_ROOT
 os.makedirs(GTFODIR, exist_ok=True)
 GTFO_FILE = os.path.join(GTFODIR, "gtfobins.json")
-
+if args.del_logs:
+    if not os.path.exists(STORAGE_ROOT):
+        print(f"[-] No logs directory found at {STORAGE_ROOT}")
+    else:
+        for filename in os.listdir(STORAGE_ROOT):
+            file_path = os.path.join(STORAGE_ROOT, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print("Failed to delete %s. Reason: %s" % (file_path, e))
+    print("Logs Deleted!")
 
 
 

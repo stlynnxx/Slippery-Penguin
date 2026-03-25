@@ -64,3 +64,13 @@ Good stuff! V1 isn't far away! Tomorrow we need to pick up on saving gtfo findin
 right now the check against gtfo data is print only. But i'm quite sleepy.
 
 Goodnight!
+
+
+8:51 PM-
+
+My personal life beyond work stuff has been stressful so i'm really
+not doing much tonight, but. I did add an argument for deleting the logs
+and it works fine!
+
+Small progress is still progress.
+
