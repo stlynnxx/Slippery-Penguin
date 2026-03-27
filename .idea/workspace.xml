@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="e90e9b7e-3334-43e2-a9ff-be84461be0e3" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/logs/2026-03-26_23-30-39/flags.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/logs/2026-03-26_23-31-54/flags.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/SlipperyPenguinDev.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SlipperyPenguin.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-14-23/cap-out.json" beforeDir="false" afterPath="$PROJECT_DIR$/logs/2026-03-26_23-30-39/cap-out.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-14-23/find-out.json" beforeDir="false" afterPath="$PROJECT_DIR$/logs/2026-03-26_23-30-39/find-out.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-14-23/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-14-23/str-out.json" beforeDir="false" afterPath="$PROJECT_DIR$/logs/2026-03-26_23-30-39/str-out.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-14-23/strace-out.json" beforeDir="false" afterPath="$PROJECT_DIR$/logs/2026-03-26_23-30-39/strace-out.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-14-23/timeout-out.json" beforeDir="false" afterPath="$PROJECT_DIR$/logs/2026-03-26_23-30-39/timeout-out.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-17-30/cap-out.json" beforeDir="false" afterPath="$PROJECT_DIR$/logs/2026-03-26_23-31-54/cap-out.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-17-30/find-out.json" beforeDir="false" afterPath="$PROJECT_DIR$/logs/2026-03-26_23-31-54/find-out.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-17-30/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-17-30/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-17-30/str-out.json" beforeDir="false" afterPath="$PROJECT_DIR$/logs/2026-03-26_23-31-54/str-out.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-17-30/strace-out.json" beforeDir="false" afterPath="$PROJECT_DIR$/logs/2026-03-26_23-31-54/strace-out.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-17-30/timeout-out.json" beforeDir="false" afterPath="$PROJECT_DIR$/logs/2026-03-26_23-31-54/timeout-out.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-19-16/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-19-16/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-19-16/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-19-16/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-19-16/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-19-16/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-19-16/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-19-38/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-19-38/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-19-38/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-19-38/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-19-38/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-19-38/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-19-38/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-20-02/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-20-02/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-20-02/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-20-02/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-20-02/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-20-02/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-20-02/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-20-25/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-20-25/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-20-25/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-20-25/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-20-25/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-20-25/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-20-25/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-21-56/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-21-56/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-21-56/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-21-56/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-21-56/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-21-56/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-21-56/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-51-16/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-51-16/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-51-16/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-51-16/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-51-16/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-51-16/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-24_21-51-16/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-13-13/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-13-13/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-13-13/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-13-13/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-13-13/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-13-13/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-25-15/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-25-15/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-25-15/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-25-15/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-25-15/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-25-15/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-25-44/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-25-44/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-25-44/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-25-44/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-25-44/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-25-44/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-26-36/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-26-36/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-26-36/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-26-36/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-26-36/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-26-36/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-42-03/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-42-03/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-42-03/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-42-03/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-42-03/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-42-03/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_11-42-03/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-29-30/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-29-30/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-30-39/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-30-39/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-30-39/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-30-39/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-30-39/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-30-39/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-30-39/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-31-18/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-31-18/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-31-18/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-31-18/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-31-18/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-31-18/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-31-18/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-31-52/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-31-52/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-31-52/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-31-52/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-31-52/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-31-52/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-31-52/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-32-32/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-32-32/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-32-32/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-32-32/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-32-32/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-32-32/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-32-32/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-34-11/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-34-11/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-34-11/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-34-11/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-34-11/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-34-11/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-34-11/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-34-39/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-34-39/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-34-39/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-34-39/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-34-39/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-34-39/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-34-39/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-35-13/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-35-13/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-35-13/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-35-13/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-35-13/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-35-13/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-35-13/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-35-34/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-35-34/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-35-34/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-35-34/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-35-34/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-35-34/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-35-34/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-36-28/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-36-28/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-36-28/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-36-28/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-36-28/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-36-28/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-36-28/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-36-40/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-36-40/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-36-40/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-36-40/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-36-40/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-36-40/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-36-40/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-37-26/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-37-26/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-37-26/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-37-26/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-37-26/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-37-26/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-37-26/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-37-45/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-37-45/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-37-45/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-37-45/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-37-45/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-37-45/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_12-37-45/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-12-03/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-12-03/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-12-03/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-12-03/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-12-03/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-12-03/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-12-03/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-12-16/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-12-16/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-12-16/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-12-16/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-12-16/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-12-16/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-12-16/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-14-41/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-14-41/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-14-41/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-14-41/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-14-41/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-14-41/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-14-41/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-16-44/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-17-12/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-17-12/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-17-12/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-17-12/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-17-12/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-17-12/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-17-12/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-18-39/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-18-39/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-18-39/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-18-39/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-18-39/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-18-39/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-18-39/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-22-19/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-22-19/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-22-19/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-22-19/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-22-19/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-22-19/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-22-19/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-23-47/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-23-47/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-23-47/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-23-47/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-23-47/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-23-47/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-23-47/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-24-21/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-24-21/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-24-21/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-24-21/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-24-21/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-24-21/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-24-21/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-26-08/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-26-08/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-26-08/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-26-08/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-26-08/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-26-08/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-26-08/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-26-47/cap-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-26-47/find-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-26-47/flags.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-26-47/gfto-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-26-47/str-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-26-47/strace-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/2026-03-25_17-26-47/timeout-out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/slipperypenguin.py" beforeDir="false" afterPath="$PROJECT_DIR$/slipperypenguin.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "stlynnxx"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "git@github.com:stlynnxx/SlipperyPenguin.git",
+    "accountId": "de43634b-3087-44a3-bc1c-8e702b199bef"
+  }
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 4
+}]]></component>
+  <component name="ProjectId" id="3BVx8U3YgCBZobak33gTObhrz9D" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "ai.playground.ignore.import.keys.banner.in.settings": "true",
+    "git-widget-placeholder": "master",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-PY-253.29346.142" />
+        <option value="bundled-python-sdk-f2b7a9f6281b-6e1f45a539f7-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.29346.142" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e90e9b7e-3334-43e2-a9ff-be84461be0e3" name="Changes" comment="" />
+      <created>1774587880073</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1774587880073</updated>
+      <workItem from="1774587881117" duration="82000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

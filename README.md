@@ -54,13 +54,18 @@ python3 slipperypenguin.py -update-gtfobins
 
 ```
 
-Add
+Add for checking output against GTFOBins data
 ```bash
 -gtfo
 ```
-For checking output against GTFOBins data
 
-To Delete Logs-
+To delete logs and then run the program-
 ```bash
--del-logs
+-del-logs run
+```
+NOTE: This will result in leaving logs in the directory still, it will just be limited to that run.
+
+To delete logs without running the program after- 
+```bash
+-del-logs close
 ```
