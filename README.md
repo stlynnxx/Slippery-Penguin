@@ -41,6 +41,12 @@ Each form of output has it's own json file within the timestamped directory.
 
 Usage:
 
+Quick installation-
+```bash
+git clone -b dev https://github.com/stlynnxx/Slippery-Penguin.git
+cd Slippery-Penguin
+```
+
 To write output to log files only-
  ```bash
 python3 slipperypenguin.py --output logs
