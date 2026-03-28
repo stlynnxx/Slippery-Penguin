@@ -2,10 +2,10 @@
 
 
 
-**This is the dev branch of Slippery Penguin. I cannot promise stability or exactly as promised behavior from this branch.
+***This is the dev branch of Slippery Penguin. I cannot promise stability or exactly as promised behavior from this branch.
 This branch will also have less robust data for checking against than the master branch whenever it is launched. 
 Slippery Penguin is currently (as of 3/28/2026) in a beta phase, so this is the only version at the moment,
-but that will be changing in due time.**
+but that will be changing in due time.***
 
 
 
