@@ -45,6 +45,8 @@ Quick installation-
 ```bash
 git clone -b dev https://github.com/stlynnxx/Slippery-Penguin.git
 cd Slippery-Penguin
+chmod +x setup.sh
+sudo ./setup.sh
 ```
 
 To write output to log files only-
