@@ -3,7 +3,7 @@ import os
 import json
 from datetime import datetime
 import argparse
-import signal
+
 import sys
 import shutil
 
@@ -39,6 +39,8 @@ parser.add_argument("-del-logs", choices=["run", "close"],  default=None, help="
 parser.add_argument("-help", action="store_true", help="Help!")
 parser.add_argument("-timeout", action="store_true", help="Used for changing timeout var, default is 10")
 parser.add_argument("-verbose", action="store_true", help="Show context in terminal for each flag")
+parser.add_argument("-cleanup", action="store_true", help="Deletes all data and uninstalls the program")
+
 
 args = parser.parse_args()
 sys.stdin = open('/dev/tty')
@@ -78,6 +80,47 @@ if args.del_logs == "close":
                 print("Failed to delete %s. Reason: %s" % (file_path, e))
     print("Logs Deleted!")
     sys.exit(0)
+if args.cleanup:
+    if not os.path.exists(STORAGE_ROOT):
+        print(f"[-] No logs directory found at {STORAGE_ROOT}")
+    else:
+        for filename in os.listdir(STORAGE_ROOT):
+            file_path = os.path.join(STORAGE_ROOT, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print("Failed to delete %s. Reason: %s" % (file_path, e))
+
+    ## Uninstalling Strace
+    print(f"{YELLOW}Uninstalling Slippery Penguin dependencies...{RESET}")
+    confirm = input(f"{RED}strace may have been present before installation. Remove anyway? (y/n): {RESET}")
+    if confirm.lower() == "y":
+        if subprocess.run(["which", "apt"], capture_output=True).returncode == 0:
+            subprocess.run(["sudo", "apt", "remove", "strace"])
+        elif subprocess.run(["which", "dnf"], capture_output=True).returncode == 0:
+            subprocess.run(["sudo", "dnf", "remove", "strace"])
+        elif subprocess.run(["which", "pacman"], capture_output=True).returncode == 0:
+            subprocess.run(["sudo", "pacman", "-R", "strace"])
+        else:
+            print(f"{RED}Could not detect package manager. Please remove strace manually.{RESET}")
+        print(f"{GREEN}Done! You can now delete the Slippery-Penguin directory.{RESET}")
+    else:
+        print(f"{YELLOW}Uninstall cancelled.{RESET}")
+
+    ## This removes the gtfobins data
+    if os.path.exists(GTFO_FILE):
+        os.unlink(GTFO_FILE)
+        print(f"{GREEN}GTFOBins data removed.{RESET}")
+
+    ## this removes the logs dir
+    if os.path.exists(STORAGE_ROOT):
+        shutil.rmtree(STORAGE_ROOT)
+        print(f"{GREEN}Logs directory removed.{RESET}")
+    sys.exit(0)
+
 
 
 

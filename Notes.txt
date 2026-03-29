@@ -81,3 +81,8 @@ printed to the terminal if that argument is passed. I have been thinking over my
 deleting the files; I think I may need to set up seperate arguments for deleting logs
 without running the program fully, and for deleting and then running. I would say running and then deleting automatically
 but that's useless and what the terminal option exists for.
+
+3/29/2026-
+
+Not much to say today, all I'm doing is adding the cleanup argument! Now using -cleanup in your command will delete the log files,
+the log dir, uninstall strace, and then uninstall the program itself!
