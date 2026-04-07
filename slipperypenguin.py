@@ -136,6 +136,7 @@ if args.update_gtfobins:
         GTFO_FILE
     ])
     print(f"[+] GTFOBins updated at {GTFO_FILE}")
+    sys.exit(0)
 
 if args.timeout:
     timeout_var = int(input(f"{YELLOW}Enter custom timeout value: {RESET}"))
