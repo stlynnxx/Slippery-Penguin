@@ -86,3 +86,15 @@ but that's useless and what the terminal option exists for.
 
 Not much to say today, all I'm doing is adding the cleanup argument! Now using -cleanup in your command will delete the log files,
 the log dir, uninstall strace, and then uninstall the program itself!
+
+
+4/6/2026-
+
+Digging into testing I immediately met an issue with uninstalling strace that I hadn't considered before
+in that it prompts for the sudo password, which may be an issue for users, so I simply landed on removing
+the logic. There's a good chance strace was previously installed and this is just the overall better option.
+
+Next I need to address the getcap issues on Debian!
+
+So far I've only tested on Debian and Fedora, but that work is ongoing.
+

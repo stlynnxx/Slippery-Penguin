@@ -3,13 +3,11 @@ import os
 import json
 from datetime import datetime
 import argparse
-
 import sys
 import shutil
 
 
 # Decor
-
 RED = '\033[91m'
 GREEN = '\033[92m'
 YELLOW = '\033[93m'
@@ -21,8 +19,6 @@ RESET = '\033[0m'
 BLACK = '\033[30m'
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
-
-
 
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
 with open('art.txt', 'r') as file:
@@ -94,21 +90,8 @@ if args.cleanup:
             except Exception as e:
                 print("Failed to delete %s. Reason: %s" % (file_path, e))
 
-    ## Uninstalling Strace
-    print(f"{YELLOW}Uninstalling Slippery Penguin dependencies...{RESET}")
-    confirm = input(f"{RED}strace may have been present before installation. Remove anyway? (y/n): {RESET}")
-    if confirm.lower() == "y":
-        if subprocess.run(["which", "apt"], capture_output=True).returncode == 0:
-            subprocess.run(["sudo", "apt", "remove", "strace"])
-        elif subprocess.run(["which", "dnf"], capture_output=True).returncode == 0:
-            subprocess.run(["sudo", "dnf", "remove", "strace"])
-        elif subprocess.run(["which", "pacman"], capture_output=True).returncode == 0:
-            subprocess.run(["sudo", "pacman", "-R", "strace"])
-        else:
-            print(f"{RED}Could not detect package manager. Please remove strace manually.{RESET}")
-        print(f"{GREEN}Done! You can now delete the Slippery-Penguin directory.{RESET}")
-    else:
-        print(f"{YELLOW}Uninstall cancelled.{RESET}")
+
+
 
     ## This removes the gtfobins data
     if os.path.exists(GTFO_FILE):
