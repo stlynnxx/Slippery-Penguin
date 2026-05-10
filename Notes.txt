@@ -101,3 +101,18 @@ So far I've only tested on Debian and Fedora, but that work is ongoing.
 4/9/2026-
 
 I changed the penguin!
+
+
+5/10/2026-
+
+I've been dealing with an overwhelming personal life and haven't been able to do much programming at all, let alone in here,
+but I'm trying to build new routines and wanted to get this project back into my mind.
+
+I think we may need to make strace optional so that the program can be run without root status/envoking sudo if needed.
+
+I ran it on the debian machine and got an odd error related to getcap and that directory not existing, we need to figure that out
+as well. I feel like I ran into this in the past and forgot it?
+
+Is it that debian uses libcap instead?
+
+Editing the setup script to adjust this, please hold.
