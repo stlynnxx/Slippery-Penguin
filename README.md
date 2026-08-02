@@ -2,13 +2,6 @@
 
 
 
-***This is the dev branch of Slippery Penguin. I cannot promise stability or exactly as promised behavior from this branch.
-This branch will also have less robust data for checking against than the master branch whenever it is launched. 
-Slippery Penguin is currently (as of 3/28/2026) in a beta phase, so this is the only version at the moment,
-but that will be changing in due time.***
-
-
-
 
 ***Slippery Penguin is intended strictly for use on systems you own or have explicit authorization
 to test. This tool is provided for educational and security research purposes only. The author assumes no liability for misuse or damage caused by this tool. Use responsibly and in accordance with all applicable local, state, and federal laws.***
@@ -19,6 +12,11 @@ for Linux Systems. It enumerates SUID binaries, checks
 capabilities, traces execution calls, and analyzes 
 binary strings, checking the results against a ranked 
 list of possible indicators for exploration.
+
+This is the official release, currently on version 1.0 
+as of 8/1/2026. You are welcome to use the dev branch 
+for the newest features and updates,
+but I cannot promise it is ever stable.
 
 *Features:*\
 -SUID binary enumeration across the filesystem\
@@ -83,3 +81,11 @@ To delete logs without running the program after-
 ```bash
 -del-logs close
 ```
+
+# Contributing
+
+Slippery Penguin is always open for contributions!
+
+Check out the dev branch if you want to contribute to the newest
+features (you can read my daily work and goals in the notes file),
+or check out the issues list!
