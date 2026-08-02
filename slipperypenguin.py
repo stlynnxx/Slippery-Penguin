@@ -168,7 +168,7 @@ GTFO_OUT = os.path.join(RUN_DIR, "gfto-out.json")
 # The flags list itself
 flags = [
     {"string": "execve", "severity": "LOW WITH CONTEXT", "context": "Binary executes another program. If called with user-influenced arguments while elevated, could be used to execute arbitrary code with elevated privileges."},
-    {"string": "ENCRYPT_METHOD", "severity": "HIGH"},
+{"string": "ENCRYPT_METHOD", "severity": "HIGH", "context": "References encryption method configuration, typically sourced from /etc/login.defs. A SUID binary reading or influencing encryption method selection could weaken system-wide password hashing if the method is manipulable or insufficiently strong."},
     {"string": "PASS_MIN_LEN", "severity": "MEDIUM",  "context": "References minimum password length configuration. If this binary reads or writes password policy, misconfiguration could weaken system authentication."},
     {"string": "PASS_MAX_LEN", "severity": "MEDIUM", "context": "References maximum password length configuration. Some implementations truncate passwords silently, which can weaken security or indicate policy manipulation."},
     {"string": "FAIL_DELAY", "severity": "MEDIUM", "context": "References the delay after a failed authentication attempt. If manipulable, an attacker could reduce or eliminate brute force delay."},
@@ -274,8 +274,12 @@ for b in agg_result:
             start_new_session=True
         )
     except subprocess.TimeoutExpired:
-        timeout_append = b
+        timeout_append.setdefault(b, "timeout")
         pass
+    for line in r.stderr.splitlines():
+        if "execve" in line:
+            strace_append.setdefault(b, [])
+            strace_append[b].append(line)
     if args.output in ("terminal", "both"):
         print(f"\n{YELLOW}Strace:{RESET} {GREEN}{strace_append}{RESET}")
         print(f"\nTimeouts: {timeout_append}")
@@ -312,7 +316,11 @@ for b in agg_result:
                 print(f"\n{YELLOW}No GTFOBins entry for {MAGENTA}{binary_name}{RESET}")
         if args.output in ("logs", "both"):
             with open(GTFO_OUT, "w") as f:
-                json.dump(f"GTFO Match: {MAGENTA}{binary_name}", f)
+                gtfo_append.setdefault(b, [])
+                gtfo_append[b].append(f"GTFOBins SUID entry: {binary_name}")
+                if args.output in ("logs", "both"):
+                    with open(GTFO_OUT, "w") as f:
+                        json.dump(gtfo_append, f)
 
 
 
