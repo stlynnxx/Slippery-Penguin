@@ -276,7 +276,7 @@ for b in agg_result:
     except subprocess.TimeoutExpired:
         timeout_append.setdefault(b, "timeout")
         pass
-    for line in r.stderr.splitlines():
+    for line in r.stderr.decode('utf-8', errors='replace').splitlines():
         if "execve" in line:
             strace_append.setdefault(b, [])
             strace_append[b].append(line)

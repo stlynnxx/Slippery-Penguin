@@ -116,3 +116,14 @@ as well. I feel like I ran into this in the past and forgot it?
 Is it that debian uses libcap instead?
 
 Editing the setup script to adjust this, please hold.
+
+8/10/2026-
+
+It's been awhile since I've journaled in here, because all I've really done since the last entry is fix a few format issues
+and then ship v1, which shipped on 08/01/2026, and then my mom passsed shortly thereafter and my productivity went down the drain
+for a bit.
+
+But here I am!
+
+After pushing v1 I found the bug where strace results were being returned as bytes, so this morning I'm fixing that and
+pushing the fix!
