@@ -4,6 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
+<<<<<<< HEAD
     <list default="true" id="e90e9b7e-3334-43e2-a9ff-be84461be0e3" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/SlipperyPenguin.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SlipperyPenguin.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
@@ -11,6 +12,9 @@
       <change beforePath="$PROJECT_DIR$/venv/bin/pip" beforeDir="false" afterPath="$PROJECT_DIR$/venv/bin/pip" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/venv/bin/pip3" beforeDir="false" afterPath="$PROJECT_DIR$/venv/bin/pip3" afterDir="false" />
     </list>
+=======
+    <list default="true" id="e90e9b7e-3334-43e2-a9ff-be84461be0e3" name="Changes" comment="" />
+>>>>>>> d2866fd18a5ddcc7d96cae54fc69ff20e2c972bb
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -143,7 +147,11 @@
       <workItem from="1774819132666" duration="1473000" />
       <workItem from="1775525364426" duration="3797000" />
       <workItem from="1775542415440" duration="3101000" />
+<<<<<<< HEAD
       <workItem from="1786897614931" duration="1905000" />
+=======
+      <workItem from="1786368092634" duration="502000" />
+>>>>>>> d2866fd18a5ddcc7d96cae54fc69ff20e2c972bb
     </task>
     <servers />
   </component>
