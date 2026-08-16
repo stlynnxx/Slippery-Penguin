@@ -5,7 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e90e9b7e-3334-43e2-a9ff-be84461be0e3" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/SlipperyPenguin.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SlipperyPenguin.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slipperypenguin.py" beforeDir="false" afterPath="$PROJECT_DIR$/slipperypenguin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/venv/bin/pip" beforeDir="false" afterPath="$PROJECT_DIR$/venv/bin/pip" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/venv/bin/pip3" beforeDir="false" afterPath="$PROJECT_DIR$/venv/bin/pip3" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,12 +25,71 @@
     &quot;assignee&quot;: &quot;stlynnxx&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;git@github.com:stlynnxx/Slippery-Penguin.git&quot;,
-    &quot;accountId&quot;: &quot;de43634b-3087-44a3-bc1c-8e702b199bef&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/stlynnxx/Slippery-Penguin",
+    "accountId": "9ed73475-a20e-42a1-9ee7-857dfb246645"
   }
-}</component>
+}]]></component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.7732239585274452" />
+      <entry key="MS500" value="3.0111539893712784" />
+      <entry key="S2" value="3.695409144010576" />
+      <entry key="S5" value="3.875449746260184" />
+      <entry key="S10" value="4.057754785146501" />
+      <entry key="S30" value="6.926633046389704" />
+      <entry key="S60" value="12.659006579939023" />
+      <entry key="M2" value="20.79067267285417" />
+      <entry key="M5" value="37.05875009767803" />
+      <entry key="M10" value="62.05155555954459" />
+      <entry key="M15" value="81.10501006749438" />
+      <entry key="M30" value="112.5682906517276" />
+      <entry key="H1" value="135.69196356389833" />
+      <entry key="H2" value="149.81229512720185" />
+      <entry key="H4" value="157.6284457108863" />
+      <entry key="D1" value="164.56441322115398" />
+      <entry key="W1" value="165.7939047633376" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="3.3968893696695277E-150" />
+      <entry key="S5" value="1.6309197058134577E-60" />
+      <entry key="S10" value="1.2773417903040093E-30" />
+      <entry key="S30" value="1.1493808411174044E-10" />
+      <entry key="S60" value="1.3020825767863567E-5" />
+      <entry key="M2" value="0.0051804431748127076" />
+      <entry key="M5" value="0.2529343697859412" />
+      <entry key="M10" value="1.0661165392050682" />
+      <entry key="M15" value="1.762483507514769" />
+      <entry key="M30" value="2.950036677542454" />
+      <entry key="H1" value="3.8345950566655915" />
+      <entry key="H2" value="4.3769889753269835" />
+      <entry key="H4" value="4.677679791891084" />
+      <entry key="D1" value="4.944710770963051" />
+      <entry key="W1" value="4.992062201300291" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="1.7296252611295975" />
+      <entry key="MS500" value="2.994222768936724" />
+      <entry key="S2" value="3.6898081195607975" />
+      <entry key="S5" value="3.872487572944211" />
+      <entry key="S10" value="4.04567783893207" />
+      <entry key="S30" value="6.851071398013018" />
+      <entry key="S60" value="12.551455861454665" />
+      <entry key="M2" value="20.69338406780171" />
+      <entry key="M5" value="37.24260476970713" />
+      <entry key="M10" value="63.069056707761334" />
+      <entry key="M15" value="82.82882808815219" />
+      <entry key="M30" value="115.49412026640789" />
+      <entry key="H1" value="139.51272549626822" />
+      <entry key="H2" value="154.1818477266246" />
+      <entry key="H4" value="162.30226452105467" />
+      <entry key="D1" value="169.50845947043564" />
+      <entry key="W1" value="170.78587150179055" />
+    </decayedShown>
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
 }</component>
@@ -35,29 +98,35 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python.slipperypenguin.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;ai.playground.ignore.import.keys.banner.in.settings&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;dev&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/steviexx/PycharmProjects/SlipperyPenguin&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.slipperypenguin.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "ai.playground.ignore.import.keys.banner.in.settings": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "dev",
+    "last_opened_file_path": "/home/steviexx/Slippery-Penguin",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-f2b7a9f6281b-6e1f45a539f7-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.29346.142" />
+        <option value="bundled-python-sdk-c6d794e1806d-5bd6d13a2a75-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-262.8665.309" />
       </set>
     </attachedChunks>
   </component>
@@ -74,6 +143,7 @@
       <workItem from="1774819132666" duration="1473000" />
       <workItem from="1775525364426" duration="3797000" />
       <workItem from="1775542415440" duration="3101000" />
+      <workItem from="1786897614931" duration="1905000" />
     </task>
     <servers />
   </component>
@@ -82,5 +152,6 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/SlipperyPenguin$slipperypenguin.coverage" NAME="slipperypenguin Coverage Results" MODIFIED="1775525395129" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Slippery_Penguin$slipperypenguin.coverage" NAME="slipperypenguin Coverage Results" MODIFIED="1786897927963" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

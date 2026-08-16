@@ -1,10 +1,13 @@
 import subprocess
 import os
 import json
+from contextlib import nullcontext
 from datetime import datetime
 import argparse
 import sys
 import shutil
+from rich.console import Console
+
 
 
 # Decor
@@ -41,7 +44,7 @@ parser.add_argument("-cleanup", action="store_true", help="Deletes all data and 
 args = parser.parse_args()
 sys.stdin = open('/dev/tty')
 timeout_var = 10
-
+console = Console()
 # Setting up dirs
 STORAGE_ROOT = args.storage
 GTFODIR = STORAGE_ROOT
@@ -148,7 +151,7 @@ if os.path.exists(GTFO_FILE) and os.path.getsize(GTFO_FILE) > 0:
     with open(GTFO_FILE, "r") as f:
         gtfo_data = json.load(f)
 
-print(f"{BLUE}Sliding Around...{RESET}")
+
 
 # RUN_ID and RUN_DIR are for the individual filesaves in the dirs
 RUN_ID = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -241,56 +244,58 @@ if os.path.exists(GTFO_OUT):
     with open(GTFO_OUT, "r") as f:
         gtfo_append = json.loads(f.read())
 
-
-for b in agg_result:
-    if not b.startswith("/usr/bin"):
-        continue
-
-    if args.output in ("terminal", "both"):
-        print(f"{MAGENTA}--Results for: {b}--{RESET}")
-    # getcap
-    result = subprocess.run(["getcap", "-r", f"{b}"], capture_output=True, text=True)  # capability check
-    if result.stdout:
-        cap_append.setdefault(b, [])
-        cap_item = [f"Cap check {b}: {result.stdout}"]
-        cap_append[b].append(cap_item)
-    if args.output in ("terminal", "both"):
-        print(f"\n{YELLOW}getcap:{RESET} {GREEN}{cap_append}{RESET}")
-    if args.output in ("logs", "both"):
-        with open(CAP_OUT, "w", encoding='utf-8') as f:
-            json.dump(cap_append, f)
-
-    # This runs strace to track the execve calls
-    # and will write both the strace results and
-    # the timeouts to seperate files
-
+with console.status(f"{BLUE}Sliding Around...{RESET}"):
     try:
-        r = subprocess.run(
-            ["strace", "-e", "execve", f"{b}"],
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            timeout=timeout_var,
-            start_new_session=True
-        )
-    except subprocess.TimeoutExpired:
-        timeout_append.setdefault(b, "timeout")
-        pass
-    for line in r.stderr.splitlines():
-        if "execve" in line:
-            strace_append.setdefault(b, [])
-            strace_append[b].append(line)
-    if args.output in ("terminal", "both"):
-        print(f"\n{YELLOW}Strace:{RESET} {GREEN}{strace_append}{RESET}")
-        print(f"\nTimeouts: {timeout_append}")
-    if args.output in ("logs", "both"):
-        # strace write to file
-        with open(STRACE_OUT, "w") as f:
-            json.dump(strace_append, f)
+        for b in agg_result:
+            if not b.startswith("/usr/bin"):
+                continue
+            if args.output in ("terminal", "both"):
+                console.print(f"[magenta]--Results for: {b}--[/magenta]]")
+                # getcap
+                result = subprocess.run(["getcap", "-r", f"{b}"], capture_output=True, text=True)  # capability check
+            if result.stdout:
+                cap_append.setdefault(b, [])
+                cap_item = [f"Cap check {b}: {result.stdout}"]
+                cap_append[b].append(cap_item)
+            if args.output in ("terminal", "both"):
+                console.print(f"\n[yellow]getcap: [/yellow][green]{cap_append}[/green]")
+            if args.output in ("logs", "both"):
+                with open(CAP_OUT, "w", encoding='utf-8') as f:
+                    json.dump(cap_append, f)
 
-        # timeout write to file
-        with open(TIMEOUT_OUT, "w") as f:
-            json.dump(timeout_append, f)
+            # This runs strace to track the execve calls
+            # and will write both the strace results and
+            # the timeouts to seperate files
+
+            try:
+                r = subprocess.run(
+            ["strace", "-e", "execve", f"{b}"],
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    timeout=timeout_var,
+                    start_new_session=True
+            )
+            except subprocess.TimeoutExpired:
+                timeout_append.setdefault(b, "timeout")
+                pass
+            for line in r.stderr.decode('utf-8', errors='replace').splitlines():
+                if "execve" in line:
+                    strace_append.setdefault(b, [])
+                    strace_append[b].append(line)
+            if args.output in ("terminal", "both"):
+                console.print(f"\n[yellow]Strace:[/yellow] [green]{strace_append}[/green]")
+                console.print(f"\nTimeouts: {timeout_append}")
+            if args.output in ("logs", "both"):
+                # strace write to file
+                with open(STRACE_OUT, "w") as f:
+                    json.dump(strace_append, f)
+                # timeout write to file
+                with open(TIMEOUT_OUT, "w") as f:
+                    json.dump(timeout_append, f)
+    except:
+        console.print("[red]Sliding around error, sorry there isn't more info! [/red] [magenta]-stlynnxx[/magenta]")
+
 
 
     # This runs strings and then writes the results to the file

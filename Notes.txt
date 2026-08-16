@@ -116,3 +116,9 @@ as well. I feel like I ran into this in the past and forgot it?
 Is it that debian uses libcap instead?
 
 Editing the setup script to adjust this, please hold.
+
+8/16/2026-
+
+Today I implemented Rich so that I could add a spinner for the sliding around portion,
+and also use Rich for the color coding instead of the ANSII codes. So far it is all working
+and I'm going to push the changes to dev!
