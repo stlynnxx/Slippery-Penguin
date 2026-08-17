@@ -148,3 +148,5 @@ code changes, just moving things around and adding some light error handling.
 
 Last night while I was programming while sleepy my identation got all crazy and I could hardly hold my eyes open
 so I left that for morning me to sort out and now I've done just that! I think it's safe to call this v1.1.0
+
+I'm having some issues with git/github
