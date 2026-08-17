@@ -1,4 +1,4 @@
-#!/home/steviexx/PycharmProjects/SlipperyPenguin/venv/bin/python3
+#!/home/steviexx/Slippery-Penguin/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

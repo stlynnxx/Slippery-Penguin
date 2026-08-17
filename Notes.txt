@@ -116,3 +116,30 @@ as well. I feel like I ran into this in the past and forgot it?
 Is it that debian uses libcap instead?
 
 Editing the setup script to adjust this, please hold.
+
+8/10/2026-
+
+It's been awhile since I've journaled in here, because all I've really done since the last entry is fix a few format issues
+and then ship v1, which shipped on 08/01/2026, and then my mom passsed shortly thereafter and my productivity went down the drain
+for a bit.
+
+But here I am!
+
+After pushing v1 I found the bug where strace results were being returned as bytes, so this morning I'm fixing that and
+pushing the fix!
+
+
+8/16/2026-
+
+Today I implemented Rich so that I could add a spinner for the sliding around portion,
+and also use Rich for the color coding instead of the ANSII codes. So far it is all working
+and I'm going to push the changes to dev!
+
+
+11:10:
+Tonight I've just come back and worked on rearragnging a few things for improved error handling, basically. No code real
+code changes, just moving things around and adding some light error handling.
+
+
+
+
