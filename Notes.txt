@@ -136,4 +136,10 @@ and also use Rich for the color coding instead of the ANSII codes. So far it is 
 and I'm going to push the changes to dev!
 
 
+11:10:
+Tonight I've just come back and worked on rearragnging a few things for improved error handling, basically. No code real
+code changes, just moving things around and adding some light error handling.
+
+
+
 
