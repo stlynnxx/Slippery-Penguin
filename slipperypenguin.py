@@ -294,7 +294,7 @@ with console.status(f"{BLUE}Sliding Around...{RESET}"):
                 with open(TIMEOUT_OUT, "w") as f:
                     json.dump(timeout_append, f)
     except:
-        console.print("[red]Sliding around error, sorry there isn't more info! [/red] [magenta]-stlynnxx[/magenta]")
+        console.print("[red]Sliding around error, sorry there isn't more info! [/red] [magenta]-stlynnxx[/magenta])")
 
 
 
