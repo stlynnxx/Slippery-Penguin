@@ -6,10 +6,14 @@
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
 <<<<<<< HEAD
+<<<<<<< HEAD
     <orderEntry type="jdk" jdkName="~/Slippery-Penguin/venv" jdkType="Python SDK" />
 =======
     <orderEntry type="jdk" jdkName="~/PycharmProjects/Slippery-Penguin/venv" jdkType="Python SDK" />
 >>>>>>> d2866fd18a5ddcc7d96cae54fc69ff20e2c972bb
+=======
+    <orderEntry type="jdk" jdkName="~/PycharmProjects/Slippery-Penguin/venv" jdkType="Python SDK" />
+>>>>>>> 2daa27d8584f0545753782e446489988549c6c09
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

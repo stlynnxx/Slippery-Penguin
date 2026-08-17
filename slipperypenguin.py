@@ -247,64 +247,39 @@ if os.path.exists(GTFO_OUT):
 with console.status(f"{BLUE}Sliding Around...{RESET}"):
     try:
         for b in agg_result:
-            try:
-                if not b.startswith("/usr/bin"):
-                    continue
-                if args.output in ("terminal", "both"):
-                    console.print(f"[magenta]--Results for: {b}--[/magenta]]")
-                    # getcap
-                    result = subprocess.run(["getcap", "-r", f"{b}"], capture_output=True, text=True)  # capability check
-                if result.stdout:
-                    cap_append.setdefault(b, [])
-                    cap_item = [f"Cap check {b}: {result.stdout}"]
-                    cap_append[b].append(cap_item)
-                if args.output in ("terminal", "both"):
-                    console.print(f"\n[yellow]getcap: [/yellow][green]{cap_append}[/green]")
-                if args.output in ("logs", "both"):
-                    with open(CAP_OUT, "w", encoding='utf-8') as f:
-                        json.dump(cap_append, f)
-            except:
-                console.print("[red]getcap error[/red]")
+            if not b.startswith("/usr/bin"):
                 pass
-
-            # This runs strace to track the execve calls
-            # and will write both the strace results and
-            # the timeouts to seperate files
-
             try:
                 r = subprocess.run(
-            ["strace", "-e", "execve", f"{b}"],
+                    ["strace", "-e", "execve", f"{b}"],
                     stdin=subprocess.DEVNULL,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     timeout=timeout_var,
                     start_new_session=True
-            )
-            except subprocess.TimeoutExpired:
-                timeout_append.setdefault(b, "timeout")
-                pass
+                )
+            except:
+                console.print("[red]strace failure[/red]")
+
             try:
                 for line in r.stderr.decode('utf-8', errors='replace').splitlines():
                     if "execve" in line:
                         strace_append.setdefault(b, [])
                         strace_append[b].append(line)
-            except:
-                console.print("[red]execve error[/red]")
-                pass
-            try:
                 if args.output in ("terminal", "both"):
-                    console.print(f"\n[yellow]Strace:[/yellow] [green]{strace_append}[/green]")
-                    console.print(f"\nTimeouts: {timeout_append}")
+                    print(f"\n{YELLOW}Strace:{RESET} {GREEN}{strace_append}{RESET}")
+                    print(f"\nTimeouts: {timeout_append}")
                 if args.output in ("logs", "both"):
                     # strace write to file
                     with open(STRACE_OUT, "w") as f:
                         json.dump(strace_append, f)
+
                     # timeout write to file
                     with open(TIMEOUT_OUT, "w") as f:
                         json.dump(timeout_append, f)
             except:
-                console.print("[red]Strace error[/red]")
-                pass
+                console.print("[red]strace write failure[/red]")
+
             try:
                 # This runs strings and then writes the results to the file
                 s_result = subprocess.run(
@@ -327,31 +302,71 @@ with console.status(f"{BLUE}Sliding Around...{RESET}"):
                     with open(STR_OUT, "w", encoding='utf-8') as f:
                         json.dump(passer, f)
             except:
-                console.print("[red]strings error[/red]")
-                pass
+                console.print("[red]strings failure[/red]")
             try:
                 # Checking against gtfobins and appending/printing the results
                 if args.gtfo:
                     binary_name = os.path.basename(b)
-                    if binary_name in gtfo_data.get("executables", {}):
-                        entry = gtfo_data["executables"][binary_name]
-                        functions = entry.get("functions", {})
-                        if "suid" in functions:
-                            suid_finding = f"GTFOBins SUID finding {binary_name}"
-                            if args.output in ("terminal", "both"):
-                                print(f"\n{YELLOW}GTFO Match:{RESET} {GREEN}{binary_name}{RESET}")
-                    else:
-                        if args.output in ("terminal", "both"):
-                            print(f"\n{YELLOW}No GTFOBins entry for {MAGENTA}{binary_name}{RESET}")
+                if binary_name in gtfo_data.get("executables", {}):
+                    entry = gtfo_data["executables"][binary_name]
+                    functions = entry.get("functions", {})
+                    if "suid" in functions:
+                        suid_finding = f"GTFOBins SUID finding {binary_name}"
+                    if args.output in ("terminal", "both"):
+                        console.print(f"[magenta]--Results for: {b}--[/magenta]]")
+                        # getcap
+                        result = subprocess.run(["getcap", "-r", f"{b}"], capture_output=True, text=True)  # capability check
+                    if result.stdout:
+                        cap_append.setdefault(b, [])
+                        cap_item = [f"Cap check {b}: {result.stdout}"]
+                        cap_append[b].append(cap_item)
+                    if args.output in ("terminal", "both"):
+                        console.print(f"\n[yellow]getcap: [/yellow][green]{cap_append}[/green]")
                     if args.output in ("logs", "both"):
-                        with open(GTFO_OUT, "w") as f:
-                            gtfo_append.setdefault(b, [])
-                            gtfo_append[b].append(f"GTFOBins SUID entry: {binary_name}")
-                            if args.output in ("logs", "both"):
-                                with open(GTFO_OUT, "w") as f:
-                                    json.dump(gtfo_append, f)
+                        with open(CAP_OUT, "w", encoding='utf-8') as f:
+                            json.dump(cap_append, f)
             except:
-                console.print("[red]GTFO error[/red]")
+                console.print("[red]gtfo error[/red]")
+                pass
+
+            # This runs strace to track the execve calls
+            # and will write both the strace results and
+            # the timeouts to seperate files
+
+            try:
+                r = subprocess.run(
+            ["strace", "-e", "execve", f"{b}"],
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    timeout=timeout_var,
+                    start_new_session=True
+            )
+            except:
+                console.print("[red]execve failure[/red]")
+                pass
+            try:
+                for line in r.stderr.decode('utf-8', errors='replace').splitlines():
+                    if "execve" in line:
+                        strace_append.setdefault(b, [])
+                        strace_append[b].append(line)
+            except:
+                console.print("[red]execve write failure[/red]")
+                pass
+            try:
+                if args.output in ("terminal", "both"):
+                    console.print(f"\n[yellow]Strace:[/yellow] [green]{strace_append}[/green]")
+                    console.print(f"\nTimeouts: {timeout_append}")
+                if args.output in ("logs", "both"):
+                    # strace write to file
+                    with open(STRACE_OUT, "w") as f:
+                        json.dump(strace_append, f)
+                    # timeout write to file
+                    with open(TIMEOUT_OUT, "w") as f:
+                        json.dump(timeout_append, f)
+            except:
+                console.print("[red]Strace write failure/red]")
+                pass
             try:
                 # This is the logic for writing any flags found to the file
                 flags_append = {}
@@ -381,40 +396,9 @@ with console.status(f"{BLUE}Sliding Around...{RESET}"):
                     with open(FLAGS, "w", encoding='utf-8') as f:
                         json.dump(flags_append, f)
             except:
-                console.print("[red]flags error[/red]")
+                console.print("[red]flags failure[/red]")
     except:
-        console.print("[red]The penguin has crashed![/red]")
-        exit(1)
-
-
-
-    # This is the logic for writing any flags found to the file
-    flags_append = {}
-    if os.path.exists(FLAGS):
-        with open(FLAGS, "r") as f:
-            flags_append = json.loads(f.read())
-
-    for flag in flags:
-        if flag["string"] in s_result:
-            flags_append.setdefault(b, [])
-            appendItem = {
-                "string": flag["string"],
-                "severity": flag["severity"],
-                "context": flag.get("context", "")
-            }
-            flags_append[b].append(appendItem)
-
-    if args.output in ("terminal", "both"):
-        for binary, findings in flags_append.items():
-            print(f"\n{YELLOW}Flags for {binary}:{RESET}")
-            for finding in findings:
-                print(f"  {YELLOW}{finding['severity']}{RESET} - {MAGENTA}{finding['string']}{RESET}")
-                if args.verbose and "context" in finding:
-                    print(f"    {CYAN}Context: {finding['context']}{RESET}")
-        print(f"{YELLOW}--------{RESET}")
-    if args.output in ("logs", "both"):
-        with open(FLAGS, "w", encoding='utf-8') as f:
-            json.dump(flags_append, f)
+        console.print("[red]b failure[/red]")
 
 
 print(f"{BOLD}{YELLOW}Done!{RESET}")

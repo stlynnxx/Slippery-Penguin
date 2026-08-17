@@ -129,6 +129,7 @@ After pushing v1 I found the bug where strace results were being returned as byt
 pushing the fix!
 
 
+
 8/16/2026-
 
 Today I implemented Rich so that I could add a spinner for the sliding around portion,
@@ -143,3 +144,7 @@ code changes, just moving things around and adding some light error handling.
 
 
 
+8/17/2026-
+
+Last night while I was programming while sleepy my identation got all crazy and I could hardly hold my eyes open
+so I left that for morning me to sort out and now I've done just that! I think it's safe to call this v1.1.0
