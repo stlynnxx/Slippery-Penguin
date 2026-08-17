@@ -13,8 +13,10 @@ capabilities, traces execution calls, and analyzes
 binary strings, checking the results against a ranked 
 list of possible indicators for exploration.
 
-This is the official release, currently on version 1.0 
-as of 8/1/2026. You are welcome to use the dev branch 
+*Version:*\
+This is the official release, v1.1.0, released on 8/17/2026.
+
+You are welcome to use the dev branch 
 for the newest features and updates,
 but I cannot promise it is ever stable.
 
