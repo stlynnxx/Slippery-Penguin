@@ -113,7 +113,7 @@ if args.cleanup:
 # Help!
 
 if args.help:
-    print("If this is a fresh download, I reccomend running -update-gtfobins for the most up to date data.")
+    print("If this is a fresh download, run -update-gtfobins for the most up to date data.")
     print("--output both:       Writes results in the terminal and to logs")
     print("--output terminal:   Writes results to the terminal only")
     print("--output logs:       Writes results to the logs only")
@@ -171,7 +171,7 @@ GTFO_OUT = os.path.join(RUN_DIR, "gfto-out.json")
 # The flags list itself
 flags = [
     {"string": "execve", "severity": "LOW WITH CONTEXT", "context": "Binary executes another program. If called with user-influenced arguments while elevated, could be used to execute arbitrary code with elevated privileges."},
-{"string": "ENCRYPT_METHOD", "severity": "HIGH", "context": "References encryption method configuration, typically sourced from /etc/login.defs. A SUID binary reading or influencing encryption method selection could weaken system-wide password hashing if the method is manipulable or insufficiently strong."},
+    {"string": "ENCRYPT_METHOD", "severity": "HIGH", "context": "References encryption method configuration, typically sourced from /etc/login.defs. A SUID binary reading or influencing encryption method selection could weaken system-wide password hashing if the method is manipulable or insufficiently strong."},
     {"string": "PASS_MIN_LEN", "severity": "MEDIUM",  "context": "References minimum password length configuration. If this binary reads or writes password policy, misconfiguration could weaken system authentication."},
     {"string": "PASS_MAX_LEN", "severity": "MEDIUM", "context": "References maximum password length configuration. Some implementations truncate passwords silently, which can weaken security or indicate policy manipulation."},
     {"string": "FAIL_DELAY", "severity": "MEDIUM", "context": "References the delay after a failed authentication attempt. If manipulable, an attacker could reduce or eliminate brute force delay."},
@@ -180,7 +180,6 @@ flags = [
     {"string": "fchown", "severity": "LOW", "context": "Binary can change file ownership. If called while elevated and the target path is user-influenced, could be used to take ownership of sensitive files."},
     {"string": "fchmod", "severity": "LOW", "context": "Binary can change file permissions. If called while elevated and the target path is user-influenced, could be used to make sensitive files world-readable or executable."},
     {"string": "tcsetattr", "severity": "LOW", "context": "Binary modifies terminal attributes. Can affect terminal input handling. If not restored properly, may leave the terminal in an insecure or broken state."},
-    # "tcsetattr\nwrite",
     {"string": "fork", "severity": "LOW WITH CONTEXT",  "context": "Binary spawns child processes. Combined with execve or shell references in the same binary, may indicate a pattern worth investigating for process injection or privilege inheritance."},
     {"string": "getlogin", "severity": "LOW", "context": "Binary reads the current login name. If used for authentication or authorization decisions without proper validation, could be spoofed in some environments."},
     {"string": "%s: failed to drop privileges (%s)", "severity": "MEDIUM WITH CONTEXT",  "context": "Binary attempted to drop elevated privileges and failed. If execution continues after this failure, the binary may be running with unintended elevated privileges."},
@@ -243,7 +242,16 @@ if os.path.exists(TIMEOUT_OUT):
 if os.path.exists(GTFO_OUT):
     with open(GTFO_OUT, "r") as f:
         gtfo_append = json.loads(f.read())
-
+async def strings_scan(b):
+    process = await asyncio.create_subprocess_exec(
+        "strings",
+        "a",
+        b,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    stdout, stderr = await process.communicate()
+    return stdout.decode().splitlines()
 with console.status(f"{BLUE}Sliding Around...{RESET}"):
     try:
         for b in agg_result:
@@ -281,12 +289,15 @@ with console.status(f"{BLUE}Sliding Around...{RESET}"):
                 console.print("[red]strace write failure[/red]")
 
             try:
-                # This runs strings and then writes the results to the file
-                s_result = subprocess.run(
-                    ["strings", "-a", f"{b}"],
-                    capture_output=True, text=True
-                )
-                s_result = s_result.stdout.splitlines()
+                s_result = asyncio.run(strings_scan(b))
+
+
+                # This has been replaced with strings_scan
+                # s_result = subprocess.run(
+                #     ["strings", "-a", f"{b}"],
+                #     capture_output=True, text=True
+                # )
+                # s_result = s_result.stdout.splitlines()
                 # Strings output to terminal
                 if args.output in ("terminal", "both"):
                     print(f"{YELLOW}Strings Found for {MAGENTA}{b}:{RESET} ")

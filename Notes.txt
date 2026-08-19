@@ -150,3 +150,10 @@ Last night while I was programming while sleepy my identation got all crazy and 
 so I left that for morning me to sort out and now I've done just that! I think it's safe to call this v1.1.0
 
 I'm having some issues with git/github
+
+8/18/2026-
+
+I have a small roadmap of things to be added or improved over the next few versions and broke ground
+on some of that tonight, but I'm quite sleepy so I'm calling it quits earlier than anticipated.
+
+But I did get a start on introducing some async into the program, a big part of what will become v2 eventually.
