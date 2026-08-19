@@ -157,3 +157,14 @@ I have a small roadmap of things to be added or improved over the next few versi
 on some of that tonight, but I'm quite sleepy so I'm calling it quits earlier than anticipated.
 
 But I did get a start on introducing some async into the program, a big part of what will become v2 eventually.
+
+8/19/2026-
+
+This morning I've been in here doing some more work on adding concurrency to the program, starting a complete rewrite
+of the "sliding process" into a main() function and making the scans concurrent. I plan to also make file writing for
+a given binary concurrent as well. This has also given me the chance to fix a few things in the original loop that
+had slipped by under my radar, so that's good!
+
+We haven't moved the gtfobins logic yet as it's going to take a bit more effort than the others, but it'll still
+happen soon regardless.
+

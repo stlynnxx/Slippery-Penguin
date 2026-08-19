@@ -242,54 +242,160 @@ if os.path.exists(TIMEOUT_OUT):
 if os.path.exists(GTFO_OUT):
     with open(GTFO_OUT, "r") as f:
         gtfo_append = json.loads(f.read())
+
+# Scans
+# This is for running the strings scan on a given binary
 async def strings_scan(b):
     process = await asyncio.create_subprocess_exec(
         "strings",
-        "a",
+        "-a",
         b,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
     stdout, stderr = await process.communicate()
     return stdout.decode().splitlines()
-with console.status(f"{BLUE}Sliding Around...{RESET}"):
-    try:
-        for b in agg_result:
-            if not b.startswith("/usr/bin"):
-                pass
-            try:
-                r = subprocess.run(
-                    ["strace", "-e", "execve", f"{b}"],
-                    stdin=subprocess.DEVNULL,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    timeout=timeout_var,
-                    start_new_session=True
-                )
-            except:
-                console.print("[red]strace failure[/red]")
+# strace scanning
+async def strace_scan(b):
+    process = await asyncio.create_subprocess_exec(
+        ["strace", "-e", "execve", b],
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    stdout, stderr = await process.communicate()
+    return stdout.decode().splitlines()
 
-            try:
-                for line in r.stderr.decode('utf-8', errors='replace').splitlines():
-                    if "execve" in line:
-                        strace_append.setdefault(b, [])
-                        strace_append[b].append(line)
-                if args.output in ("terminal", "both"):
-                    print(f"\n{YELLOW}Strace:{RESET} {GREEN}{strace_append}{RESET}")
-                    print(f"\nTimeouts: {timeout_append}")
-                if args.output in ("logs", "both"):
+# File writing
+# strace results
+async def strace_write(b):
+    for line in r.stderr.decode('utf-8', errors='replace').splitlines():
+        if "execve" in line:
+            strace_append.setdefault(b, [])
+            strace_append[b].append(line)
+    if args.output in ("terminal", "both"):
+        print(f"\n{YELLOW}Strace:{RESET} {GREEN}{strace_append}{RESET}")
+        print(f"\nTimeouts: {timeout_append}")
+    if args.output in ("logs", "both"):
+        # strace write to file
+        with open(STRACE_OUT, "w") as f:
+            json.dump(strace_append, f)
+
+        # timeout write to file
+        with open(TIMEOUT_OUT, "w") as f:
+            json.dump(timeout_append, f)
+# strings results
+async def strings_write(b):
+    if args.output in ("terminal", "both"):
+        print(f"{YELLOW}Strings Found for {MAGENTA}{b}:{RESET} ")
+        for string in s_result:
+            print(f"    {GREEN}{string}{RESET}")
+    if args.output in ("logs", "both"):
+        if os.path.exists(STR_OUT):
+            with open(STR_OUT, "r") as f:
+                passer = json.loads(f.read())
+        else:
+            passer = {}
+        passer[b] = s_result
+        with open(STR_OUT, "w", encoding='utf-8') as f:
+            json.dump(passer, f)
+
+# flags writing
+async def flags_write(b):
+    if args.output in ("terminal", "both"):
+        # This is the logic for writing any flags found to the file
+        flags_append = {}
+        if os.path.exists(FLAGS):
+            with open(FLAGS, "r") as f:
+                flags_append = json.loads(f.read())
+        for flag in flags:
+            if flag["string"] in s_result:
+                flags_append.setdefault(b, [])
+                appendItem = {
+                    "string": flag["string"],
+                    "severity": flag["severity"],
+                    "context": flag.get("context", "")
+                }
+                flags_append[b].append(appendItem)
+        for binary, findings in flags_append.items():
+            print(f"\n{YELLOW}Flags for {binary}:{RESET}")
+            for finding in findings:
+                print(f"  {YELLOW}{finding['severity']}{RESET} - {MAGENTA}{finding['string']}{RESET}")
+                if args.verbose and "context" in finding:
+                    print(f"    {CYAN}Context: {finding['context']}{RESET}")
+                print(f"{YELLOW}--------{RESET}")
+            with open(FLAGS, "w", encoding='utf-8') as f:
+                json.dump(flags_append, f)
+
+
+# New
+async def main():
+    with console.status("[blue]Sliding Around... [/blue]"):
+        try:
+            for binary in agg_result:
+                if not binary.startswith("/usr/bin"):
+                    pass
+                try:
+                    results = await asyncio.gather(
+                        strings_scan(binary),
+                        strace_scan(binary),
+
+                    )
+                except:
+                    console.print("[red]scan failure[/red]")
+                try:
+                    write_results = await asyncio.gather(
+                        strace_write(binary),
+                        strings_write(binary),
+                        flags_write(binary),
+                    )
+                except:
+                    console.print("[red]write failure[/red]")
+
+        except:
+            console.print("[red]binary failure[/red]")
+
+asyncio.run(main())
+
+# Old
+# with console.status(f"{BLUE}Sliding Around...{RESET}"):
+    #try:
+        #for b in agg_result:
+            #if not b.startswith("/usr/bin"):
+                #pass
+            # try:
+                # asynced
+                # r = subprocess.run(
+                #    ["strace", "-e", "execve", f"{b}"],
+                #    stdin=subprocess.DEVNULL,
+                #    stdout=subprocess.PIPE,
+                #    stderr=subprocess.PIPE,
+                #    timeout=timeout_var,
+                #    start_new_session=True
+                #)
+            # except:
+                # console.print("[red]strace failure[/red]")
+
+            # try:
+                # for line in r.stderr.decode('utf-8', errors='replace').splitlines():
+                    # if "execve" in line:
+                        # strace_append.setdefault(b, [])
+                        # strace_append[b].append(line)
+                # if args.output in ("terminal", "both"):
+                    # print(f"\n{YELLOW}Strace:{RESET} {GREEN}{strace_append}{RESET}")
+                    # print(f"\nTimeouts: {timeout_append}")
+                # if args.output in ("logs", "both"):
                     # strace write to file
-                    with open(STRACE_OUT, "w") as f:
-                        json.dump(strace_append, f)
+                    # with open(STRACE_OUT, "w") as f:
+                        # json.dump(strace_append, f)
 
                     # timeout write to file
-                    with open(TIMEOUT_OUT, "w") as f:
-                        json.dump(timeout_append, f)
-            except:
-                console.print("[red]strace write failure[/red]")
+                    # with open(TIMEOUT_OUT, "w") as f:
+                        # json.dump(timeout_append, f)
+            # except:
+                # console.print("[red]strace write failure[/red]")
 
-            try:
-                s_result = asyncio.run(strings_scan(b))
+            #try:
+
 
 
                 # This has been replaced with strings_scan
@@ -299,22 +405,22 @@ with console.status(f"{BLUE}Sliding Around...{RESET}"):
                 # )
                 # s_result = s_result.stdout.splitlines()
                 # Strings output to terminal
-                if args.output in ("terminal", "both"):
-                    print(f"{YELLOW}Strings Found for {MAGENTA}{b}:{RESET} ")
-                    for string in s_result:
-                        print(f"    {GREEN}{string}{RESET}")
-                if args.output in ("logs", "both"):
-                    if os.path.exists(STR_OUT):
-                        with open(STR_OUT, "r") as f:
-                            passer = json.loads(f.read())
-                    else:
-                        passer = {}
-                    passer[b] = s_result
-                    with open(STR_OUT, "w", encoding='utf-8') as f:
-                        json.dump(passer, f)
-            except:
-                console.print("[red]strings failure[/red]")
-            try:
+                # if args.output in ("terminal", "both"):
+                    # print(f"{YELLOW}Strings Found for {MAGENTA}{b}:{RESET} ")
+                    # for string in s_result:
+                    #    print(f"    {GREEN}{string}{RESET}")
+                # if args.output in ("logs", "both"):
+                #     if os.path.exists(STR_OUT):
+                #         with open(STR_OUT, "r") as f:
+                #             passer = json.loads(f.read())
+                #    else:
+                #         passer = {}
+                #    passer[b] = s_result
+                #    with open(STR_OUT, "w", encoding='utf-8') as f:
+                #        json.dump(passer, f)
+            # except:
+                #console.print("[red]strings failure[/red]")
+            # try:
                 # Checking against gtfobins and appending/printing the results
                 if args.gtfo:
                     binary_name = os.path.basename(b)
@@ -344,40 +450,40 @@ with console.status(f"{BLUE}Sliding Around...{RESET}"):
             # and will write both the strace results and
             # the timeouts to seperate files
 
-            try:
-                r = subprocess.run(
-            ["strace", "-e", "execve", f"{b}"],
-                    stdin=subprocess.DEVNULL,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    timeout=timeout_var,
-                    start_new_session=True
-            )
-            except:
-                console.print("[red]execve failure[/red]")
-                pass
-            try:
-                for line in r.stderr.decode('utf-8', errors='replace').splitlines():
-                    if "execve" in line:
-                        strace_append.setdefault(b, [])
-                        strace_append[b].append(line)
-            except:
-                console.print("[red]execve write failure[/red]")
-                pass
-            try:
-                if args.output in ("terminal", "both"):
-                    console.print(f"\n[yellow]Strace:[/yellow] [green]{strace_append}[/green]")
-                    console.print(f"\nTimeouts: {timeout_append}")
-                if args.output in ("logs", "both"):
-                    # strace write to file
-                    with open(STRACE_OUT, "w") as f:
-                        json.dump(strace_append, f)
-                    # timeout write to file
-                    with open(TIMEOUT_OUT, "w") as f:
-                        json.dump(timeout_append, f)
-            except:
-                console.print("[red]Strace write failure/red]")
-                pass
+            # try:
+              #  r = subprocess.run(
+            # ["strace", "-e", "execve", f"{b}"],
+            #        stdin=subprocess.DEVNULL,
+            #        stdout=subprocess.PIPE,
+            #        stderr=subprocess.PIPE,
+            #        timeout=timeout_var,
+            #        start_new_session=True
+            #)
+            #except:
+            #    console.print("[red]execve failure[/red]")
+            #    pass
+            #try:
+            #    for line in r.stderr.decode('utf-8', errors='replace').splitlines():
+            #        if "execve" in line:
+            #            strace_append.setdefault(b, [])
+            #            strace_append[b].append(line)
+            #except:
+            #    console.print("[red]execve write failure[/red]")
+            #    pass
+            #try:
+            #    if args.output in ("terminal", "both"):
+            #        console.print(f"\n[yellow]Strace:[/yellow] [green]{strace_append}[/green]")
+            #        console.print(f"\nTimeouts: {timeout_append}")
+            #    if args.output in ("logs", "both"):
+            #        # strace write to file
+            #        with open(STRACE_OUT, "w") as f:
+            #            json.dump(strace_append, f)
+            #        # timeout write to file
+            #        with open(TIMEOUT_OUT, "w") as f:
+            #            json.dump(timeout_append, f)
+            #except:
+            #    console.print("[red]Strace write failure/red]")
+            #    pass
             try:
                 # This is the logic for writing any flags found to the file
                 flags_append = {}
