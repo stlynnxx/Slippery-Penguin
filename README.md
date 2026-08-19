@@ -14,11 +14,12 @@ binary strings, checking the results against a ranked
 list of possible indicators for exploration.
 
 *Version:*\
-This is the official release, v1.1.0, released on 8/17/2026.
+This is the dev branch, where I push my in progress work to.
+You are welcome to use it at any point you would like if you are 
+interested, it may have new/improved features not present in the 
+official release, however, it is not promised to always be stable
+as I will be actively working on it from time to time.
 
-You are welcome to use the dev branch 
-for the newest features and updates,
-but I cannot promise it is ever stable.
 
 *Features:*\
 -SUID binary enumeration across the filesystem\
