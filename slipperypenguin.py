@@ -7,6 +7,7 @@ import argparse
 import sys
 import shutil
 from rich.console import Console
+import asyncio
 
 
 
@@ -144,9 +145,8 @@ if args.update_gtfobins:
 if args.timeout:
     timeout_var = int(input(f"{YELLOW}Enter custom timeout value: {RESET}"))
 
-
+# Loading the gtfobins data
 gtfo_data = {}
-
 if os.path.exists(GTFO_FILE) and os.path.getsize(GTFO_FILE) > 0:
     with open(GTFO_FILE, "r") as f:
         gtfo_data = json.load(f)
@@ -223,7 +223,7 @@ if args.output in ("terminal", "both"):
 
 
 
-
+strings_append = {}
 cap_append = {}
 strace_append = {}
 timeout_append = {}
@@ -254,7 +254,8 @@ async def strings_scan(b):
         stderr=asyncio.subprocess.PIPE,
     )
     stdout, stderr = await process.communicate()
-    return stdout.decode().splitlines()
+    strings_append = stdout.decode().splitlines()
+    # return stdout.decode().splitlines()
 # strace scanning
 async def strace_scan(b):
     process = await asyncio.create_subprocess_exec(
@@ -263,9 +264,41 @@ async def strace_scan(b):
         stderr=asyncio.subprocess.PIPE,
     )
     stdout, stderr = await process.communicate()
-    return stdout.decode().splitlines()
+    strace_append = stdout.decode().splitlines()
+    # return stdout.decode().splitlines()
 
+#gtfobins comp
+async def gtfo_scan(b):
+    if args.gtfo:
+        binary_name = os.path.basename(b)
+    for exe in gtfo_data.get("executables", []):
+        if binary_name in gtfo_data.get("executables", {}):
+            entry = gtfo_data["executables"][binary_name]
+            functions = entry.get("functions", {})
+        if "suid" in functions:
+            suid_finding = f"GTFOBins SUID finding {binary_name}"
+            gtfo_append = suid_finding
+        if args.output in ("terminal", "both"):
+            console.print(f"[magenta]--Results for: {b}--[/magenta]]")
+
+# getcap scan
+async def get_scan(b):
+    result = await asyncio.create_subprocess_exec(
+        "getcap",
+        "-r",
+        b,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+    )
+    if result.stdout:
+        cap_append.setdefault(b, [])
+        cap_item = [f"Cap check {b}: {result.stdout}"]
+        cap_append[b].append(cap_item)
+    if args.output in ("terminal", "both"):
+        console.print(f"\n[yellow]getcap: [/yellow][green]{cap_append}[/green]")
+    getcap_append = stdout.decode().splitlines()
 # File writing
+
 # strace results
 async def strace_write(b):
     for line in r.stderr.decode('utf-8', errors='replace').splitlines():
@@ -283,6 +316,7 @@ async def strace_write(b):
         # timeout write to file
         with open(TIMEOUT_OUT, "w") as f:
             json.dump(timeout_append, f)
+
 # strings results
 async def strings_write(b):
     if args.output in ("terminal", "both"):
@@ -313,7 +347,7 @@ async def flags_write(b):
                 appendItem = {
                     "string": flag["string"],
                     "severity": flag["severity"],
-                    "context": flag.get("context", "")
+                        "context": flag.get("context", "")
                 }
                 flags_append[b].append(appendItem)
         for binary, findings in flags_append.items():
@@ -325,6 +359,26 @@ async def flags_write(b):
                 print(f"{YELLOW}--------{RESET}")
             with open(FLAGS, "w", encoding='utf-8') as f:
                 json.dump(flags_append, f)
+
+# getcap results writing
+async def getcap_write(b):
+    # Checking against gtfobins and appending/printing the results
+    try:
+        if args.output in ("logs", "both"):
+            with open(CAP_OUT, "w", encoding='utf-8') as f:
+                json.dump(cap_append, f)
+    except:
+        console.print("[red]gtfo error[/red]")
+        pass
+
+# gtfobins results writing
+async def gtfo_write(b):
+    try:
+        if args.output in ("logs", "both"):
+            with open(GTFO_OUT, "w", encoding='utf-8') as f:
+                json.dump(gtfo_append, f)
+    except:
+        console.print("[red]gtfo write error[/red]")
 
 
 # New
@@ -338,6 +392,7 @@ async def main():
                     results = await asyncio.gather(
                         strings_scan(binary),
                         strace_scan(binary),
+                        gtfo(binary)
 
                     )
                 except:
@@ -422,29 +477,29 @@ asyncio.run(main())
                 #console.print("[red]strings failure[/red]")
             # try:
                 # Checking against gtfobins and appending/printing the results
-                if args.gtfo:
-                    binary_name = os.path.basename(b)
-                if binary_name in gtfo_data.get("executables", {}):
-                    entry = gtfo_data["executables"][binary_name]
-                    functions = entry.get("functions", {})
-                    if "suid" in functions:
-                        suid_finding = f"GTFOBins SUID finding {binary_name}"
-                    if args.output in ("terminal", "both"):
-                        console.print(f"[magenta]--Results for: {b}--[/magenta]]")
+                # if args.gtfo:
+                #    binary_name = os.path.basename(b)
+                # if binary_name in gtfo_data.get("executables", {}):
+                #    entry = gtfo_data["executables"][binary_name]
+                #    functions = entry.get("functions", {})
+                #    if "suid" in functions:
+                #        suid_finding = f"GTFOBins SUID finding {binary_name}"
+                #    if args.output in ("terminal", "both"):
+                #        console.print(f"[magenta]--Results for: {b}--[/magenta]]")
                         # getcap
-                        result = subprocess.run(["getcap", "-r", f"{b}"], capture_output=True, text=True)  # capability check
-                    if result.stdout:
-                        cap_append.setdefault(b, [])
-                        cap_item = [f"Cap check {b}: {result.stdout}"]
-                        cap_append[b].append(cap_item)
-                    if args.output in ("terminal", "both"):
-                        console.print(f"\n[yellow]getcap: [/yellow][green]{cap_append}[/green]")
-                    if args.output in ("logs", "both"):
-                        with open(CAP_OUT, "w", encoding='utf-8') as f:
-                            json.dump(cap_append, f)
-            except:
-                console.print("[red]gtfo error[/red]")
-                pass
+               #         result = subprocess.run(["getcap", "-r", f"{b}"], capture_output=True, text=True)  # capability check
+               #     if result.stdout:
+               #         cap_append.setdefault(b, [])
+               #         cap_item = [f"Cap check {b}: {result.stdout}"]
+               #         cap_append[b].append(cap_item)
+               #     if args.output in ("terminal", "both"):
+               #         console.print(f"\n[yellow]getcap: [/yellow][green]{cap_append}[/green]")
+               #     if args.output in ("logs", "both"):
+               #         with open(CAP_OUT, "w", encoding='utf-8') as f:
+               #             json.dump(cap_append, f)
+            #except:
+            #    console.print("[red]gtfo error[/red]")
+            #    pass
 
             # This runs strace to track the execve calls
             # and will write both the strace results and
@@ -484,38 +539,39 @@ asyncio.run(main())
             #except:
             #    console.print("[red]Strace write failure/red]")
             #    pass
-            try:
+           # try:
                 # This is the logic for writing any flags found to the file
-                flags_append = {}
-                if os.path.exists(FLAGS):
-                    with open(FLAGS, "r") as f:
-                        flags_append = json.loads(f.read())
+           #     flags_append = {}
+           #     if os.path.exists(FLAGS):
+           #         with open(FLAGS, "r") as f:
 
-                for flag in flags:
-                    if flag["string"] in s_result:
-                        flags_append.setdefault(b, [])
-                        appendItem = {
-                            "string": flag["string"],
-                            "severity": flag["severity"],
-                            "context": flag.get("context", "")
-                        }
-                        flags_append[b].append(appendItem)
+           #             flags_append = json.loads(f.read())
 
-                if args.output in ("terminal", "both"):
-                    for binary, findings in flags_append.items():
-                        print(f"\n{YELLOW}Flags for {binary}:{RESET}")
-                        for finding in findings:
-                            print(f"  {YELLOW}{finding['severity']}{RESET} - {MAGENTA}{finding['string']}{RESET}")
-                            if args.verbose and "context" in finding:
-                                print(f"    {CYAN}Context: {finding['context']}{RESET}")
-                    print(f"{YELLOW}--------{RESET}")
-                if args.output in ("logs", "both"):
-                    with open(FLAGS, "w", encoding='utf-8') as f:
-                        json.dump(flags_append, f)
-            except:
-                console.print("[red]flags failure[/red]")
-    except:
-        console.print("[red]b failure[/red]")
+           #     for flag in flags:
+           #         if flag["string"] in s_result:
+           #             flags_append.setdefault(b, [])
+           #             appendItem = {
+           #                 "string": flag["string"],
+           #                 "severity": flag["severity"],
+           #                 "context": flag.get("context", "")
+           #             }
+           #             flags_append[b].append(appendItem)
+
+          #      if args.output in ("terminal", "both"):
+          #          for binary, findings in flags_append.items():
+          #              print(f"\n{YELLOW}Flags for {binary}:{RESET}")
+          #              for finding in findings:
+          #                  print(f"  {YELLOW}{finding['severity']}{RESET} - {MAGENTA}{finding['string']}{RESET}")
+          #                  if args.verbose and "context" in finding:
+          #                      print(f"    {CYAN}Context: {finding['context']}{RESET}")
+          #          print(f"{YELLOW}--------{RESET}")
+          #      if args.output in ("logs", "both"):
+          #          with open(FLAGS, "w", encoding='utf-8') as f:
+          #              json.dump(flags_append, f)
+          #  except:
+          #      console.print("[red]flags failure[/red]")
+    #except:
+    #    console.print("[red]b failure[/red]")
 
 
 print(f"{BOLD}{YELLOW}Done!{RESET}")

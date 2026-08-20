@@ -168,3 +168,13 @@ had slipped by under my radar, so that's good!
 We haven't moved the gtfobins logic yet as it's going to take a bit more effort than the others, but it'll still
 happen soon regardless.
 
+8/20/2026-
+
+I moved the gtfobins related logic into it's own function and added the call to the asyncio.gather for the scan calling,
+then I straightend it out because it was a mess; the getcap scan and gtfo file writing lines were also mixed in there so
+I get everything in it's own function and we're almost functional now, with some errors and failures that I still
+need to read through and figure out, but. My dog needs to go outside and I need to get a few ebay packages out and
+check on my dad as well, so, that'll have to come either later or tomorrow.
+
+Until then!
+
