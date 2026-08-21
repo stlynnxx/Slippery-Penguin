@@ -194,40 +194,36 @@ border = "-----"
 
 
 
-find_append = {}
-agg_result = []
+
 if os.path.exists(FIND_OUT):
     with open(FIND_OUT, "r") as f:
         find_append = json.loads(f.read())
 # Enumerates SUIDs and checking capabilites
 result = subprocess.run( ["find", "/", "-perm", "-4000", "-type", "f"], capture_output=True, text=True)
 agg_result = result.stdout.splitlines()
-
-
-
-# print(f"Find result: {result.stdout}")
 find_append = agg_result
-
-
-if args.output in ("logs", "both"):
-    with open(FIND_OUT, "w") as f:
-        json.dump(find_append, f)
-
 if args.output in ("terminal", "both"):
     print(f"\n{YELLOW}SUIDs Found:{RESET}")
     for suid in agg_result:
         print(f"  {GREEN}{suid}{RESET}")
     print(f"{YELLOW}END SUIDs{RESET}\n")
+if args.output in ("logs", "both"):
+    with open(FIND_OUT, "w") as f:
+        json.dump(find_append, f)
 
 
 
 
-
+# Globals for passing data between functions
 strings_append = {}
 cap_append = {}
 strace_append = {}
 timeout_append = {}
 gtfo_append = {}
+find_append = {}
+getcap_append = {}
+
+
 
 if os.path.exists(CAP_OUT):
     with open(CAP_OUT, "r") as f:
@@ -244,8 +240,11 @@ if os.path.exists(GTFO_OUT):
         gtfo_append = json.loads(f.read())
 
 # Scans
+
 # This is for running the strings scan on a given binary
 async def strings_scan(b):
+    global strings_append
+    global timeout_append
     process = await asyncio.create_subprocess_exec(
         "strings",
         "-a",
@@ -253,22 +252,35 @@ async def strings_scan(b):
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stdout, stderr = await process.communicate()
-    strings_append = stdout.decode().splitlines()
+    try:
+        stdout, stderr = await process.communicate()
+    except asyncio.TimeoutError:
+        process.kill()
+        await process.wait()
+        timeout_append[b]
+    strings_append[b] = stdout.decode().splitlines()
     # return stdout.decode().splitlines()
 # strace scanning
 async def strace_scan(b):
+    global strace_append
+    global timeout_append
     process = await asyncio.create_subprocess_exec(
-        ["strace", "-e", "execve", b],
+        "strace", "-e", "execve", b,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stdout, stderr = await process.communicate()
+    try:
+        stdout, stderr = await process.communicate()
+    except asyncio.TimeoutError:
+        process.kill()
+        await process.wait()
+        timeout_append[b]
     strace_append = stdout.decode().splitlines()
     # return stdout.decode().splitlines()
 
 #gtfobins comp
 async def gtfo_scan(b):
+    global gtfo_append
     if args.gtfo:
         binary_name = os.path.basename(b)
     for exe in gtfo_data.get("executables", []):
@@ -283,6 +295,7 @@ async def gtfo_scan(b):
 
 # getcap scan
 async def get_scan(b):
+    global getcap_append
     result = await asyncio.create_subprocess_exec(
         "getcap",
         "-r",
@@ -290,6 +303,12 @@ async def get_scan(b):
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE
     )
+    try:
+        stdout, stderr = await result.communicate()
+    except asyncio.TimeoutError:
+        result.kill()
+        await result.wait()
+        timeout_append[b]
     if result.stdout:
         cap_append.setdefault(b, [])
         cap_item = [f"Cap check {b}: {result.stdout}"]
@@ -299,9 +318,12 @@ async def get_scan(b):
     getcap_append = stdout.decode().splitlines()
 # File writing
 
+
+
 # strace results
 async def strace_write(b):
-    for line in r.stderr.decode('utf-8', errors='replace').splitlines():
+    global strace_append
+    for line in strace_append:
         if "execve" in line:
             strace_append.setdefault(b, [])
             strace_append[b].append(line)
@@ -319,9 +341,10 @@ async def strace_write(b):
 
 # strings results
 async def strings_write(b):
+    global strings_append
     if args.output in ("terminal", "both"):
         print(f"{YELLOW}Strings Found for {MAGENTA}{b}:{RESET} ")
-        for string in s_result:
+        for string in strings_append:
             print(f"    {GREEN}{string}{RESET}")
     if args.output in ("logs", "both"):
         if os.path.exists(STR_OUT):
@@ -329,12 +352,14 @@ async def strings_write(b):
                 passer = json.loads(f.read())
         else:
             passer = {}
-        passer[b] = s_result
+        passer[b] = strace_append
         with open(STR_OUT, "w", encoding='utf-8') as f:
             json.dump(passer, f)
 
 # flags writing
 async def flags_write(b):
+    global flags_append
+    global strings_append
     if args.output in ("terminal", "both"):
         # This is the logic for writing any flags found to the file
         flags_append = {}
@@ -342,7 +367,7 @@ async def flags_write(b):
             with open(FLAGS, "r") as f:
                 flags_append = json.loads(f.read())
         for flag in flags:
-            if flag["string"] in s_result:
+            if flag["string"] in strings_append:
                 flags_append.setdefault(b, [])
                 appendItem = {
                     "string": flag["string"],
@@ -362,7 +387,7 @@ async def flags_write(b):
 
 # getcap results writing
 async def getcap_write(b):
-    # Checking against gtfobins and appending/printing the results
+    global cap_append
     try:
         if args.output in ("logs", "both"):
             with open(CAP_OUT, "w", encoding='utf-8') as f:
@@ -373,6 +398,7 @@ async def getcap_write(b):
 
 # gtfobins results writing
 async def gtfo_write(b):
+    global gtfo_append
     try:
         if args.output in ("logs", "both"):
             with open(GTFO_OUT, "w", encoding='utf-8') as f:
@@ -384,30 +410,34 @@ async def gtfo_write(b):
 # New
 async def main():
     with console.status("[blue]Sliding Around... [/blue]"):
-        try:
+        # try:
             for binary in agg_result:
                 if not binary.startswith("/usr/bin"):
-                    pass
+                    continue
                 try:
                     results = await asyncio.gather(
-                        strings_scan(binary),
-                        strace_scan(binary),
-                        gtfo(binary)
+                        await strings_scan(binary),
+                        await strace_scan(binary),
+                        await gtfo_scan(binary),
+
 
                     )
                 except:
                     console.print("[red]scan failure[/red]")
                 try:
                     write_results = await asyncio.gather(
-                        strace_write(binary),
-                        strings_write(binary),
-                        flags_write(binary),
+                        await strace_write(binary),
+                        await strings_write(binary),
+                        await flags_write(binary),
+                        await getcap_write(binary),
+                        await gtfo_write(binary),
+
                     )
                 except:
                     console.print("[red]write failure[/red]")
 
-        except:
-            console.print("[red]binary failure[/red]")
+        # except:
+            # console.print("[red]main failure[/red]")
 
 asyncio.run(main())
 

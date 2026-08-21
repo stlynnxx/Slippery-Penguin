@@ -178,3 +178,14 @@ check on my dad as well, so, that'll have to come either later or tomorrow.
 
 Until then!
 
+8/21/2026-
+
+So far today I've been working through the pile of bugs that I left for myself yesterday; I feel i'm at least making
+some progress. I got the timeouts set back up, and fixed a few other things that I had left out yesterday.
+
+My goal today is to push twice; I left the dev branch not working yesterday and then this morning I'm going to be
+making a push that makes it slightly better but still realistically unusable and then I need to do some other things
+for a bit and will be coming back for more work on this after that, hopefully to get things working again,
+if not at least closer to so.
+
+To anyone who could be reading this, just use the master version until like later or tomorrow :D
