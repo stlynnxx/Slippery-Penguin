@@ -10,11 +10,11 @@ from rich.console import Console
 import asyncio
 import traceback
 #69
-
+console = Console()
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
 with open('art.txt', 'r') as file:
     content = file.read()
-    print(f"{GREEN}{content}{RESET}")
+    console.print(f"[green]{content}[/green]")
 
 # Setting up argparse
 parser = argparse.ArgumentParser("SUID enumeration and vulnerability scanning")
@@ -32,7 +32,7 @@ parser.add_argument("-cleanup", action="store_true", help="Deletes all data and 
 args = parser.parse_args()
 sys.stdin = open('/dev/tty')
 timeout_var = 10
-console = Console()
+
 # Setting up dirs
 STORAGE_ROOT = args.storage
 GTFODIR = STORAGE_ROOT
@@ -86,12 +86,12 @@ if args.cleanup:
     ## This removes the gtfobins data
     if os.path.exists(GTFO_FILE):
         os.unlink(GTFO_FILE)
-        print(f"{GREEN}GTFOBins data removed.{RESET}")
+        console.print(f"[green]GTFOBins data removed.[/green]")
 
     ## this removes the logs dir
     if os.path.exists(STORAGE_ROOT):
         shutil.rmtree(STORAGE_ROOT)
-        print(f"{GREEN}Logs directory removed.{RESET}")
+        console.print(f"[green]Logs directory removed.[/green]")
     sys.exit(0)
 
 
@@ -100,7 +100,7 @@ if args.cleanup:
 # Help!
 
 if args.help:
-    print("If this is a fresh download, run -update-gtfobins for the most up to date data.")
+    console.print("[cyan]If this is a fresh download, run -update-gtfobins for the most up to date data.[/cyan]")
     print("--output both:       Writes results in the terminal and to logs")
     print("--output terminal:   Writes results to the terminal only")
     print("--output logs:       Writes results to the logs only")
@@ -208,7 +208,7 @@ timeout_append = {}
 gtfo_append = {}
 find_append = {}
 getcap_append = {}
-
+flags_append = {}
 
 
 if os.path.exists(CAP_OUT):
@@ -249,7 +249,7 @@ async def strings_scan(b):
 
         # return stdout.decode().splitlines()
     except Exception as e:
-        console.print(f"[red]strings_scan failure: {e}")
+        console.print(f"[red]strings_scan failure: {e}[/red]")
         traceback.print_exc()
 # strace scanning
 async def strace_scan(b):
@@ -269,6 +269,8 @@ async def strace_scan(b):
             process.kill()
             await process.wait()
             timeout_append[b] = "timeout"
+        if args.output in ("terminal", "both"):
+            print(f"\n[yellow]Strace:[/yellow][green]{strace_append}[/green]")
 
     except Exception as e:
         console.print(f"[red]strace_scan failure: {e}[/red]")
@@ -311,7 +313,7 @@ async def get_scan(b):
         except asyncio.TimeoutError:
             result.kill()
             await result.wait()
-            timeout_append[b]
+            timeout_append[b] = "timeout"
         if result.stdout:
             cap_append.setdefault(b, [])
             cap_item = [f"Cap check {b}: {result.stdout}"]
@@ -321,6 +323,22 @@ async def get_scan(b):
     except Exception as e:
         console.print(f"[red]get_scan failure: {e}[/red]")
         traceback.print_exc()
+async def timeouts(b):
+    global timeout_append
+    try:
+        if args.output in ("terminal", "both"):
+            console.print("[yellow]Timeouts:[/yellow]")
+            for t in timeout_append:
+                console.print(f"\n[green] {t}[/green]")
+        if args.output in ("logs", "both"):
+            with open(TIMEOUT_OUT, "w") as f:
+                json.dump(timeout_append, f)
+
+    except Exception as e:
+        console.print(f"[red]timeouts failure: {e}[/red]")
+        traceback.print_exc()
+
+
 # File writing
 
 
@@ -329,38 +347,29 @@ async def get_scan(b):
 async def strace_write(b):
     global strace_append
     try:
-        for line in strace_append.get(b, []):
-            if "execve" in line:
-                strace_append.setdefault(b, [])
-                strace_append[b].append(line)
-        if args.output in ("terminal", "both"):
-            print(f"\n{YELLOW}Strace:{RESET} {GREEN}{strace_append}{RESET}")
-            print(f"\nTimeouts: {timeout_append}")
         if args.output in ("logs", "both"):
             # strace write to file
             with open(STRACE_OUT, "w") as f:
                 json.dump(strace_append, f)
-            # timeout write to file
-            with open(TIMEOUT_OUT, "w") as f:
-                json.dump(timeout_append, f)
     except Exception as e:
         console.print(f"[red]strace write failure: {e}[/red]")
+        traceback.print_exc()
 
 # strings results
 async def strings_write(b):
     global strings_append
     try:
         if args.output in ("terminal", "both"):
-            print(f"{YELLOW}Strings Found for {MAGENTA}{b}:{RESET} ")
+            console.print(f"[yellow]Strings Found for [/yellow][magenta] {b}:[/magenta] ")
             for string in strings_append:
-                print(f"    {GREEN}{string}{RESET}")
+                console.print(f"    [green]{string}[/green]")
         if args.output in ("logs", "both"):
             if os.path.exists(STR_OUT):
                 with open(STR_OUT, "r") as f:
                     passer = json.loads(f.read())
             else:
                 passer = {}
-            passer[b] = strings_append
+            passer[b] = strings_append.get(b, [])
             with open(STR_OUT, "w", encoding='utf-8') as f:
                 json.dump(passer, f)
     except Exception as e:
@@ -389,14 +398,14 @@ async def flags_write(b):
                     }
                     flags_append[b].append(appendItem)
             for binary, findings in flags_append.items():
-                print(f"\n{YELLOW}Flags for {binary}:{RESET}")
+                console.print(f"\n[yellow]Flags for {binary}: [/yellow]")
                 for finding in findings:
-                    print(f"  {YELLOW}{finding['severity']}{RESET} - {MAGENTA}{finding['string']}{RESET}")
+                    console.print(f"  [yellow]{finding['severity']}[/yellow] - [yellow]{finding['string']}[/yellow]")
                     if args.verbose and "context" in finding:
-                        print(f"    {CYAN}Context: {finding['context']}{RESET}")
-                    print(f"{YELLOW}--------{RESET}")
-                with open(FLAGS, "w", encoding='utf-8') as f:
-                    json.dump(flags_append, f)
+                        console.print(f"    [cyan]Context: {finding['context']}[/cyan]")
+                    console.print(f"[yellow]--------[/yellow]")
+            with open(FLAGS, "w", encoding='utf-8') as f:
+                json.dump(flags_append, f)
     except Exception as e:
         console.print(f"[red]gtfo error: {e}[/red]")
         traceback.print_exc()
@@ -437,6 +446,7 @@ async def main():
                         strings_scan(binary),
                         strace_scan(binary),
                         gtfo_scan(binary),
+                        get_scan(binary)
 
 
                     )
