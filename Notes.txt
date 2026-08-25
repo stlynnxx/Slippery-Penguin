@@ -204,3 +204,15 @@ I didn't get back as quickly as I'd wanted; in fact, it's now late and i'm quite
 on the ample amount of bugs i've introduced and will pick back up tomorrow.
 
 Must sleep
+
+8/24/2026-
+
+I'm not sure what happened on my last push to the dev branch but it appparently cut over half of the code, so I went back
+a push and that's where I'm working from now. I hadn't even noticed that had happened until today and I'm pretty unclear on how it
+even did, honestly.
+
+Okay, I got things fixed up and made a bit of progress even. I took the timeout stuff out of the strace write function and put it into it's
+own function, and got the strace write actually working correctly, as well as I believe fixing all of the color codes.
+
+Next I need to eat some food and then get some ebay packages out, I might be back later.
+

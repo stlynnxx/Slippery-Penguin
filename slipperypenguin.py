@@ -9,7 +9,7 @@ import shutil
 from rich.console import Console
 import asyncio
 import traceback
-#69
+#690
 console = Console()
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
 with open('art.txt', 'r') as file:
@@ -30,7 +30,7 @@ parser.add_argument("-cleanup", action="store_true", help="Deletes all data and 
 
 
 args = parser.parse_args()
-sys.stdin = open('/dev/tty')
+# sys.stdin = open('/dev/tty')
 timeout_var = 10
 
 # Setting up dirs
@@ -111,7 +111,7 @@ if args.help:
     print("-help:               How you got here")
 
     print("An example command:\npython3 slipperypenguin.py --output logs -gtfo -update-gtfo,\n" +
-          "with -gtfo-update being optional if your data is up to date.")
+          "with -update-gtfobins being optional if your data is up to date.")
     sys.exit(0)
 
 
@@ -220,7 +220,7 @@ if os.path.exists(STRACE_OUT):
         strace_append = json.loads(f.read())
 if os.path.exists(TIMEOUT_OUT):
     with open(TIMEOUT_OUT, "r") as f:
-        timout_append = json.loads(f.read())
+        timeout_append = json.loads(f.read())
 if os.path.exists(GTFO_OUT):
     with open(GTFO_OUT, "r") as f:
         gtfo_append = json.loads(f.read())
@@ -242,15 +242,20 @@ async def strings_scan(b):
         try:
             stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout_var)
             strings_append[b] = stdout.decode().splitlines()
-        except asyncio.TimeoutError:
+        except TimeoutError:
             process.kill()
-            await process.wait()
-            timeout_append[b] = "timeout"
+            try:
+                await process.wait()
+            except (asyncio.CancelledError, Exception) as e:
+                pass
+            finally:
+                timeout_append[b] = "timeout"
 
         # return stdout.decode().splitlines()
     except Exception as e:
         console.print(f"[red]strings_scan failure: {e}[/red]")
         traceback.print_exc()
+
 # strace scanning
 async def strace_scan(b):
     global strace_append
@@ -265,13 +270,29 @@ async def strace_scan(b):
         try:
             stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout_var)
             strace_append[b] = stderr.decode().splitlines()
-        except asyncio.TimeoutError:
-            process.kill()
-            await process.wait()
-            timeout_append[b] = "timeout"
+        except TimeoutError:
+            try:
+                process.terminate()
+            except Exception as e:
+                console.print(f"[red]process.terminate failure, {e}[/red]")
+                pass
+
+            try:
+                if process.returncode is None:
+                    process.kill()
+
+            except Exception as e:
+                console.print(f"[red]process.kill failure, {e}[/red]")
+                pass
+            try:
+                await process.wait()
+            except (asyncio.CancelledError, Exception) as e:
+                console.print(f"[red]await process.wait() failure, {e}[/red]")
+                pass
+            finally:
+                timeout_append[b] = "timeout"
         if args.output in ("terminal", "both"):
             print(f"\n[yellow]Strace:[/yellow][green]{strace_append}[/green]")
-
     except Exception as e:
         console.print(f"[red]strace_scan failure: {e}[/red]")
         traceback.print_exc()
@@ -284,8 +305,8 @@ async def gtfo_scan(b):
         if args.gtfo:
             binary_name = os.path.basename(b)
             entry = gtfo_data["executables"].get(binary_name)
-            functions = entry.get("functions", {})
             if entry:
+                functions = entry.get("functions", {})
                 for func_type, methods in functions.items():
                     for method in methods:
                         contexts = method.get("contexts", {})
@@ -303,18 +324,22 @@ async def get_scan(b):
         result = await asyncio.create_subprocess_exec(
             "getcap",
             "-r",
-            b,
+            "/bin",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
         try:
             stdout, stderr = await asyncio.wait_for(result.communicate(), timeout=timeout_var)
             getcap_append[b] = stdout.decode().splitlines()
-        except asyncio.TimeoutError:
+        except TimeoutError:
             result.kill()
-            await result.wait()
-            timeout_append[b] = "timeout"
-        if result.stdout:
+            try:
+                await result.wait()
+            except (asyncio.CancelledError, Exception) as e:
+                pass
+            finally:
+                timeout_append[b] = "timeout"
+        if stdout:
             cap_append.setdefault(b, [])
             cap_item = [f"Cap check {b}: {result.stdout}"]
             cap_append[b].append(cap_item)
@@ -323,6 +348,7 @@ async def get_scan(b):
     except Exception as e:
         console.print(f"[red]get_scan failure: {e}[/red]")
         traceback.print_exc()
+
 async def timeouts(b):
     global timeout_append
     try:
@@ -361,7 +387,7 @@ async def strings_write(b):
     try:
         if args.output in ("terminal", "both"):
             console.print(f"[yellow]Strings Found for [/yellow][magenta] {b}:[/magenta] ")
-            for string in strings_append:
+            for string in strings_append.get(b, []):
                 console.print(f"    [green]{string}[/green]")
         if args.output in ("logs", "both"):
             if os.path.exists(STR_OUT):
@@ -382,7 +408,7 @@ async def flags_write(b):
     global flags_append
     global strings_append
     try:
-        if args.output in ("terminal", "both"):
+        if args.output in ("logs", "both"):
             # This is the logic for writing any flags found to the file
             flags_append = {}
             if os.path.exists(FLAGS):
@@ -446,13 +472,16 @@ async def main():
                         strings_scan(binary),
                         strace_scan(binary),
                         gtfo_scan(binary),
-                        get_scan(binary)
+                        get_scan(binary),
+                        timeouts(binary),
+                        return_exceptions=True
 
 
                     )
-                except Exception as e:
+                except (asyncio.CancelledError, Exception) as e:
                     console.print(f"[red]scan failure: {e}[/red]")
                     traceback.print_exc()
+                    pass
                 try:
                     write_results = await asyncio.gather(
                         strace_write(binary),
@@ -460,15 +489,18 @@ async def main():
                         flags_write(binary),
                         getcap_write(binary),
                         gtfo_write(binary),
+                        return_exceptions=True
 
                     )
-                except Exception as e:
+                except (asyncio.CancelledError, Exception) as e:
                     console.print(f"[red]write failure: {e}[/red]")
                     traceback.print_exc()
+                    pass
 
         except Exception as e:
             console.print(f"[red]main failure: {e}[/red]")
             traceback.print_exc()
+            pass
 
 asyncio.run(main())
 
