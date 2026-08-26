@@ -1,3 +1,4 @@
+
 import subprocess
 import os
 import json
@@ -9,7 +10,7 @@ import shutil
 from rich.console import Console
 import asyncio
 import traceback
-#690
+#700
 console = Console()
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
 with open('art.txt', 'r') as file:
@@ -31,7 +32,7 @@ parser.add_argument("-cleanup", action="store_true", help="Deletes all data and 
 
 args = parser.parse_args()
 # sys.stdin = open('/dev/tty')
-timeout_var = 10
+timeout_var = 5
 
 # Setting up dirs
 STORAGE_ROOT = args.storage
@@ -129,7 +130,7 @@ if args.update_gtfobins:
     sys.exit(0)
 
 if args.timeout:
-    timeout_var = int(input(f"{YELLOW}Enter custom timeout value: {RESET}"))
+    timeout_var = int(input(f"[yellow]Enter custom timeout value: [/yellow]"))
 
 # Loading the gtfobins data
 gtfo_data = {}
@@ -178,6 +179,8 @@ flags = [
 
 border = "-----"
 
+# The datetime
+dt = datetime.now()
 
 
 
@@ -318,36 +321,52 @@ async def gtfo_scan(b):
         traceback.print_exc()
 
 # getcap scan
-async def get_scan(b):
+async def get_scan():
     global getcap_append
-    try:
-        result = await asyncio.create_subprocess_exec(
-            "getcap",
-            "-r",
-            "/bin",
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        try:
-            stdout, stderr = await asyncio.wait_for(result.communicate(), timeout=timeout_var)
-            getcap_append[b] = stdout.decode().splitlines()
-        except TimeoutError:
-            result.kill()
+    global dt
+    global strings_append
+    global flags_append
+    global timeout_append
+
+
+    for flag in flags_append:
+        if flag["string"] in strings_append.get(flag, []):
             try:
-                await result.wait()
+                result = await asyncio.create_subprocess_exec(
+                "getcap",
+                "-r",
+                    flag,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+                try:
+                    stdout, stderr = await asyncio.wait_for(result.communicate(), timeout=timeout_var)
+                    getcap_append[dt] = stdout.decode().splitlines()
+                    try:
+                        if stdout:
+                            cap_append.setdefault(dt, [])
+                            cap_item = [f"Cap check {dt}: {result.stdout}"]
+                            cap_append[dt].append(cap_item)
+                        if args.output in ("terminal", "both"):
+                            console.print(f"\n[yellow]getcap: [/yellow][green]{cap_append}[/green]")
+                    except Exception as e:
+                        console.print(f"[red]get_scan failure: {e}[/red]")
+                        traceback.print_exc()
+
+                except TimeoutError:
+                    result.kill()
             except (asyncio.CancelledError, Exception) as e:
-                pass
-            finally:
-                timeout_append[b] = "timeout"
-        if stdout:
-            cap_append.setdefault(b, [])
-            cap_item = [f"Cap check {b}: {result.stdout}"]
-            cap_append[b].append(cap_item)
-        if args.output in ("terminal", "both"):
-            console.print(f"\n[yellow]getcap: [/yellow][green]{cap_append}[/green]")
-    except Exception as e:
-        console.print(f"[red]get_scan failure: {e}[/red]")
-        traceback.print_exc()
+                console.print(f"getcap flag append failure {e}")
+                traceback.print_exc()
+        else:
+            console.print("[magenta]No strings matches found for getcap scan[/magenta]")
+
+    try:
+        await result.wait()
+    except (asyncio.CancelledError, Exception) as e:
+        pass
+    finally:
+        timeout_append[dt] = "timeout"
 
 async def timeouts(b):
     global timeout_append
@@ -356,7 +375,6 @@ async def timeouts(b):
             console.print("[yellow]Timeouts:[/yellow]")
             for t in timeout_append:
                 console.print(f"\n[green] {t}[/green]")
-        if args.output in ("logs", "both"):
             with open(TIMEOUT_OUT, "w") as f:
                 json.dump(timeout_append, f)
 
@@ -373,7 +391,7 @@ async def timeouts(b):
 async def strace_write(b):
     global strace_append
     try:
-        if args.output in ("logs", "both"):
+        if args.output in ("terminal", "both"):
             # strace write to file
             with open(STRACE_OUT, "w") as f:
                 json.dump(strace_append, f)
@@ -404,11 +422,16 @@ async def strings_write(b):
         pass
 
 # flags writing
+
+async def flags_write_print():
+    global flags_append
+    global strings_append
+
 async def flags_write(b):
     global flags_append
     global strings_append
     try:
-        if args.output in ("logs", "both"):
+        if args.output in ("terminal", "both"):
             # This is the logic for writing any flags found to the file
             flags_append = {}
             if os.path.exists(FLAGS):
@@ -423,13 +446,8 @@ async def flags_write(b):
                         "context": flag.get("context", "")
                     }
                     flags_append[b].append(appendItem)
-            for binary, findings in flags_append.items():
-                console.print(f"\n[yellow]Flags for {binary}: [/yellow]")
-                for finding in findings:
-                    console.print(f"  [yellow]{finding['severity']}[/yellow] - [yellow]{finding['string']}[/yellow]")
-                    if args.verbose and "context" in finding:
-                        console.print(f"    [cyan]Context: {finding['context']}[/cyan]")
-                    console.print(f"[yellow]--------[/yellow]")
+
+
             with open(FLAGS, "w", encoding='utf-8') as f:
                 json.dump(flags_append, f)
     except Exception as e:
@@ -441,7 +459,7 @@ async def flags_write(b):
 async def getcap_write(b):
     global cap_append
     try:
-        if args.output in ("logs", "both"):
+        if args.output in ("terminal", "both"):
             with open(CAP_OUT, "w", encoding='utf-8') as f:
                 json.dump(cap_append, f)
     except Exception as e:
@@ -453,7 +471,7 @@ async def getcap_write(b):
 async def gtfo_write(b):
     global gtfo_append
     try:
-        if args.output in ("logs", "both"):
+        if args.output in ("terminal", "both"):
             with open(GTFO_OUT, "w", encoding='utf-8') as f:
                 json.dump(gtfo_append, f)
     except Exception as e:
@@ -472,12 +490,12 @@ async def main():
                         strings_scan(binary),
                         strace_scan(binary),
                         gtfo_scan(binary),
-                        get_scan(binary),
                         timeouts(binary),
                         return_exceptions=True
 
 
                     )
+                    await get_scan()
                 except (asyncio.CancelledError, Exception) as e:
                     console.print(f"[red]scan failure: {e}[/red]")
                     traceback.print_exc()
@@ -492,6 +510,8 @@ async def main():
                         return_exceptions=True
 
                     )
+                    if args.output in ("terminal", "both"):
+                        await flags_write_print()
                 except (asyncio.CancelledError, Exception) as e:
                     console.print(f"[red]write failure: {e}[/red]")
                     traceback.print_exc()

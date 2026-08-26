@@ -216,3 +216,21 @@ own function, and got the strace write actually working correctly, as well as I 
 
 Next I need to eat some food and then get some ebay packages out, I might be back later.
 
+8/25/2026-
+
+Another day of just what feels like spinning my tires and fighting bug after bug. Anytime I feel like I'm figuring something out it
+actually just opens up more issues.. I am almost starting to wonder if I regret these changes and want to roll back to the latest v1
+release.
+
+I'll probably try and stick the changes out a bit more, but. If I don't see a light at the end of the tunnel soon, a rollback
+may indeed happen.
+
+8/26/2026-
+
+I'm in here chipping away at it again, spending more time on this than I had planned but also
+too stubborn to give it up.
+
+It does at least seem that I've cleared through the bugs popping up before the sliding around spinner, and now just
+need to figure out what all/ what excactly is holding that up and how to fix it. It's a bit of a progress, and even
+though it isn't exactly a ton it still feels good after spinning my tires for a few days.
+
