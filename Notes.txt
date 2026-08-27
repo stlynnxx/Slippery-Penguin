@@ -234,3 +234,13 @@ It does at least seem that I've cleared through the bugs popping up before the s
 need to figure out what all/ what excactly is holding that up and how to fix it. It's a bit of a progress, and even
 though it isn't exactly a ton it still feels good after spinning my tires for a few days.
 
+8/27/2026-
+
+So far this morning I've been trying to work through the remaining bugs; I made some progress in concretely identifying
+my biggest issue which lead to the realization that the real, long term fix is moving the flags list to a json file
+and reworking get_scan() around that, so I've set up the json file and moved the flags data into there. This was always
+the plan but I'd just sort of set it on the back burner but v2 is as good of a time as any to implement this particular
+change!
+
+As I often say, progress is progress.
+
