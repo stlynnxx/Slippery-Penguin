@@ -9,6 +9,9 @@ import shutil
 from rich.console import Console
 import asyncio
 import traceback
+
+from rich.json import JSON
+
 #701
 console = Console()
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
@@ -33,8 +36,14 @@ args = parser.parse_args()
 # sys.stdin = open('/dev/tty')
 timeout_var = 5
 
+
+
+
+
 # Setting up dirs
 STORAGE_ROOT = args.storage
+JSON_DIR = os.environ.get("JSON", "./flags.json")
+JSON_FILE = os.path.join(JSON_DIR, "flags.json")
 GTFODIR = STORAGE_ROOT
 os.makedirs(GTFODIR, exist_ok=True)
 GTFO_FILE = os.path.join(GTFODIR, "gtfobins.json")
@@ -155,28 +164,7 @@ GTFO_OUT = os.path.join(RUN_DIR, "gfto-out.json")
 
 
 # The flags list itself
-flags = {
-    "strings": [    {"string": "execve", "severity": "LOW WITH CONTEXT", "context": "Binary executes another program. If called with user-influenced arguments while elevated, could be used to execute arbitrary code with elevated privileges."},
-        {"string": "ENCRYPT_METHOD", "severity": "HIGH", "context": "References encryption method configuration, typically sourced from /etc/login.defs. A SUID binary reading or influencing encryption method selection could weaken system-wide password hashing if the method is manipulable or insufficiently strong."},
-        {"string": "PASS_MIN_LEN", "severity": "MEDIUM",  "context": "References minimum password length configuration. If this binary reads or writes password policy, misconfiguration could weaken system authentication."},
-        {"string": "PASS_MAX_LEN", "severity": "MEDIUM", "context": "References maximum password length configuration. Some implementations truncate passwords silently, which can weaken security or indicate policy manipulation."},
-        {"string": "FAIL_DELAY", "severity": "MEDIUM", "context": "References the delay after a failed authentication attempt. If manipulable, an attacker could reduce or eliminate brute force delay."},
-        {"string": "FAKE_SHELL", "severity": "HIGH", "context": "Explicit reference to a fake or substitute shell. Presence in a SUID binary is highly suspicious and warrants immediate investigation."},
-        {"string": "SYS_GID_MAX", "severity": "HIGH", "context": "References system group ID boundaries. A SUID binary reading or writing GID configuration could be used to manipulate group membership or escalate group privileges."},
-        {"string": "fchown", "severity": "LOW", "context": "Binary can change file ownership. If called while elevated and the target path is user-influenced, could be used to take ownership of sensitive files."},
-        {"string": "fchmod", "severity": "LOW", "context": "Binary can change file permissions. If called while elevated and the target path is user-influenced, could be used to make sensitive files world-readable or executable."},
-        {"string": "tcsetattr", "severity": "LOW", "context": "Binary modifies terminal attributes. Can affect terminal input handling. If not restored properly, may leave the terminal in an insecure or broken state."},
-        {"string": "fork", "severity": "LOW WITH CONTEXT",  "context": "Binary spawns child processes. Combined with execve or shell references in the same binary, may indicate a pattern worth investigating for process injection or privilege inheritance."},
-        {"string": "getlogin", "severity": "LOW", "context": "Binary reads the current login name. If used for authentication or authorization decisions without proper validation, could be spoofed in some environments."},
-        {"string": "%s: failed to drop privileges (%s)", "severity": "MEDIUM WITH CONTEXT",  "context": "Binary attempted to drop elevated privileges and failed. If execution continues after this failure, the binary may be running with unintended elevated privileges."},
-        {"string": "SUDO_ASKPASS", "severity": "MEDIUM WITH CONTEXT", "context": "Binary references the sudo password helper path. If this environment variable is read without sanitization, an attacker could point it to a malicious program to intercept sudo password prompts."},
-        {"string": "allow_root", "severity": "MEDIUM", "context": "FUSE mount option that permits root to access a user-mounted filesystem. Combined with a permissive /etc/fuse.conf, could allow a malicious userspace filesystem to intercept root file access"},
-        {"string": "/bin/sh", "severity": "MEDIUM WITH CONTEXT", "context": "Binary spawns a shell. If privileges are not dropped before the shell is executed, the spawned shell may inherit elevated privileges."},
-        {"string": "/usr/sbin:/usr/bin:/sbin:/bin:%s/bin", "severity": "HIGH WITH CONTEXT",
-        "context": "Binary constructs a PATH dynamically with a variable component. If the variable is user-influenced, an attacker may be able to inject a malicious directory into the PATH and hijack binary execution. Associated with CVE-2021-4034 in pkexec."},
 
-    ]
-}
 border = "-----"
 
 # The datetime
@@ -213,6 +201,10 @@ find_append = {}
 getcap_append = {}
 flags_append = {}
 
+# loading the flags from json
+if os.path.exists(JSON_FILE):
+    with open("flags.json", 'r') as file:
+        flags_append = json.load(file)
 
 if os.path.exists(CAP_OUT):
     with open(CAP_OUT, "r") as f:

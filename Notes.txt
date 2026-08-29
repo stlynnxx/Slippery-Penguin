@@ -244,3 +244,8 @@ change!
 
 As I often say, progress is progress.
 
+8/28/2026-
+
+Just simple work tonight so far, picking up where I was
+yesterday and loading the newly implemented json flags file
+into the flags_append dict and making sure that it fits in the existing logic.
