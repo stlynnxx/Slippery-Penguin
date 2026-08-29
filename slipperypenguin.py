@@ -42,8 +42,8 @@ timeout_var = 5
 
 # Setting up dirs
 STORAGE_ROOT = args.storage
-JSON_DIR = os.environ.get("JSON", "./flags.json")
-JSON_FILE = os.path.join(JSON_DIR, "flags.json")
+JSON_DIR = os.environ.get("JSON", "JSON/flags.json")
+JSON_FILE = os.path.join(JSON_DIR, "JSON/flags.json")
 GTFODIR = STORAGE_ROOT
 os.makedirs(GTFODIR, exist_ok=True)
 GTFO_FILE = os.path.join(GTFODIR, "gtfobins.json")
@@ -155,7 +155,7 @@ RUN_DIR = os.path.join(STORAGE_ROOT, RUN_ID)
 os.makedirs(RUN_DIR, exist_ok=True)
 
 STR_OUT = os.path.join(RUN_DIR, "str-out.json")
-FLAGS = os.path.join(RUN_DIR, "flags.json")
+FLAGS = os.path.join(RUN_DIR, "JSON/flags.json")
 CAP_OUT = os.path.join(RUN_DIR, "cap-out.json")
 FIND_OUT = os.path.join(RUN_DIR, "find-out.json")
 STRACE_OUT = os.path.join(RUN_DIR, "strace-out.json")
@@ -203,7 +203,7 @@ flags_append = {}
 
 # loading the flags from json
 if os.path.exists(JSON_FILE):
-    with open("flags.json", 'r') as file:
+    with open("JSON/flags.json", 'r') as file:
         flags_append = json.load(file)
 
 if os.path.exists(CAP_OUT):
