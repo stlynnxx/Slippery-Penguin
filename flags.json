@@ -17,7 +17,7 @@
             {"string": "allow_root", "severity": "MEDIUM", "context": "FUSE mount option that permits root to access a user-mounted filesystem. Combined with a permissive /etc/fuse.conf, could allow a malicious userspace filesystem to intercept root file access"},
             {"string": "/bin/sh", "severity": "MEDIUM WITH CONTEXT", "context": "Binary spawns a shell. If privileges are not dropped before the shell is executed, the spawned shell may inherit elevated privileges."},
             {"string": "/usr/sbin:/usr/bin:/sbin:/bin:%s/bin", "severity": "HIGH WITH CONTEXT",
-            "context": "Binary constructs a PATH dynamically with a variable component. If the variable is user-influenced, an attacker may be able to inject a malicious directory into the PATH and hijack binary execution. Associated with CVE-2021-4034 in pkexec."},
+            "context": "Binary constructs a PATH dynamically with a variable component. If the variable is user-influenced, an attacker may be able to inject a malicious directory into the PATH and hijack binary execution. Associated with CVE-2021-4034 in pkexec."}
 
     ]
 }

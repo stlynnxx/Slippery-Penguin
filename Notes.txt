@@ -249,3 +249,9 @@ As I often say, progress is progress.
 Just simple work tonight so far, picking up where I was
 yesterday and loading the newly implemented json flags file
 into the flags_append dict and making sure that it fits in the existing logic.
+
+
+8/30/2026-
+
+This morning I've been killing more bugs and maming smnall progress, and I also added a semaphore and am currently adding
+locks for the globals, but need to go do some non programming things. I aim to be back in here today though!
