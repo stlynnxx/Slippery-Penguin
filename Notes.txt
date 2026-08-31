@@ -263,3 +263,9 @@ manual appends with the new append function.
 
 But now I'm fighting sleep. My life is exhausting.
 
+I did some more fixing and such out of stubborness and wanting to put more time into here today
+and now I'm at a point where it seems to be hanging on dealing with gpasswd for some reason. I moved the timeouts
+call as it was in the wrong place anyway and now it's hanging in the gpasswd strings results but I'm not sure why yet,
+but I want to leave that for whenever I'm fresh.
+
+Progress is progress, and tonight was better progress than I've had on some other recent nights, so.
