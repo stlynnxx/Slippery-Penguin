@@ -1,3 +1,4 @@
+import signal
 import subprocess
 import os
 import json
@@ -166,8 +167,7 @@ GTFO_OUT = os.path.join(RUN_DIR, "gfto-out.json")
 
 border = "-----"
 
-# The datetime
-dt = str(datetime.now())
+
 
 
 
@@ -249,22 +249,19 @@ async def strings_scan(b):
             b,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
+            stdin=asyncio.subprocess.DEVNULL,
         )
         try:
             stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout_var)
             # strings_append[b] = stdout.decode().splitlines()
             await append(strings_append, b, stdout.decode().splitlines())
         except TimeoutError:
-            process.kill()
             try:
-                await process.wait()
-            except (asyncio.CancelledError, Exception) as e:
+                os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+            except (ProcessLookupError, PermissionError):
                 pass
-            finally:
-                # DB
-                #if args.output in ("logs"):
-                #    print("strings scan finished")
-                timeout_append[b] = "timeout"
+            await process.wait()
+            await append(timeout_append, b, "timeout")
             # return stdout.decode().splitlines()
     except Exception as e:
         console.print(f"[red]strings_scan failure: {e}[/red]")
@@ -272,49 +269,31 @@ async def strings_scan(b):
 
 # strace scanning
 async def strace_scan(b):
-    # DB
-    #if args.output ("logs"):
-    #    print("strace scan started")
-    global strace_append
-    global timeout_append
+    global strace_append, timeout_append
     try:
         process = await asyncio.create_subprocess_exec(
-            "strace", "-e", "execve", b,
+            "timeout", str(timeout_var), "strace", "-e", "execve", b,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
+            stdin=asyncio.subprocess.DEVNULL,
         )
         try:
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout_var)
-            await append(strace_append, b, stdout.decode().splitlines())
-            # strace_append[b] = stderr.decode().splitlines()
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=timeout_var
+            )
+            await append(strace_append, b, stderr.decode().splitlines())
         except TimeoutError:
             try:
-                process.terminate()
-            except Exception as e:
-                console.print(f"[red]process.terminate failure, {e}[/red]")
+                os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+            except (ProcessLookupError, PermissionError):
                 pass
-        try:
-            if process.returncode is None:
-                process.kill()
-        except Exception as e:
-                console.print(f"[red]process.kill failure, {e}[/red]")
-                pass
-        try:
             await process.wait()
-        except (asyncio.CancelledError, Exception) as e:
-            console.print(f"[red]await process.wait() failure, {e}[/red]")
-            pass
-        finally:
-            # DB
-            #if args.output in ("logs"):
-            #    print("strace scan finished")
-            timeout_append[b] = "timeout"
+            await append(timeout_append, b, "timeout")
         if args.output in ("terminal", "both"):
-            print(f"\n[yellow]Strace:[/yellow][green]{strace_append}[/green]")
+            print(f"\nStrace for {b}: {strace_append.get(b, [])}")
     except Exception as e:
         console.print(f"[red]strace_scan failure: {e}[/red]")
         traceback.print_exc()
-        # return stdout.decode().splitlines()
 
 #gtfobins comp
 async def gtfo_scan(b):
@@ -348,10 +327,10 @@ async def get_scan():
     #if args.output in ("logs"):
     #     print("get scan started")
     global getcap_append
-    global dt
     global strings_append
     global flags_append
     global timeout_append
+    dt = str(datetime.now())
     for flag in flags_append:
         if flag["string"] in strings_append.get(flag, {}):
             try:
@@ -467,7 +446,7 @@ def flags_write_print():
 async def flags_write(b):
     # DB
     # if args.output in ("logs"):
-     #   print("Flags write start")
+    #     print("Flags write start")
     global flags_append
     global strings_append
     try:
@@ -481,8 +460,11 @@ async def flags_write(b):
                         "context": flag.get("context", "")
                     }
                     flags_append[b].append(appendItem)
+
+
         with open("flags.json", 'w') as file:
             json.dump(flags_append, file)
+
         if args.output in ("logs"):
             print("flags write")
     except Exception as e:
@@ -566,16 +548,16 @@ async def main():
                         console.print(f"[red]write failure: {e}[/red]")
                         traceback.print_exc()
                         pass
-                try:
-                    await timeouts(binary)
-                except (Exception) as e:
-                    console.print({e})
+
 
             except Exception as e:
                 console.print(f"[red]main failure: {e}[/red]")
                 traceback.print_exc()
                 pass
-
+            try:
+                await timeouts(binary)
+            except (Exception) as e:
+                console.print({e})
             if args.output in ("logs"):
                 print("The end")
         return 0

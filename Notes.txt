@@ -269,3 +269,11 @@ call as it was in the wrong place anyway and now it's hanging in the gpasswd str
 but I want to leave that for whenever I'm fresh.
 
 Progress is progress, and tonight was better progress than I've had on some other recent nights, so.
+
+8/31/2026-
+
+After much frustration I've finally solved the bug that was causing the hanging; one of the strace scans was opening
+a terminal and it was waiting for input that the user was unable to give and not timing out, but now it times out!
+
+I still need to clean up some debug statements and some small formatting bugs and then I think v2 will finally be mostly
+ready!
