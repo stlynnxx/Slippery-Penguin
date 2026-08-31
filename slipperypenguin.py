@@ -36,7 +36,7 @@ parser.add_argument("-cleanup", action="store_true", help="Deletes all data and 
 
 args = parser.parse_args()
 # sys.stdin = open('/dev/tty')
-timeout_var = 5
+timeout_var = 2
 
 
 
@@ -116,7 +116,7 @@ if args.help:
     print("-gtfo:               Checks results against GTFOBins data, data follows output choice")
     print("-update-gtfobins:    Updates GTFOBins data from the GTFOBins API endpoint")
     print("-del-logs:           Deletes all logs that are currently stored")
-    print("-timeout:            Allows the user to set the timeout value")
+    print("-timeout:            Allows the user to set the timeout value, default is 2")
     print("-help:               How you got here")
 
     print("An example command:\npython3 slipperypenguin.py --output logs -gtfo -update-gtfo,\n" +
@@ -297,10 +297,6 @@ async def strace_scan(b):
 
 #gtfobins comp
 async def gtfo_scan(b):
-
-    # DB
-    #if args.output in ("logs"):
-    #    print("gtfo scan started")
     global gtfo_append
     try:
         if args.gtfo:
@@ -314,18 +310,12 @@ async def gtfo_scan(b):
                         if "suid" in contexts:
                             console.print(f"[magenta]--Results for: {b}--[/magenta]")
                             console.print(f"[cyan]  SUID exploit: {func_type}[/cyan]")
-                            # DB
-                            # if args.output in ("logs"):
-                            #     print("gtfo scan finished")
     except Exception as e:
         console.print(f"[red]gtfo comp failure: {e}[/red]")
         traceback.print_exc()
 
 # getcap scan
 async def get_scan():
-    # DB
-    #if args.output in ("logs"):
-    #     print("get scan started")
     global getcap_append
     global strings_append
     global flags_append
@@ -369,9 +359,7 @@ async def get_scan():
                 pass
             finally:
                 timeout_append[dt] = "timeout"
-            # DB
-            #if args.output in ("logs"):
-            #    print("get scan finished")
+
 
 async def timeouts(b):
     global timeout_append
@@ -383,8 +371,6 @@ async def timeouts(b):
                 console.print(f"\n[green] {t}[/green]")
             with open(TIMEOUT_OUT, "w") as f:
                 json.dump(timeout_append, f)
-        #if args.output in ("logs"):
-        #    print("timeout write")
     except Exception as e:
         console.print(f"[red]timeouts failure: {e}[/red]")
         traceback.print_exc()
@@ -402,9 +388,6 @@ def strace_write(b):
             # strace write to file
             with open(STRACE_OUT, "w") as f:
                 json.dump(strace_append, f)
-        # DB
-        # if args.output in ("logs"):
-        #    print("strace write")
     except Exception as e:
         console.print(f"[red]strace write failure: {e}[/red]")
         traceback.print_exc()
@@ -412,8 +395,6 @@ def strace_write(b):
 # strings results
 def strings_write(b):
     passer = {}
-    #if args.output in ("logs"):
-    #    print("strings write start")
     global strings_append
     try:
         if args.output in ("terminal", "both"):
@@ -429,8 +410,6 @@ def strings_write(b):
             passer[b] = strings_append.get(b, {})
             with open(STR_OUT, "w", encoding='utf-8') as f:
                 json.dump(passer, f)
-        #if args.output in ("logs"):
-        #    print("strings write")
     except Exception as e:
         console.print(f"[red]strings write failure: {e}[/red]")
         traceback.print_exc()
@@ -444,9 +423,6 @@ def flags_write_print():
 
 # flags writing
 async def flags_write(b):
-    # DB
-    # if args.output in ("logs"):
-    #     print("Flags write start")
     global flags_append
     global strings_append
     try:
@@ -464,9 +440,6 @@ async def flags_write(b):
 
         with open("flags.json", 'w') as file:
             json.dump(flags_append, file)
-
-        if args.output in ("logs"):
-            print("flags write")
     except Exception as e:
         console.print(f"[red]Flags dump failure: {e}[/red]")
         traceback.print_exc()
@@ -478,9 +451,6 @@ def getcap_write(b):
         if args.output in ("terminal", "both"):
             with open(CAP_OUT, "w", encoding='utf-8') as f:
                 json.dump(cap_append, f)
-            # DB
-            #if args.output in ("logs"):
-            #    print("cap write")
     except Exception as e:
         console.print(f"[red]gtfo error: {e}[/red]")
         traceback.print_exc()
@@ -493,9 +463,6 @@ def gtfo_write(b):
         if args.output in ("terminal", "both"):
             with open(GTFO_OUT, "w", encoding='utf-8') as f:
                 json.dump(gtfo_append, f)
-            # DB
-            #if args.output in ("logs"):
-            #    print("gtfo write")
     except Exception as e:
         console.print(f"[red]gtfo write error : {e}[/red]")
 
@@ -519,9 +486,6 @@ async def main():
 
 
                         )
-                        # DB
-                        # if args.output in ("logs"):
-                        #    print("Moving along..")
                     except (asyncio.CancelledError, Exception) as e:
                         console.print(f"[red]scan failure: {e}[/red]")
                         traceback.print_exc()
@@ -533,23 +497,10 @@ async def main():
                         strace_write(binary)
                         strings_write(binary)
                         await get_scan()
-
-
-
-                        # DB
-                        # if args.output in ("logs"):
-                        #    print("Tried!")
-                        #if args.output in ("terminal", "both"):
-                        #    flags_write_print()
-                        # DB
-                        #if args.output in ("logs"):
-                        #    print("Wow!")
                     except (Exception) as e:
                         console.print(f"[red]write failure: {e}[/red]")
                         traceback.print_exc()
                         pass
-
-
             except Exception as e:
                 console.print(f"[red]main failure: {e}[/red]")
                 traceback.print_exc()
@@ -558,13 +509,6 @@ async def main():
                 await timeouts(binary)
             except (Exception) as e:
                 console.print({e})
-            if args.output in ("logs"):
-                print("The end")
         return 0
-
-
-
-
 asyncio.run(main())
-
-print(f"[bold bright_green]Done![/bold bright_green]")
+console.print(f"[bold bright_green]Done![/bold bright_green]")
