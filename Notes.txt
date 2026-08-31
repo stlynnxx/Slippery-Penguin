@@ -253,5 +253,13 @@ into the flags_append dict and making sure that it fits in the existing logic.
 
 8/30/2026-
 
-This morning I've been killing more bugs and maming smnall progress, and I also added a semaphore and am currently adding
+This morning I've been killing more bugs and making small progress, and I also added a semaphore and am currently adding
 locks for the globals, but need to go do some non programming things. I aim to be back in here today though!
+
+9:56 PM:
+
+It took me all day but I did find my way back in here; I finished what I was doing earlier with replacing the
+manual appends with the new append function.
+
+But now I'm fighting sleep. My life is exhausting.
+

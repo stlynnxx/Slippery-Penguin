@@ -13,7 +13,7 @@ import traceback
 
 
 
-#1000
+#1001
 console = Console()
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
 with open('art.txt', 'r') as file:
@@ -162,7 +162,7 @@ TIMEOUT_OUT = os.path.join(RUN_DIR, "timeout-out.json")
 GTFO_OUT = os.path.join(RUN_DIR, "gfto-out.json")
 
 
-# The flags list itself
+
 
 border = "-----"
 
@@ -198,6 +198,7 @@ find_append = {}
 getcap_append = {}
 flags_append = {}
 flags = {}
+
 
 # loading the flags from json
 try:
@@ -238,8 +239,8 @@ async def append(target: dict, b, data):
 async def strings_scan(b):
     async with semaphore:
         # Debug
-        if args.output in ("logs"):
-            print("strings scan started")
+        #if args.output in ("logs"):
+        #    print("strings scan started")
         global strings_append
         global timeout_append
         try:
@@ -262,8 +263,8 @@ async def strings_scan(b):
                     pass
                 finally:
                     # DB
-                    if args.output in ("logs"):
-                        print("strings scan finished")
+                    #if args.output in ("logs"):
+                    #    print("strings scan finished")
                     timeout_append[b] = "timeout"
 
             # return stdout.decode().splitlines()
@@ -275,8 +276,8 @@ async def strings_scan(b):
 async def strace_scan(b):
     async with semaphore:
         # DB
-        if args.output ("logs"):
-            print("strace scan started")
+        #if args.output ("logs"):
+        #    print("strace scan started")
         global strace_append
         global timeout_append
         try:
@@ -311,8 +312,8 @@ async def strace_scan(b):
                     pass
                 finally:
                     # DB
-                    if args.output in ("logs"):
-                        print("strace scan finished")
+                    #if args.output in ("logs"):
+                    #    print("strace scan finished")
                     timeout_append[b] = "timeout"
             if args.output in ("terminal", "both"):
                 print(f"\n[yellow]Strace:[/yellow][green]{strace_append}[/green]")
@@ -325,8 +326,8 @@ async def strace_scan(b):
 async def gtfo_scan(b):
     async with semaphore:
         # DB
-        if args.output in ("logs"):
-        print("gtfo scan started")
+        #if args.output in ("logs"):
+        #    print("gtfo scan started")
         global gtfo_append
         try:
             if args.gtfo:
@@ -351,8 +352,8 @@ async def gtfo_scan(b):
 async def get_scan():
     async with semaphore:
         # DB
-        if args.output in ("logs"):
-             print("get scan started")
+        #if args.output in ("logs"):
+        #     print("get scan started")
         global getcap_append
         global dt
         global strings_append
@@ -370,12 +371,14 @@ async def get_scan():
                     )
                     try:
                         stdout, stderr = await asyncio.wait_for(result.communicate(), timeout=timeout_var)
-                        getcap_append[dt] = stdout.decode().splitlines()
+                        # await append(getcap_append, dt, stdout.decode().splitlines())
+                        # getcap_append[dt] = stdout.decode().splitlines()
                         try:
                             if stdout:
                                 cap_append.setdefault(dt, [])
-                                cap_item = [f"Cap check {dt}: {result.stdout}"]
-                                cap_append[dt].append(cap_item)
+                                cap_item = [f"Cap check {dt}: {result.stdout.decode().splitlines()}"]
+                                await append(getcap_append, dt, cap_item)
+                                # cap_append[dt].append(cap_item)
                             if args.output in ("terminal", "both"):
                                 console.print(f"\n[yellow]getcap: [/yellow][green]{cap_append}[/green]")
                         except Exception as e:
@@ -396,12 +399,12 @@ async def get_scan():
         finally:
             timeout_append[dt] = "timeout"
             # DB
-            if args.output in ("logs"):
-                print("get scan finished")
+            #if args.output in ("logs"):
+            #    print("get scan finished")
 
 async def timeouts(b):
-    asyncio with semaphore:
-        global timeout_append
+    global timeout_append
+    async with semaphore:
         try:
             if args.output in ("terminal", "both"):
                 console.print("[yellow]Timeouts:[/yellow]")
@@ -409,8 +412,8 @@ async def timeouts(b):
                     console.print(f"\n[green] {t}[/green]")
                 with open(TIMEOUT_OUT, "w") as f:
                     json.dump(timeout_append, f)
-            if args.output in ("logs"):
-                print("timeout write")
+            #if args.output in ("logs"):
+            #    print("timeout write")
         except Exception as e:
             console.print(f"[red]timeouts failure: {e}[/red]")
             traceback.print_exc()
@@ -428,16 +431,18 @@ def strace_write(b):
             # strace write to file
             with open(STRACE_OUT, "w") as f:
                 json.dump(strace_append, f)
-        if args.output in ("logs"):
-            print("strace write")
+        # DB
+        # if args.output in ("logs"):
+        #    print("strace write")
     except Exception as e:
         console.print(f"[red]strace write failure: {e}[/red]")
         traceback.print_exc()
 
 # strings results
 def strings_write(b):
-    if args.output in ("logs"):
-        print("strings write start")
+    passer = {}
+    #if args.output in ("logs"):
+    #    print("strings write start")
     global strings_append
     try:
         if args.output in ("terminal", "both"):
@@ -453,8 +458,8 @@ def strings_write(b):
             passer[b] = strings_append.get(b, {})
             with open(STR_OUT, "w", encoding='utf-8') as f:
                 json.dump(passer, f)
-        if args.output in ("logs"):
-            print("strings write")
+        #if args.output in ("logs"):
+        #    print("strings write")
     except Exception as e:
         console.print(f"[red]strings write failure: {e}[/red]")
         traceback.print_exc()
@@ -467,8 +472,8 @@ def flags_write_print():
     global strings_append
 
 async def flags_write(b):
-    if args.output in ("logs"):
-        print("Flags write start")
+    #if args.output in ("logs"):
+    #    print("Flags write start")
     global flags_append
     global strings_append
     try:
@@ -486,8 +491,9 @@ async def flags_write(b):
             try:
                 with open("flags.json", 'r') as file:
                     json.dump(flags_append, file)
-                if args.output in ("logs"):
-                    print("flags write")
+                # DB
+                #if args.output in ("logs"):
+                #    print("flags write")
             except FileNotFoundError as e:
                 console.print("[red]Flags dump failure: {e}[/red]")
                 traceback.print_exc()
@@ -503,8 +509,9 @@ def getcap_write(b):
         if args.output in ("terminal", "both"):
             with open(CAP_OUT, "w", encoding='utf-8') as f:
                 json.dump(cap_append, f)
-            if args.output in ("logs"):
-                print("cap write")
+            # DB
+            #if args.output in ("logs"):
+            #    print("cap write")
     except Exception as e:
         console.print(f"[red]gtfo error: {e}[/red]")
         traceback.print_exc()
@@ -517,8 +524,9 @@ def gtfo_write(b):
         if args.output in ("terminal", "both"):
             with open(GTFO_OUT, "w", encoding='utf-8') as f:
                 json.dump(gtfo_append, f)
-            if args.output in ("logs"):
-                print("gtfo write")
+            # DB
+            #if args.output in ("logs"):
+            #    print("gtfo write")
     except Exception as e:
         console.print(f"[red]gtfo write error : {e}[/red]")
 
@@ -526,7 +534,7 @@ def gtfo_write(b):
 # New
 async def main():
         with (console.status("[blue]Sliding Around... [/blue]")):
-            print("1000")
+            #print("1000")
             try:
                 for binary in agg_result:
                     if not binary.startswith("/usr/bin"):
@@ -544,8 +552,9 @@ async def main():
                         )
 
                         await get_scan()
-                        if args.output in ("logs"):
-                            print("Moving along..")
+                        # DB
+                        # if args.output in ("logs"):
+                        #    print("Moving along..")
                     except (asyncio.CancelledError, Exception) as e:
                         console.print(f"[red]scan failure: {e}[/red]")
                         traceback.print_exc()
@@ -560,13 +569,13 @@ async def main():
 
 
                         # DB
-                        if args.output in ("logs"):
-                            print("Tried!")
-                        if args.output in ("terminal", "both"):
-                            flags_write_print()
+                        # if args.output in ("logs"):
+                        #    print("Tried!")
+                        #if args.output in ("terminal", "both"):
+                        #    flags_write_print()
                         # DB
-                        if args.output in ("logs"):
-                            print("Wow!")
+                        #if args.output in ("logs"):
+                        #    print("Wow!")
                     except (Exception) as e:
                         console.print(f"[red]write failure: {e}[/red]")
                         traceback.print_exc()
