@@ -14,7 +14,7 @@ binary strings, checking the results against a ranked
 list of possible indicators for exploration.
 
 *Version:*\
-This is the official release, v1.1.0, released on 8/17/2026.
+This is the official release, v2.0.0, released on 9/1/2026.
 
 You are welcome to use the dev branch 
 for the newest features and updates,
@@ -24,7 +24,7 @@ but I cannot promise it is ever stable.
 -SUID binary enumeration across the filesystem\
 -Capability checking via getcap\
 -Execution call tracing via strace\
--Binary string analysis against a severity-rated watchlist\
+-Binary string analysis against a severity rated watchlist\
 -Configurable path filtering and timeout handling\
 -JSON Logging
 
