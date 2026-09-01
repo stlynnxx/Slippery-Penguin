@@ -150,3 +150,134 @@ Last night while I was programming while sleepy my identation got all crazy and 
 so I left that for morning me to sort out and now I've done just that! I think it's safe to call this v1.1.0
 
 I'm having some issues with git/github
+
+8/18/2026-
+
+I have a small roadmap of things to be added or improved over the next few versions and broke ground
+on some of that tonight, but I'm quite sleepy so I'm calling it quits earlier than anticipated.
+
+But I did get a start on introducing some async into the program, a big part of what will become v2 eventually.
+
+8/19/2026-
+
+This morning I've been in here doing some more work on adding concurrency to the program, starting a complete rewrite
+of the "sliding process" into a main() function and making the scans concurrent. I plan to also make file writing for
+a given binary concurrent as well. This has also given me the chance to fix a few things in the original loop that
+had slipped by under my radar, so that's good!
+
+We haven't moved the gtfobins logic yet as it's going to take a bit more effort than the others, but it'll still
+happen soon regardless.
+
+8/20/2026-
+
+I moved the gtfobins related logic into it's own function and added the call to the asyncio.gather for the scan calling,
+then I straightend it out because it was a mess; the getcap scan and gtfo file writing lines were also mixed in there so
+I get everything in it's own function and we're almost functional now, with some errors and failures that I still
+need to read through and figure out, but. My dog needs to go outside and I need to get a few ebay packages out and
+check on my dad as well, so, that'll have to come either later or tomorrow.
+
+Until then!
+
+8/21/2026-
+
+So far today I've been working through the pile of bugs that I left for myself yesterday; I feel i'm at least making
+some progress. I got the timeouts set back up, and fixed a few other things that I had left out yesterday.
+
+My goal today is to push twice; I left the dev branch not working yesterday and then this morning I'm going to be
+making a push that makes it slightly better but still realistically unusable and then I need to do some other things
+for a bit and will be coming back for more work on this after that, hopefully to get things working again,
+if not at least closer to so.
+
+To anyone who could be reading this, just use the master version until like later or tomorrow :D
+
+8/22/2026-
+
+I never wound up coming back yesterday as I had intended, but, it's because I was working in another project,
+so, there's that at least. I've gotten a lot of the major bugs that I left yesterday figured out this morning and
+i'm going to take a short break and come back and hopefully get things up and running again.
+
+My dog needs to go outside and I need to eat breakfast and shower, but. I'll actually come back today.
+
+I'll probably bring more coffee with me too.
+
+I didn't get back as quickly as I'd wanted; in fact, it's now late and i'm quite sleepy. I made some more progress
+on the ample amount of bugs i've introduced and will pick back up tomorrow.
+
+Must sleep
+
+8/24/2026-
+
+I'm not sure what happened on my last push to the dev branch but it appparently cut over half of the code, so I went back
+a push and that's where I'm working from now. I hadn't even noticed that had happened until today and I'm pretty unclear on how it
+even did, honestly.
+
+Okay, I got things fixed up and made a bit of progress even. I took the timeout stuff out of the strace write function and put it into it's
+own function, and got the strace write actually working correctly, as well as I believe fixing all of the color codes.
+
+Next I need to eat some food and then get some ebay packages out, I might be back later.
+
+8/25/2026-
+
+Another day of just what feels like spinning my tires and fighting bug after bug. Anytime I feel like I'm figuring something out it
+actually just opens up more issues.. I am almost starting to wonder if I regret these changes and want to roll back to the latest v1
+release.
+
+I'll probably try and stick the changes out a bit more, but. If I don't see a light at the end of the tunnel soon, a rollback
+may indeed happen.
+
+8/26/2026-
+
+I'm in here chipping away at it again, spending more time on this than I had planned but also
+too stubborn to give it up.
+
+It does at least seem that I've cleared through the bugs popping up before the sliding around spinner, and now just
+need to figure out what all/ what excactly is holding that up and how to fix it. It's a bit of a progress, and even
+though it isn't exactly a ton it still feels good after spinning my tires for a few days.
+
+8/27/2026-
+
+So far this morning I've been trying to work through the remaining bugs; I made some progress in concretely identifying
+my biggest issue which lead to the realization that the real, long term fix is moving the flags list to a json file
+and reworking get_scan() around that, so I've set up the json file and moved the flags data into there. This was always
+the plan but I'd just sort of set it on the back burner but v2 is as good of a time as any to implement this particular
+change!
+
+As I often say, progress is progress.
+
+8/28/2026-
+
+Just simple work tonight so far, picking up where I was
+yesterday and loading the newly implemented json flags file
+into the flags_append dict and making sure that it fits in the existing logic.
+
+
+8/30/2026-
+
+This morning I've been killing more bugs and making small progress, and I also added a semaphore and am currently adding
+locks for the globals, but need to go do some non programming things. I aim to be back in here today though!
+
+9:56 PM:
+
+It took me all day but I did find my way back in here; I finished what I was doing earlier with replacing the
+manual appends with the new append function.
+
+But now I'm fighting sleep. My life is exhausting.
+
+I did some more fixing and such out of stubborness and wanting to put more time into here today
+and now I'm at a point where it seems to be hanging on dealing with gpasswd for some reason. I moved the timeouts
+call as it was in the wrong place anyway and now it's hanging in the gpasswd strings results but I'm not sure why yet,
+but I want to leave that for whenever I'm fresh.
+
+Progress is progress, and tonight was better progress than I've had on some other recent nights, so.
+
+8/31/2026-
+
+After much frustration I've finally solved the bug that was causing the hanging; one of the strace scans was opening
+a terminal and it was waiting for input that the user was unable to give and not timing out, but now it times out!
+
+I still need to clean up some debug statements and some small formatting bugs and then I think v2 will finally be mostly
+ready!
+
+9/1/2026-
+
+I got it cleaned up yesterday and today we release v2!
