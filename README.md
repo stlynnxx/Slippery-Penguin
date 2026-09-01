@@ -20,12 +20,13 @@ interested, it may have new/improved features not present in the
 official release, however, it is not promised to always be stable
 as I will be actively working on it from time to time.
 
+The master branch is currently on v2.0.0
 
 *Features:*\
 -SUID binary enumeration across the filesystem\
 -Capability checking via getcap\
 -Execution call tracing via strace\
--Binary string analysis against a severity-rated watchlist\
+-Binary string analysis against a severity rated watchlist\
 -Configurable path filtering and timeout handling\
 -JSON Logging
 
