@@ -14,13 +14,11 @@ binary strings, checking the results against a ranked
 list of possible indicators for exploration.
 
 *Version:*\
-This is the dev branch, where I push my in progress work to.
-You are welcome to use it at any point you would like if you are 
-interested, it may have new/improved features not present in the 
-official release, however, it is not promised to always be stable
-as I will be actively working on it from time to time.
+This is the official release, v2.1.0, released on 9/14/2026.
 
-The master branch is currently on v2.1.0
+You are welcome to use the dev branch 
+for the newest features and updates,
+but I cannot promise it is ever stable.
 
 *Features:*\
 -SUID binary enumeration across the filesystem\
@@ -29,13 +27,15 @@ The master branch is currently on v2.1.0
 -Binary string analysis against a severity rated watchlist\
 -Configurable path filtering and timeout handling\
 -JSON Logging
-
+- Automatic updating and update checking
 
 *Requirements:*\
 -Linux\
 -Python 3\
 -strace\
--getcap
+-getcap\
+-curl\
+-git
 
 The JSON files are stored in /SlipperyPenguin/logs, within timestamped directories.
 Each form of output has it's own json file within the timestamped directory. 
@@ -51,40 +51,126 @@ chmod +x setup.sh
 sudo ./setup.sh
 ```
 
-To write output to log files only-
+### To write output to log files only-
  ```bash
 python3 slipperypenguin.py --output logs
 ```
-To write output to the terminal only-
+#### OR
+```bash
+python3 slipperypenguin.py -o logs
+```
+
+### To write output to the terminal only-
 ```bash
 python3 slipperypenguin.py --output terminal
 ```
+#### OR
+```bash
+python3 slipperypenguin.py -o terminal
+```
 
-To write output to both the log files and the terminal-
+
+### To write output to both the log files and the terminal-
 ```bash
 python3 slipperypenguin.py --output both
 ```
-To update the GTFOBins data:
+#### OR
 ```bash
-python3 slipperypenguin.py -update-gtfobins
-
+python3 slipperypenguin.py -o both
 ```
 
-Add for checking output against GTFOBins data
+### To update the GTFOBins data:
 ```bash
--gtfo
+python3 slipperypenguin.py --update-gtfobins
+
+```
+#### OR
+```bash
+python3 slipperypenguin.py -upgt
 ```
 
-To delete logs and then run the program-
+
+### Add for checking output against GTFOBins data
 ```bash
--del-logs run
+python3 slipperypenguin.py -o [choice]-gtfo
 ```
+
+### To delete logs and then run the program-
+```bash
+python3 slipperypenguin.py --del-logs run
+```
+#### OR
+```bash
+python3 slipperypenguin.py -dl run
+```
+
 NOTE: This will result in leaving logs in the directory still, it will just be limited to that run.
 
-To delete logs without running the program after- 
+### To delete logs without running the program after- 
 ```bash
--del-logs close
+python3 slipperypenguin.py --del-logs close
 ```
+#### OR
+```bash
+python3 slipperypenguin.py -dl close
+```
+
+### To bring up the help menu-
+```bash
+python3 slipperypenguin.py --help
+```
+#### OR
+```bash
+python3 slipperypenguin.py -h
+```
+### To change the default timeout value-
+```bash
+python3 slipperypenguin.py --timeout 
+```
+#### OR
+```bash
+python3 slipperypenguin.py -t
+```
+
+### Cleanup Logs-
+```bash
+python3 slipperypenguin.py --cleanup
+```
+#### OR
+```bash
+python3 slipperypenguin.py -c
+```
+### Update the Program and run afterwards
+```bash
+python3 slipperypenguin.py --update run
+```
+#### OR
+```bash
+python3 slipperypenguin.py -u
+```
+
+### Update the Program and Close
+```bash
+python3 slipperypenguin.py --update close
+```
+#### OR
+```bash
+python3 slipperypenguin.py -u close
+```
+### Check for updates
+
+### Update the Program and run afterwards
+```bash
+python3 slipperypenguin.py --check
+```
+#### OR
+```bash
+python3 slipperypenguin.py -c
+```
+
+
+
+
 
 # Contributing
 
