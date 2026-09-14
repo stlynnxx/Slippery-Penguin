@@ -14,7 +14,7 @@ binary strings, checking the results against a ranked
 list of possible indicators for exploration.
 
 *Version:*\
-This is the official release, v2.0.0, released on 9/1/2026.
+This is the official release, v2.1.0, released on 9/14/2026.
 
 You are welcome to use the dev branch 
 for the newest features and updates,
@@ -27,13 +27,15 @@ but I cannot promise it is ever stable.
 -Binary string analysis against a severity rated watchlist\
 -Configurable path filtering and timeout handling\
 -JSON Logging
-
+- Automatic updating and update checking
 
 *Requirements:*\
 -Linux\
 -Python 3\
 -strace\
--getcap
+-getcap\
+-curl\
+-git
 
 The JSON files are stored in /SlipperyPenguin/logs, within timestamped directories.
 Each form of output has it's own json file within the timestamped directory. 
@@ -53,20 +55,40 @@ To write output to log files only-
  ```bash
 python3 slipperypenguin.py --output logs
 ```
+#### OR
+```bash
+python3 slipperypenguin.py -o logs
+```
+
 To write output to the terminal only-
 ```bash
 python3 slipperypenguin.py --output terminal
 ```
+#### OR
+```bash
+python3 slipperypenguin.py -o terminal
+```
+
 
 To write output to both the log files and the terminal-
 ```bash
 python3 slipperypenguin.py --output both
 ```
+#### OR
+```bash
+python3 slipperypenguin.py -o both
+```
+
 To update the GTFOBins data:
 ```bash
-python3 slipperypenguin.py -update-gtfobins
+python3 slipperypenguin.py --update-gtfobins
 
 ```
+#### OR
+```bash
+python3 slipperypenguin.py -upgt
+```
+
 
 Add for checking output against GTFOBins data
 ```bash
@@ -75,14 +97,80 @@ Add for checking output against GTFOBins data
 
 To delete logs and then run the program-
 ```bash
--del-logs run
+python3 slipperypenguin.py --del-logs run
 ```
+#### OR
+```bash
+python3 slipperypenguin.py -dl run
+```
+
 NOTE: This will result in leaving logs in the directory still, it will just be limited to that run.
 
 To delete logs without running the program after- 
 ```bash
--del-logs close
+python3 slipperypenguin.py --del-logs close
 ```
+#### OR
+```bash
+python3 slipperypenguin.py -dl close
+```
+
+To bring up the help menu-
+```bash
+python3 slipperypenguin.py --help
+```
+#### OR
+```bash
+python3 slipperypenguin.py -h
+```
+To change the default timeout value-
+```bash
+python3 slipperypenguin.py --timeout 
+```
+#### OR
+```bash
+python3 slipperypenguin.py -t
+```
+
+Cleanup Logs-
+```bash
+python3 slipperypenguin.py --cleanup
+```
+#### OR
+```bash
+python3 slipperypenguin.py -c
+```
+### Update the Program and run afterwards
+```bash
+python3 slipperypenguin.py --update run
+```
+#### OR
+```bash
+python3 slipperypenguin.py -u
+```
+
+### Update the Program and Close
+```bash
+python3 slipperypenguin.py --update close
+```
+#### OR
+```bash
+python3 slipperypenguin.py -u close
+```
+### Check for updates
+
+### Update the Program and run afterwards
+```bash
+python3 slipperypenguin.py --check
+```
+#### OR
+```bash
+python3 slipperypenguin.py -c
+```
+
+
+
+
 
 # Contributing
 
