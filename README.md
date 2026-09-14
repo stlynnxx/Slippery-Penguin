@@ -96,3 +96,9 @@ Slippery Penguin is always open for contributions!
 Check out the dev branch if you want to contribute to the newest
 features (you can read my daily work and goals in the notes file),
 or check out the issues list!
+
+### Donations
+I am physically disabled and do this and hardware repair to support myself; if you feel generous and 
+can afford to do so, every penny helps out! 
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H5F5269IH4)
