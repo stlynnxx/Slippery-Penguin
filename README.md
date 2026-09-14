@@ -14,11 +14,7 @@ binary strings, checking the results against a ranked
 list of possible indicators for exploration.
 
 *Version:*\
-This is the dev branch, where I push my in progress work to.
-You are welcome to use it at any point you would like if you are 
-interested, it may have new/improved features not present in the 
-official release, however, it is not promised to always be stable
-as I will be actively working on it from time to time.
+This is v2.1.0, the official release.
 
 
 *Features:*\
@@ -50,39 +46,41 @@ chmod +x setup.sh
 sudo ./setup.sh
 ```
 
-To write output to log files only-
+### To write output to log files only-
  ```bash
-python3 slipperypenguin.py --output logs
-```
-To write output to the terminal only-
-```bash
-python3 slipperypenguin.py --output terminal
+python3 slipperypenguin.py --output logs / python3 slipperypenguin.py -o logs
 ```
 
-To write output to both the log files and the terminal-
+### To write output to the terminal only-
 ```bash
-python3 slipperypenguin.py --output both
+python3 slipperypenguin.py --output terminal / python3 slipperypenguin.py -o terminal 
 ```
-To update the GTFOBins data:
+
+### To write output to both the log files and the terminal-
 ```bash
-python3 slipperypenguin.py -update-gtfobins
+python3 slipperypenguin.py --output both / python3 slipperypenguin.py -o terminal 
+```
+
+### To update the GTFOBins data:
+```bash
+python3 slipperypenguin.py --update-gtfobins / python3 slipperypenguin.py -upgt
 
 ```
 
-Add for checking output against GTFOBins data
+### Add for checking output against GTFOBins data
 ```bash
--gtfo
+python3 slippperypenguin.py -o [choice] -gtfo
 ```
 
-To delete logs and then run the program-
+### To delete logs and then run the program-
 ```bash
--del-logs run
+python3 slipperypenguin.py --del-logs run / python3 slipperypenguin.py -dl run
 ```
 NOTE: This will result in leaving logs in the directory still, it will just be limited to that run.
 
-To delete logs without running the program after- 
+### To delete logs without running the program after- 
 ```bash
--del-logs close
+python3 slipperypenguin.py --del-logs close / python3 slipperypenguin.py -dl close
 ```
 
 # Contributing
