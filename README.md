@@ -40,6 +40,12 @@ Usage:
 
 Quick installation-
 ```bash
+curl -L https://eclecticelectronics.fly.dev/api/download/2.1.0 -o slipperypenguin-2.1.0.tar.gz
+sha256sum slipperypenguin-2.1.0.tar.gz
+```
+##### Or
+
+```bash
 git clone -b dev https://github.com/stlynnxx/Slippery-Penguin.git
 cd Slippery-Penguin
 chmod +x setup.sh
