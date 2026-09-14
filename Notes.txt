@@ -281,3 +281,19 @@ ready!
 9/1/2026-
 
 I got it cleaned up yesterday and today we release v2!
+
+9/11/2026-
+
+I haven't been in here since the v2 release, but only because it was a bit of work and I needed a little break in here
+while I put energy in elsewhere, but this project has still stayed in mind and is still churning internally.
+
+Today I'm working on adding some updating logic that will reach out to the eclectic electronics site to check for and
+receive any updates from the downloaded version.
+
+9/14/2026-
+
+Okay, this morning I came back and picked back up where I'd left off on the updating logic and got it finished and
+working! I also added an argument for updating (-update) that can be used with run or close to either run the program
+post update, or to close it.
+
+New release coming today!
