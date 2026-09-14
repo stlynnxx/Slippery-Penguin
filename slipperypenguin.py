@@ -1,21 +1,13 @@
-import signal
-import subprocess
-import os
-import json
+import signal, subprocess,os, json, argparse, sys, shutil, urllib.request, tempfile,hashlib,asyncio,traceback
+import tarfile, urllib.error
 from datetime import datetime
-import argparse
-import sys
-import shutil
-
-
 from rich.console import Console
-import asyncio
-import traceback
 
-
-
-#1001
+# Version
+__version__ = "2.1.0"
 console = Console()
+UPDATE_URL = "https://eclecticelectronics.fly.dev/api/check-update/"
+
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
 with open('art.txt', 'r') as file:
     content = file.read()
@@ -23,16 +15,16 @@ with open('art.txt', 'r') as file:
 
 # Setting up argparse
 parser = argparse.ArgumentParser("SUID enumeration and vulnerability scanning")
-parser.add_argument("--output", choices=["terminal", "logs", "both"], default="both", help="Output mode")
-parser.add_argument("--storage", type=str, default="./logs", help="Log storage directory")
+parser.add_argument("--output", "-o", choices=["terminal", "logs", "both"], default="terminal", help="Output mode")
+parser.add_argument("--storage", "-s", type=str, default="./logs", help="Log storage directory")
 parser.add_argument("-gtfo", action="store_true", help="Enables GTFO Comparison")
-parser.add_argument("-update-gtfobins", action="store_true", help="Download/update GTFOBins database")
-parser.add_argument("-del-logs", choices=["run", "close"],  default=None, help="Delete Logs")
-parser.add_argument("-help", action="store_true", help="Help!")
-parser.add_argument("-timeout", action="store_true", help="Used for changing timeout var, default is 10")
-parser.add_argument("-verbose", action="store_true", help="Show context in terminal for each flag")
-parser.add_argument("-cleanup", action="store_true", help="Deletes all data and uninstalls the program")
-
+parser.add_argument("--update-gtfobins", "-upgt", action="store_true", help="Download/update GTFOBins database")
+parser.add_argument("--del-logs", "-dl", choices=["run", "close"],  default=None, help="Delete Logs")
+parser.add_argument("--help", "-h", action="store_true", help="Help!")
+parser.add_argument("--timeout", "-t", action="store_true", help="Used for changing timeout var, default is 10")
+parser.add_argument("--cleanup", "-c", action="store_true", help="Deletes all data and uninstalls the program")
+parser.add_argument("--update", "-u", choices=["run", "close"], help="Download and install the latest version")
+parser.add_argument("--check", "-c", action="store_true", help="Check the current version")
 
 args = parser.parse_args()
 # sys.stdin = open('/dev/tty')
@@ -136,6 +128,23 @@ if args.update_gtfobins:
     ])
     print(f"GTFOBins updated at {GTFO_FILE}")
     sys.exit(0)
+# Checking for available updates
+if args.check:
+    print(f"Current version: {__version__}")
+    # This is where we will contact the server for updates whenever i'm finished setting all of that up.
+    try:
+        with urllib.request.urlopen(UPDATE_URL + __version__, timeout=10) as resp:
+            update_info = json.loads(resp.read().decode())
+    except (urllib.error.URLError, json.JSONDecodeError) as e:
+        print(f"[-] Could not reach update server: {e}")
+        sys.exit(1)
+    latest = update_info.get("latest", "")
+    if latest == __version__:
+        print("[+] Up to date.")
+    else:
+        print(f"[*] Update available: {latest} (you are running {__version__})")
+        print(update_info.get("notes", ""))
+    sys.exit(0)
 
 if args.timeout:
     timeout_var = int(input(f"[yellow]Enter custom timeout value: [/yellow]"))
@@ -174,6 +183,63 @@ border = "-----"
 if os.path.exists(FIND_OUT):
     with open(FIND_OUT, "r") as f:
         find_append = json.loads(f.read())
+
+
+# Updating logic helper functions
+if args.update in ("run", "close"):
+    try:
+        def download_update(url,expected_hash):
+            fd, tmp_path = tempfile.mkstemp(suffix=".tar.gz")
+            os.close(fd)
+            hasher = hashlib.sha256()
+            try:
+                with urllib.request.urlopen(url, timeout=10) as resp, open(tmp_path, "wb") as out:
+                    while chunk := resp.read(65536):
+                        out.write(chunk)
+                        hasher.update(chunk)
+                    if hasher.hexdigest() != expected_hash:
+                        os.unlink(tmp_path)
+                        raise RuntimeError("Checksum mismatch- download aborted")
+            except Exception as e:
+                if os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
+                raise e
+    except Exception:
+        console.print(f"[red]{Exception}[/red]")
+        exit(-1)
+    try:
+        def extract_update(tmp_path):
+            extract_dir = tempfile.mkdtemp()
+            with tarfile.open(tmp_path, "r:gz") as tar:
+                tar.extractall(extract_dir, filter="data")
+
+            required = ["slipperypenguin.py", "art.txt", "flags.json"]
+            extracted_names = os.listdir(extract_dir)
+            for name in required:
+                if name not in extracted_names:
+                    raise RuntimeError(
+                        "Incomplete package, download aborted"
+                    )
+            return extract_dir
+    except Exception:
+        console.print(f"[red]{Exception}[/red]")
+        exit(-1)
+    try:
+        def install_update(extract_dir):
+            install_root = os.path.dirname(os.path.abspath(__file__))
+            for fname in os.listdir(extract_dir):
+                src = os.path.join(extract_dir, fname)
+                dst = os.path.join(install_root, fname)
+                os.replace(src, dst)
+            shutil.rmtree(extract_dir)
+    except Exception:
+        console.print(f"[red]{Exception}[/red]")
+        exit(-1)
+    console.print("[green]Update Successful![/green]")
+    if args.update in ("run"):
+        pass
+    if args.update in ("close"):
+        exit(0)
 
 # Enumerates SUIDs and checking capabilites
 result = subprocess.run( ["find", "/", "-perm", "-4000", "-type", "f"], capture_output=True, text=True)
@@ -225,6 +291,8 @@ if os.path.exists(GTFO_OUT):
 
 lock = asyncio.Lock()
 semaphore = asyncio.Semaphore(5)
+
+
 
 async def append(target: dict, b, data):
     async with semaphore:
