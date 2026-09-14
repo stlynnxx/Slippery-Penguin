@@ -41,9 +41,13 @@ The JSON files are stored in /SlipperyPenguin/logs, within timestamped directori
 Each form of output has it's own json file within the timestamped directory. 
 
 
-Usage:
-
 Quick installation-
+```bash
+curl -L https://eclecticelectronics.fly.dev/api/download/2.1.0 -o slipperypenguin-2.1.0.tar.gz
+sha256sum slipperypenguin-2.1.0.tar.gz
+```
+##### Or
+
 ```bash
 git clone -b dev https://github.com/stlynnxx/Slippery-Penguin.git
 cd Slippery-Penguin
@@ -51,6 +55,7 @@ chmod +x setup.sh
 sudo ./setup.sh
 ```
 
+Usage:
 ### To write output to log files only-
  ```bash
 python3 slipperypenguin.py --output logs
