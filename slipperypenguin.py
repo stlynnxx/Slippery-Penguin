@@ -119,15 +119,18 @@ if args.help:
 
 
 # Updating gtfobins logic
-if args.update_gtfobins:
-    subprocess.run([
-        "curl",
-        "https://gtfobins.org/api.json",
-        "-o",
-        GTFO_FILE
-    ])
-    print(f"GTFOBins updated at {GTFO_FILE}")
-    sys.exit(0)
+try:
+    if args.update_gtfobins:
+        subprocess.run([
+            "curl",
+            "https://gtfobins.org/api.json",
+            "-o",
+            GTFO_FILE
+        ])
+        print(f"GTFOBins updated at {GTFO_FILE}")
+        sys.exit(0)
+except Exception as e:
+    console.print(f"[red]Updating GTFObins failed, {e}[/red]")
 # Checking for available updates
 if args.check:
     print(f"Current version: {__version__}")
@@ -187,6 +190,18 @@ if os.path.exists(FIND_OUT):
 
 # Updating logic helper functions
 if args.update in ("run", "close"):
+    try:
+        # Updating gtfobins logic
+        if args.update_gtfobins:
+            subprocess.run([
+                "curl",
+                "https://gtfobins.org/api.json",
+                "-o",
+                GTFO_FILE
+            ])
+            print(f"GTFOBins updated at {GTFO_FILE}")
+    except Exception as e:
+        console.print(f"[red]Could not update GTFOBins, {e}[/red]")
     try:
         def download_update(url,expected_hash):
             fd, tmp_path = tempfile.mkstemp(suffix=".tar.gz")
