@@ -51,7 +51,7 @@ chmod +x setup.sh
 sudo ./setup.sh
 ```
 
-To write output to log files only-
+### To write output to log files only-
  ```bash
 python3 slipperypenguin.py --output logs
 ```
@@ -60,7 +60,7 @@ python3 slipperypenguin.py --output logs
 python3 slipperypenguin.py -o logs
 ```
 
-To write output to the terminal only-
+### To write output to the terminal only-
 ```bash
 python3 slipperypenguin.py --output terminal
 ```
@@ -70,7 +70,7 @@ python3 slipperypenguin.py -o terminal
 ```
 
 
-To write output to both the log files and the terminal-
+### To write output to both the log files and the terminal-
 ```bash
 python3 slipperypenguin.py --output both
 ```
@@ -79,7 +79,7 @@ python3 slipperypenguin.py --output both
 python3 slipperypenguin.py -o both
 ```
 
-To update the GTFOBins data:
+### To update the GTFOBins data:
 ```bash
 python3 slipperypenguin.py --update-gtfobins
 
@@ -90,12 +90,12 @@ python3 slipperypenguin.py -upgt
 ```
 
 
-Add for checking output against GTFOBins data
+### Add for checking output against GTFOBins data
 ```bash
--gtfo
+python3 slipperypenguin.py -o [choice]-gtfo
 ```
 
-To delete logs and then run the program-
+### To delete logs and then run the program-
 ```bash
 python3 slipperypenguin.py --del-logs run
 ```
@@ -106,7 +106,7 @@ python3 slipperypenguin.py -dl run
 
 NOTE: This will result in leaving logs in the directory still, it will just be limited to that run.
 
-To delete logs without running the program after- 
+### To delete logs without running the program after- 
 ```bash
 python3 slipperypenguin.py --del-logs close
 ```
@@ -115,7 +115,7 @@ python3 slipperypenguin.py --del-logs close
 python3 slipperypenguin.py -dl close
 ```
 
-To bring up the help menu-
+### To bring up the help menu-
 ```bash
 python3 slipperypenguin.py --help
 ```
@@ -123,7 +123,7 @@ python3 slipperypenguin.py --help
 ```bash
 python3 slipperypenguin.py -h
 ```
-To change the default timeout value-
+### To change the default timeout value-
 ```bash
 python3 slipperypenguin.py --timeout 
 ```
@@ -132,7 +132,7 @@ python3 slipperypenguin.py --timeout
 python3 slipperypenguin.py -t
 ```
 
-Cleanup Logs-
+### Cleanup Logs-
 ```bash
 python3 slipperypenguin.py --cleanup
 ```
