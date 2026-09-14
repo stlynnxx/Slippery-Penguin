@@ -7,6 +7,7 @@
 to test. This tool is provided for educational and security research purposes only. The author assumes no liability for misuse or damage caused by this tool. Use responsibly and in accordance with all applicable local, state, and federal laws.***
 
 
+
 Slippery Penguin is a local privilege escalation tool
 for Linux Systems. It enumerates SUID binaries, checks
 capabilities, traces execution calls, and analyzes 
@@ -14,11 +15,10 @@ binary strings, checking the results against a ranked
 list of possible indicators for exploration.
 
 *Version:*\
-This is the official release, v2.1.0, released on 9/14/2026.
-
-You are welcome to use the dev branch 
-for the newest features and updates,
-but I cannot promise it is ever stable.
+This is the dev branch, which is where I save 
+my work in progress as I build. You are welcome 
+to use it, however I cannot promise stability. 
+I would update any time I use a dev branch download. 
 
 *Features:*\
 -SUID binary enumeration across the filesystem\
