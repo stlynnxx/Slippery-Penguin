@@ -42,7 +42,7 @@ Each form of output has it's own json file within the timestamped directory.
 
 Quick installation-
 ```bash
-curl -L https://eclecticelectronics.fly.dev/api/download/2.1.0 -o slipperypenguin-2.1.2.tar.gz
+curl -L https://eclecticelectronics.fly.dev/api/download/2.1.2 -o slipperypenguin-2.1.2.tar.gz
 sha256sum slipperypenguin-2.1.2.tar.gz
 ```
 ##### Or
