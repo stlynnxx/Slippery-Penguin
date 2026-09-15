@@ -20,11 +20,11 @@ parser.add_argument("--storage", "-s", type=str, default="./logs", help="Log sto
 parser.add_argument("-gtfo", action="store_true", help="Enables GTFO Comparison")
 parser.add_argument("--update-gtfobins", "-upgt", action="store_true", help="Download/update GTFOBins database")
 parser.add_argument("--del-logs", "-dl", choices=["run", "close"],  default=None, help="Delete Logs")
-parser.add_argument("--help", "-h", action="store_true", help="Help!")
 parser.add_argument("--timeout", "-t", action="store_true", help="Used for changing timeout var, default is 10")
 parser.add_argument("--cleanup", "-c", action="store_true", help="Deletes all data and uninstalls the program")
 parser.add_argument("--update", "-u", choices=["run", "close"], help="Download and install the latest version")
-parser.add_argument("--check", "-c", action="store_true", help="Check the current version")
+parser.add_argument("--check", "-chk", action="store_true", help="Check the current version")
+parser.add_argument("--manual", "-man", action="store_true", help="Manual")
 
 args = parser.parse_args()
 # sys.stdin = open('/dev/tty')
@@ -100,7 +100,7 @@ if args.cleanup:
 
 # Help!
 
-if args.help:
+if args.manual:
     console.print("[cyan]If this is a fresh download, run -update-gtfobins for the most up to date data.[/cyan]")
     print("--output both:       Writes results in the terminal and to logs")
     print("--output terminal:   Writes results to the terminal only")
@@ -192,14 +192,13 @@ if os.path.exists(FIND_OUT):
 if args.update in ("run", "close"):
     try:
         # Updating gtfobins logic
-        if args.update_gtfobins:
-            subprocess.run([
-                "curl",
-                "https://gtfobins.org/api.json",
-                "-o",
-                GTFO_FILE
-            ])
-            print(f"GTFOBins updated at {GTFO_FILE}")
+        subprocess.run([
+            "curl",
+            "https://gtfobins.org/api.json",
+            "-o",
+            GTFO_FILE
+        ])
+        print(f"GTFOBins updated at {GTFO_FILE}")
     except Exception as e:
         console.print(f"[red]Could not update GTFOBins, {e}[/red]")
     try:
