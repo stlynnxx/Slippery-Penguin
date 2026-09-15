@@ -16,6 +16,15 @@ list of possible indicators for exploration.
 *Version:*\
 This is v2.1.0, the official release.
 
+If you have issues with the gtfobins data on your first run, for now try this first:
+```bash
+python3 slipperypenguin.py -u close
+```
+
+And then you shouldn't have issues.
+
+I will be fixing this bug soon.
+
 
 *Features:*\
 -SUID binary enumeration across the filesystem\
