@@ -15,10 +15,9 @@ binary strings, checking the results against a ranked
 list of possible indicators for exploration.
 
 *Version:*\
-This is the dev branch, which is where I save 
-my work in progress as I build. You are welcome 
-to use it, however I cannot promise stability. 
-I would update any time I use a dev branch download. 
+This is v2.1.2, the official release.
+
+The only change from v2.1.1 was a bug fix.
 
 *Features:*\
 -SUID binary enumeration across the filesystem\
@@ -43,8 +42,8 @@ Each form of output has it's own json file within the timestamped directory.
 
 Quick installation-
 ```bash
-curl -L https://eclecticelectronics.fly.dev/api/download/2.1.0 -o slipperypenguin-2.1.0.tar.gz
-sha256sum slipperypenguin-2.1.0.tar.gz
+curl -L https://eclecticelectronics.fly.dev/api/download/2.1.0 -o slipperypenguin-2.1.2.tar.gz
+sha256sum slipperypenguin-2.1.2.tar.gz
 ```
 ##### Or
 
