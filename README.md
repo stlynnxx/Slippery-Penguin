@@ -48,7 +48,7 @@ sha256sum slipperypenguin-2.1.2.tar.gz
 ##### Or
 
 ```bash
-git clone -b dev https://github.com/stlynnxx/Slippery-Penguin.git
+git clone -b master https://github.com/stlynnxx/Slippery-Penguin.git
 cd Slippery-Penguin
 chmod +x setup.sh
 sudo ./setup.sh
