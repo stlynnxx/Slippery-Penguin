@@ -36,10 +36,7 @@ timeout_var = 2
 
 # Setting up dirs
 STORAGE_ROOT = args.storage
-
-GTFODIR = STORAGE_ROOT
-os.makedirs(GTFODIR, exist_ok=True)
-GTFO_FILE = os.path.join(GTFODIR, "gtfobins.json")
+GTFO_FILE = os.path.join("gtfobins.json")
 if args.del_logs == "run":
     if not os.path.exists(STORAGE_ROOT):
         print(f"[-] No logs directory found at {STORAGE_ROOT}")
