@@ -7,6 +7,7 @@
 to test. This tool is provided for educational and security research purposes only. The author assumes no liability for misuse or damage caused by this tool. Use responsibly and in accordance with all applicable local, state, and federal laws.***
 
 
+
 Slippery Penguin is a local privilege escalation tool
 for Linux Systems. It enumerates SUID binaries, checks
 capabilities, traces execution calls, and analyzes 
@@ -14,29 +15,31 @@ binary strings, checking the results against a ranked
 list of possible indicators for exploration.
 
 *Version:*\
-This is v2.1.0, the official release.
-
+This is the dev branch, which is where I save 
+my work in progress as I build. You are welcome 
+to use it, however I cannot promise stability. 
+I would update any time I use a dev branch download. 
 
 *Features:*\
 -SUID binary enumeration across the filesystem\
 -Capability checking via getcap\
 -Execution call tracing via strace\
--Binary string analysis against a severity-rated watchlist\
+-Binary string analysis against a severity rated watchlist\
 -Configurable path filtering and timeout handling\
 -JSON Logging
-
+- Automatic updating and update checking
 
 *Requirements:*\
 -Linux\
 -Python 3\
 -strace\
--getcap
+-getcap\
+-curl\
+-git
 
 The JSON files are stored in /SlipperyPenguin/logs, within timestamped directories.
 Each form of output has it's own json file within the timestamped directory. 
 
-
-Usage:
 
 Quick installation-
 ```bash
@@ -52,42 +55,127 @@ chmod +x setup.sh
 sudo ./setup.sh
 ```
 
+Usage:
 ### To write output to log files only-
  ```bash
-python3 slipperypenguin.py --output logs / python3 slipperypenguin.py -o logs
+python3 slipperypenguin.py --output logs
+```
+#### OR
+```bash
+python3 slipperypenguin.py -o logs
 ```
 
 ### To write output to the terminal only-
 ```bash
-python3 slipperypenguin.py --output terminal / python3 slipperypenguin.py -o terminal 
+python3 slipperypenguin.py --output terminal
 ```
+#### OR
+```bash
+python3 slipperypenguin.py -o terminal
+```
+
 
 ### To write output to both the log files and the terminal-
 ```bash
-python3 slipperypenguin.py --output both / python3 slipperypenguin.py -o terminal 
+python3 slipperypenguin.py --output both
+```
+#### OR
+```bash
+python3 slipperypenguin.py -o both
 ```
 
 ### To update the GTFOBins data:
 ```bash
-python3 slipperypenguin.py --update-gtfobins / python3 slipperypenguin.py -upgt
+python3 slipperypenguin.py --update-gtfobins
 
 ```
+#### OR
+```bash
+python3 slipperypenguin.py -upgt
+```
+
 
 ### Add for checking output against GTFOBins data
 ```bash
-python3 slippperypenguin.py -o [choice] -gtfo
+python3 slipperypenguin.py -o [choice]-gtfo
 ```
 
 ### To delete logs and then run the program-
 ```bash
-python3 slipperypenguin.py --del-logs run / python3 slipperypenguin.py -dl run
+python3 slipperypenguin.py --del-logs run
 ```
+#### OR
+```bash
+python3 slipperypenguin.py -dl run
+```
+
 NOTE: This will result in leaving logs in the directory still, it will just be limited to that run.
 
 ### To delete logs without running the program after- 
 ```bash
-python3 slipperypenguin.py --del-logs close / python3 slipperypenguin.py -dl close
+python3 slipperypenguin.py --del-logs close
 ```
+#### OR
+```bash
+python3 slipperypenguin.py -dl close
+```
+
+### To bring up the help menu-
+```bash
+python3 slipperypenguin.py --help
+```
+#### OR
+```bash
+python3 slipperypenguin.py -h
+```
+### To change the default timeout value-
+```bash
+python3 slipperypenguin.py --timeout 
+```
+#### OR
+```bash
+python3 slipperypenguin.py -t
+```
+
+### Cleanup Logs-
+```bash
+python3 slipperypenguin.py --cleanup
+```
+#### OR
+```bash
+python3 slipperypenguin.py -c
+```
+### Update the Program and run afterwards
+```bash
+python3 slipperypenguin.py --update run
+```
+#### OR
+```bash
+python3 slipperypenguin.py -u
+```
+
+### Update the Program and Close
+```bash
+python3 slipperypenguin.py --update close
+```
+#### OR
+```bash
+python3 slipperypenguin.py -u close
+```
+### Check for updates
+
+### Update the Program and run afterwards
+```bash
+python3 slipperypenguin.py --check
+```
+#### OR
+```bash
+python3 slipperypenguin.py -c
+```
+
+
+
+
 
 # Contributing
 
