@@ -40,8 +40,8 @@ Usage:
 
 Quick installation-
 ```bash
-curl -L https://eclecticelectronics.fly.dev/api/download/2.1.0 -o slipperypenguin-2.1.0.tar.gz
-sha256sum slipperypenguin-2.1.0.tar.gz
+curl -L https://eclecticelectronics.fly.dev/api/download/2.1.1 -o slipperypenguin-2.1.1.tar.gz
+sha256sum slipperypenguin-2.1.1.tar.gz
 ```
 ##### Or
 
