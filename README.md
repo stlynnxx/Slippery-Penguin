@@ -46,7 +46,7 @@ Note: The curl command will download the official release, not the dev branch.
 Quick installation-
 ```bash
 curl -L https://eclecticelectronics.fly.dev/api/download/2.1.2 -o slipperypenguin-2.1.2.tar.gz
-sha256sum slipperypenguin-2.1.0.tar.gz
+sha256sum slipperypenguin-2.1.2.tar.gz
 ```
 ##### Or
 
