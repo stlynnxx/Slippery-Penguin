@@ -25,8 +25,8 @@ The only change from v2.1.1 was a bug fix.
 -Execution call tracing via strace\
 -Binary string analysis against a severity rated watchlist\
 -Configurable path filtering and timeout handling\
--JSON Logging
-- Automatic updating and update checking
+-JSON Logging\
+-Automatic updating and update checking
 
 *Requirements:*\
 -Linux\
