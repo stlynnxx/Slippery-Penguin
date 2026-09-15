@@ -173,6 +173,11 @@ python3 slipperypenguin.py -c
 ```
 
 
+# Donations
+I am physically disabled and do this and hardware repair to support myself; if you feel generous and 
+can afford to do so, every penny helps out! 
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H5F5269IH4)
 
 
 
@@ -188,9 +193,3 @@ If you find a bug in the current master release, I would check the dev
 version to see if it's been fixed but not yet released on master
 before submitting a PR. I really prefer for contributions to come 
 on the dev branch, but will not automatically reject them on master. 
-
-### Donations
-I am physically disabled and do this and hardware repair to support myself; if you feel generous and 
-can afford to do so, every penny helps out! 
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H5F5269IH4)
