@@ -184,6 +184,11 @@ Check out the dev branch if you want to contribute to the newest
 features (you can read my daily work and goals in the notes file),
 or check out the issues list!
 
+If you find a bug in the current master release, I would check the dev 
+version to see if it's been fixed but not yet released on master
+before submitting a PR. I really prefer for contributions to come 
+on the dev branch, but will not automatically reject them on master. 
+
 ### Donations
 I am physically disabled and do this and hardware repair to support myself; if you feel generous and 
 can afford to do so, every penny helps out! 
