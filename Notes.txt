@@ -297,3 +297,9 @@ working! I also added an argument for updating (-update) that can be used with r
 post update, or to close it.
 
 New release coming today!
+
+9/15/2026-
+
+After playing wack a mole with bugs and releases, we're on 2.1.3 today, with hopefully any big bug being taken care of.
+
+I also made the gtfobins comparison run by default.

@@ -17,7 +17,6 @@ with open('art.txt', 'r') as file:
 parser = argparse.ArgumentParser("SUID enumeration and vulnerability scanning")
 parser.add_argument("--output", "-o", choices=["terminal", "logs", "both"], default="terminal", help="Output mode")
 parser.add_argument("--storage", "-s", type=str, default="./logs", help="Log storage directory")
-parser.add_argument("-gtfo", action="store_true", help="Enables GTFO Comparison")
 parser.add_argument("--update-gtfobins", "-upgt", action="store_true", help="Download/update GTFOBins database")
 parser.add_argument("--del-logs", "-dl", choices=["run", "close"],  default=None, help="Delete Logs")
 parser.add_argument("--timeout", "-t", action="store_true", help="Used for changing timeout var, default is 10")
@@ -37,9 +36,7 @@ timeout_var = 2
 # Setting up dirs
 STORAGE_ROOT = args.storage
 
-GTFODIR = STORAGE_ROOT
-os.makedirs(GTFODIR, exist_ok=True)
-GTFO_FILE = os.path.join(GTFODIR, "gtfobins.json")
+GTFO_FILE = os.path.join("gtfobins.json")
 if args.del_logs == "run":
     if not os.path.exists(STORAGE_ROOT):
         print(f"[-] No logs directory found at {STORAGE_ROOT}")
@@ -381,17 +378,16 @@ async def strace_scan(b):
 async def gtfo_scan(b):
     global gtfo_append
     try:
-        if args.gtfo:
-            binary_name = os.path.basename(b)
-            entry = gtfo_data["executables"].get(binary_name)
-            if entry:
-                functions = entry.get("functions", {})
-                for func_type, methods in functions.items():
-                    for method in methods:
-                        contexts = method.get("contexts", {})
-                        if "suid" in contexts:
-                            console.print(f"[magenta]--Results for: {b}--[/magenta]")
-                            console.print(f"[cyan]  SUID exploit: {func_type}[/cyan]")
+        binary_name = os.path.basename(b)
+        entry = gtfo_data["executables"].get(binary_name)
+        if entry:
+            functions = entry.get("functions", {})
+            for func_type, methods in functions.items():
+                for method in methods:
+                    contexts = method.get("contexts", {})
+                    if "suid" in contexts:
+                        console.print(f"[magenta]--Results for: {b}--[/magenta]")
+                        console.print(f"[cyan]  SUID exploit: {func_type}[/cyan]")
     except Exception as e:
         console.print(f"[red]gtfo comp failure: {e}[/red]")
         traceback.print_exc()
@@ -563,7 +559,6 @@ async def main():
                             flags_write(binary),
                             strace_scan(binary),
                             gtfo_scan(binary),
-
                             return_exceptions=True
 
 
