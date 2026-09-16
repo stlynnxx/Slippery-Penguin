@@ -4,7 +4,7 @@ from datetime import datetime
 from rich.console import Console
 
 # Version
-__version__ = "2.1.2"
+__version__ = "2.1.3"
 console = Console()
 UPDATE_URL = "https://eclecticelectronics.fly.dev/api/check-update/"
 
@@ -17,7 +17,6 @@ with open('art.txt', 'r') as file:
 parser = argparse.ArgumentParser("SUID enumeration and vulnerability scanning")
 parser.add_argument("--output", "-o", choices=["terminal", "logs", "both"], default="terminal", help="Output mode")
 parser.add_argument("--storage", "-s", type=str, default="./logs", help="Log storage directory")
-parser.add_argument("-gtfo", action="store_true", help="Enables GTFO Comparison")
 parser.add_argument("--update-gtfobins", "-upgt", action="store_true", help="Download/update GTFOBins database")
 parser.add_argument("--del-logs", "-dl", choices=["run", "close"],  default=None, help="Delete Logs")
 parser.add_argument("--timeout", "-t", action="store_true", help="Used for changing timeout var, default is 10")
@@ -36,6 +35,7 @@ timeout_var = 2
 
 # Setting up dirs
 STORAGE_ROOT = args.storage
+
 GTFO_FILE = os.path.join("gtfobins.json")
 if args.del_logs == "run":
     if not os.path.exists(STORAGE_ROOT):
@@ -378,17 +378,16 @@ async def strace_scan(b):
 async def gtfo_scan(b):
     global gtfo_append
     try:
-        if args.gtfo:
-            binary_name = os.path.basename(b)
-            entry = gtfo_data["executables"].get(binary_name)
-            if entry:
-                functions = entry.get("functions", {})
-                for func_type, methods in functions.items():
-                    for method in methods:
-                        contexts = method.get("contexts", {})
-                        if "suid" in contexts:
-                            console.print(f"[magenta]--Results for: {b}--[/magenta]")
-                            console.print(f"[cyan]  SUID exploit: {func_type}[/cyan]")
+        binary_name = os.path.basename(b)
+        entry = gtfo_data["executables"].get(binary_name)
+        if entry:
+            functions = entry.get("functions", {})
+            for func_type, methods in functions.items():
+                for method in methods:
+                    contexts = method.get("contexts", {})
+                    if "suid" in contexts:
+                        console.print(f"[magenta]--Results for: {b}--[/magenta]")
+                        console.print(f"[cyan]  SUID exploit: {func_type}[/cyan]")
     except Exception as e:
         console.print(f"[red]gtfo comp failure: {e}[/red]")
         traceback.print_exc()
@@ -442,14 +441,14 @@ async def get_scan():
 
 async def timeouts(b):
     global timeout_append
-
     try:
         if args.output in ("terminal", "both"):
             console.print("[yellow]Timeouts:[/yellow]")
             for t in timeout_append:
                 console.print(f"\n[green] {t}[/green]")
+        if args.output in ("logs", "both"):
             with open(TIMEOUT_OUT, "w") as f:
-                json.dump(timeout_append, f)
+                    json.dump(timeout_append, f)
     except Exception as e:
         console.print(f"[red]timeouts failure: {e}[/red]")
         traceback.print_exc()
@@ -463,7 +462,7 @@ async def timeouts(b):
 def strace_write(b):
     global strace_append
     try:
-        if args.output in ("terminal", "both"):
+        if args.output in ("logs", "both"):
             # strace write to file
             with open(STRACE_OUT, "w") as f:
                 json.dump(strace_append, f)
@@ -516,9 +515,9 @@ async def flags_write(b):
                     }
                     flags_append[b].append(appendItem)
 
-
-        with open("flags.json", 'w') as file:
-            json.dump(flags_append, file)
+        if args.output in ("logs", "both"):
+            with open("flags.json", 'w') as file:
+                json.dump(flags_append, file)
     except Exception as e:
         console.print(f"[red]Flags dump failure: {e}[/red]")
         traceback.print_exc()
@@ -527,7 +526,7 @@ async def flags_write(b):
 def getcap_write(b):
     global cap_append
     try:
-        if args.output in ("terminal", "both"):
+        if args.output in ("logs", "both"):
             with open(CAP_OUT, "w", encoding='utf-8') as f:
                 json.dump(cap_append, f)
     except Exception as e:
@@ -539,7 +538,7 @@ def getcap_write(b):
 def gtfo_write(b):
     global gtfo_append
     try:
-        if args.output in ("terminal", "both"):
+        if args.output in ("logs", "both"):
             with open(GTFO_OUT, "w", encoding='utf-8') as f:
                 json.dump(gtfo_append, f)
     except Exception as e:
@@ -560,7 +559,6 @@ async def main():
                             flags_write(binary),
                             strace_scan(binary),
                             gtfo_scan(binary),
-
                             return_exceptions=True
 
 

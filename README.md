@@ -19,6 +19,8 @@ This is v2.1.2, the official release.
 
 The only change from v2.1.1 was a bug fix.
 
+The master branch is on v2.1.2, the official release.
+
 *Features:*\
 -SUID binary enumeration across the filesystem\
 -Capability checking via getcap\
@@ -39,7 +41,7 @@ The only change from v2.1.1 was a bug fix.
 The JSON files are stored in /SlipperyPenguin/logs, within timestamped directories.
 Each form of output has it's own json file within the timestamped directory. 
 
-
+Note: The curl command will download the official release, not the dev branch.
 Quick installation-
 ```bash
 curl -L https://eclecticelectronics.fly.dev/api/download/2.1.2 -o slipperypenguin-2.1.2.tar.gz
