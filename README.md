@@ -20,7 +20,7 @@ my work in progress as I build. You are welcome
 to use it, however I cannot promise stability. 
 I would update any time I use a dev branch download. 
 
-The master branch is on v2.1.2, the official release.
+The master branch is on v2.1.3, the official release.
 
 *Features:*\
 -SUID binary enumeration across the filesystem\
@@ -45,8 +45,8 @@ Each form of output has it's own json file within the timestamped directory.
 Note: The curl command will download the official release, not the dev branch.
 Quick installation-
 ```bash
-curl -L https://eclecticelectronics.fly.dev/api/download/2.1.2 -o slipperypenguin-2.1.2.tar.gz
-sha256sum slipperypenguin-2.1.2.tar.gz
+curl -L https://eclecticelectronics.fly.dev/api/download/2.1.3 -o slipperypenguin-2.1.3.tar.gz
+sha256sum slipperypenguin-2.1.3.tar.gz
 ```
 ##### Or
 
@@ -94,12 +94,6 @@ python3 slipperypenguin.py --update-gtfobins
 #### OR
 ```bash
 python3 slipperypenguin.py -upgt
-```
-
-
-### Add for checking output against GTFOBins data
-```bash
-python3 slipperypenguin.py -o [choice]-gtfo
 ```
 
 ### To delete logs and then run the program-
