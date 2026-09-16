@@ -15,11 +15,8 @@ binary strings, checking the results against a ranked
 list of possible indicators for exploration.
 
 *Version:*\
-This is v2.1.2, the official release.
+This is v2.1.3, the official release.
 
-The only change from v2.1.1 was a bug fix.
-
-The master branch is on v2.1.2, the official release.
 
 *Features:*\
 -SUID binary enumeration across the filesystem\
@@ -29,6 +26,7 @@ The master branch is on v2.1.2, the official release.
 -Configurable path filtering and timeout handling\
 -JSON Logging\
 -Automatic updating and update checking
+-Automatic GTFOBins data comparison
 
 *Requirements:*\
 -Linux\
@@ -44,8 +42,8 @@ Each form of output has it's own json file within the timestamped directory.
 Note: The curl command will download the official release, not the dev branch.
 Quick installation-
 ```bash
-curl -L https://eclecticelectronics.fly.dev/api/download/2.1.2 -o slipperypenguin-2.1.2.tar.gz
-sha256sum slipperypenguin-2.1.2.tar.gz
+curl -L https://eclecticelectronics.fly.dev/api/download/2.1.3 -o slipperypenguin-2.1.3.tar.gz
+sha256sum slipperypenguin-2.1.3.tar.gz
 ```
 ##### Or
 
@@ -93,12 +91,6 @@ python3 slipperypenguin.py --update-gtfobins
 #### OR
 ```bash
 python3 slipperypenguin.py -upgt
-```
-
-
-### Add for checking output against GTFOBins data
-```bash
-python3 slipperypenguin.py -o [choice]-gtfo
 ```
 
 ### To delete logs and then run the program-
