@@ -20,7 +20,7 @@ my work in progress as I build. You are welcome
 to use it, however I cannot promise stability. 
 I would update any time I use a dev branch download. 
 
-The master branch is on v2.1.3, the official release.
+The master branch is on v2.2.0, the official release.
 
 *Features:*\
 -SUID binary enumeration across the filesystem\
@@ -158,17 +158,15 @@ python3 slipperypenguin.py --update close
 ```bash
 python3 slipperypenguin.py -u close
 ```
-### Check for updates
 
-### Update the Program and run afterwards
+### Update the Program and Run
 ```bash
-python3 slipperypenguin.py --check
+python3 slipperypenguin.py --update run
 ```
 #### OR
 ```bash
-python3 slipperypenguin.py -c
+python3 slipperypenguin.py -u run
 ```
-
 
 
 
