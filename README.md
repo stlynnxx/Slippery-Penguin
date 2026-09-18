@@ -15,7 +15,7 @@ binary strings, checking the results against a ranked
 list of possible indicators for exploration.
 
 *Version:*\
-This is v2.1.3, the official release.
+This is v2.2.0, the official release.
 
 
 *Features:*\
@@ -42,8 +42,8 @@ Each form of output has it's own json file within the timestamped directory.
 Note: The curl command will download the official release, not the dev branch.
 Quick installation-
 ```bash
-curl -L https://eclecticelectronics.fly.dev/api/download/2.1.3 -o slipperypenguin-2.1.3.tar.gz
-sha256sum slipperypenguin-2.1.3.tar.gz
+curl -L https://eclecticelectronics.fly.dev/api/download/2.2.0 -o slipperypenguin-2.2.0.tar.gz
+sha256sum slipperypenguin-2.2.0.tar.gz
 ```
 ##### Or
 
