@@ -4,7 +4,7 @@ from datetime import datetime
 from rich.console import Console
 
 # Version
-__version__ = "2.1.4"
+__version__ = "2.2.0"
 console = Console()
 UPDATE_URL = "https://eclecticelectronics.fly.dev/api/check-update/"
 
