@@ -155,15 +155,13 @@ python3 slipperypenguin.py --update close
 ```bash
 python3 slipperypenguin.py -u close
 ```
-### Check for updates
-
-### Update the Program and run afterwards
+### Update the Program and Run
 ```bash
-python3 slipperypenguin.py --check
+python3 slipperypenguin.py --update run
 ```
 #### OR
 ```bash
-python3 slipperypenguin.py -c
+python3 slipperypenguin.py -u run
 ```
 
 
