@@ -4,7 +4,7 @@ from datetime import datetime
 from rich.console import Console
 
 # Version
-__version__ = "2.1.3"
+__version__ = "2.1.4"
 console = Console()
 UPDATE_URL = "https://eclecticelectronics.fly.dev/api/check-update/"
 
@@ -171,7 +171,7 @@ except (urllib.error.URLError, json.JSONDecodeError) as e:
     sys.exit(1)
 latest = update_info.get("latest", "")
 if latest == __version__:
-    console.print("[green] Up to date. [/green]")
+    pass
 else:
     console.print(f"[magenta] Update available: {latest} (you are running {__version__}) [/magenta]")
     console.print("[green] Enter 1 to update, enter 2 to continue on current version: [/green]")
