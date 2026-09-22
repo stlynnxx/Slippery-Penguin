@@ -310,3 +310,12 @@ I've been back in here today, working on moving some code around so it makes mor
 automatic, with the option to bypass updating if a newer version is found. I was going to wait a bit before
 doing another release but I hate the way I left some of the code that I fixed today, so, that'll probably come soon.
 
+9/22/2026-
+
+Today I started working on adding an option for exporting reports in HTML. I built the skeleton for a simple HTML
+generator and the logic for calling it, and next I need to focus on getting that smoothed over.
+
+If anyone finds themselves both reading and using this before I finish it, it's not really ready to use yet but I have
+a lot to do today.
+
+I'll try to be back later if I can, if not then tomorrow.

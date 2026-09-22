@@ -303,3 +303,10 @@ New release coming today!
 After playing wack a mole with bugs and releases, we're on 2.1.3 today, with hopefully any big bug being taken care of.
 
 I also made the gtfobins comparison run by default.
+
+9/18/2026-
+
+I've been back in here today, working on moving some code around so it makes more sense, and making update checking
+automatic, with the option to bypass updating if a newer version is found. I was going to wait a bit before
+doing another release but I hate the way I left some of the code that I fixed today, so, that'll probably come soon.
+

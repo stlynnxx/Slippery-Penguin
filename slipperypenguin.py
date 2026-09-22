@@ -2,9 +2,11 @@ import signal, subprocess,os, json, argparse, sys, shutil, urllib.request, tempf
 import tarfile, urllib.error
 from datetime import datetime
 from rich.console import Console
+from yattag import Doc
+import htmlgenerator
 
 # Version
-__version__ = "2.2.0"
+__version__ = "2.2.1"
 console = Console()
 UPDATE_URL = "https://eclecticelectronics.fly.dev/api/check-update/"
 
@@ -24,6 +26,7 @@ parser.add_argument("--cleanup", "-c", action="store_true", help="Deletes all da
 parser.add_argument("--update", "-u", choices=["run", "close"], help="Download and install the latest version")
 parser.add_argument("--check", "-chk", action="store_true", help="Check the current version")
 parser.add_argument("--manual", "-man", action="store_true", help="Manual")
+parser.add_argument("--htmlreport", "-hr", action="store_true", help="Save results in HTML file")
 
 args = parser.parse_args()
 # sys.stdin = open('/dev/tty')
@@ -234,7 +237,7 @@ FIND_OUT = os.path.join(RUN_DIR, "find-out.json")
 STRACE_OUT = os.path.join(RUN_DIR, "strace-out.json")
 TIMEOUT_OUT = os.path.join(RUN_DIR, "timeout-out.json")
 GTFO_OUT = os.path.join(RUN_DIR, "gfto-out.json")
-
+HTML_OUT = os.path.join(RUN_DIR, "html-out.html")
 
 
 
@@ -574,48 +577,54 @@ def gtfo_write(b):
     except Exception as e:
         console.print(f"[red]gtfo write error : {e}[/red]")
 
+# html export
+def html_export(b, r):
+    report = htmlgenerator.generate_report(b, r)
+    with open(HTML_OUT, 'w', encoding='utf-8') as f:
+        f.write(report)
 
-# New
+
+    # New
 async def main():
-        with (console.status("[blue]Sliding Around... [/blue]")):
-            #print("1000")
-            try:
-                for binary in agg_result:
-                    if not binary.startswith("/usr/bin"):
-                        continue
-                    try:
-                        results = await asyncio.gather(
-                            strings_scan(binary),
-                            flags_write(binary),
-                            strace_scan(binary),
-                            gtfo_scan(binary),
-                            return_exceptions=True
+    with (console.status("[blue]Sliding Around... [/blue]")):
+        #print("1000")
+        try:
+            for binary in agg_result:
+                if not binary.startswith("/usr/bin"):
+                    continue
+                try:
+                    results = await asyncio.gather(
+                        strings_scan(binary),
+                        flags_write(binary),
+                        strace_scan(binary),
+                        gtfo_scan(binary),
+                        return_exceptions=True
+                    )
+                except (asyncio.CancelledError, Exception) as e:
+                    console.print(f"[red]scan failure: {e}[/red]")
+                    traceback.print_exc()
+                    pass
+                try:
+                    # flags_write(binary)
+                    getcap_write(binary)
+                    gtfo_write(binary)
+                    strace_write(binary)
+                    strings_write(binary)
+                    if args.htmlreport:
+                        html_export(binary, "test"),
+                    await get_scan()
+                except (Exception) as e:
+                    console.print(f"[red]write failure: {e}[/red]")
+                    traceback.print_exc()
+                    pass
+        except Exception as e:
+            console.print(f"[red]main failure: {e}[/red]")
+            traceback.print_exc()
 
-
-                        )
-                    except (asyncio.CancelledError, Exception) as e:
-                        console.print(f"[red]scan failure: {e}[/red]")
-                        traceback.print_exc()
-                        pass
-                    try:
-                        # flags_write(binary)
-                        getcap_write(binary)
-                        gtfo_write(binary)
-                        strace_write(binary)
-                        strings_write(binary)
-                        await get_scan()
-                    except (Exception) as e:
-                        console.print(f"[red]write failure: {e}[/red]")
-                        traceback.print_exc()
-                        pass
-            except Exception as e:
-                console.print(f"[red]main failure: {e}[/red]")
-                traceback.print_exc()
-                pass
-            try:
-                await timeouts(binary)
-            except (Exception) as e:
-                console.print({e})
-        return 0
+        try:
+            await timeouts(binary)
+        except (Exception) as e:
+            console.print({e})
+            return 0
 asyncio.run(main())
 console.print(f"[bold bright_green]Done![/bold bright_green]")

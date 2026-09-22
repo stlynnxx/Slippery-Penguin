@@ -4,7 +4,7 @@ from datetime import datetime
 from rich.console import Console
 
 # Version
-__version__ = "2.1.3"
+__version__ = "2.2.0"
 console = Console()
 UPDATE_URL = "https://eclecticelectronics.fly.dev/api/check-update/"
 
@@ -28,10 +28,6 @@ parser.add_argument("--manual", "-man", action="store_true", help="Manual")
 args = parser.parse_args()
 # sys.stdin = open('/dev/tty')
 timeout_var = 2
-
-
-
-
 
 # Setting up dirs
 STORAGE_ROOT = args.storage
@@ -112,7 +108,42 @@ if args.manual:
           "with -update-gtfobins being optional if your data is up to date.")
     sys.exit(0)
 
+# Update helper functions
+def download_update(url, expected_hash):
+    fd, tmp_path = tempfile.mkstemp(suffix=".tar.gz")
+    os.close(fd)
+    hasher = hashlib.sha256()
+    try:
+        with urllib.request.urlopen(url, timeout=10) as resp, open(tmp_path, "wb") as out:
+            while chunk := resp.read(65536):
+                out.write(chunk)
+                hasher.update(chunk)
+            if hasher.hexdigest() != expected_hash:
+                os.unlink(tmp_path)
+                raise RuntimeError("Checksum mismatch- download aborted")
+    except Exception as e:
+        console.print(f"[red]{e}[/red]")
 
+def extract_update(tmp_path):
+    extract_dir = tempfile.mkdtemp()
+    with tarfile.open(tmp_path, "r:gz") as tar:
+        tar.extractall(extract_dir, filter="data")
+        required = ["slipperypenguin.py", "art.txt", "flags.json"]
+        extracted_names = os.listdir(extract_dir)
+        for name in required:
+            if name not in extracted_names:
+                raise RuntimeError(
+                    "Incomplete package, download aborted"
+                )
+                return extract_dir
+
+def install_update(extract_dir):
+    install_root = os.path.dirname(os.path.abspath(__file__))
+    for fname in os.listdir(extract_dir):
+        src = os.path.join(extract_dir, fname)
+        dst = os.path.join(install_root, fname)
+        os.replace(src, dst)
+        shutil.rmtree(extract_dir)
 
 
 # Updating gtfobins logic
@@ -128,23 +159,56 @@ try:
         sys.exit(0)
 except Exception as e:
     console.print(f"[red]Updating GTFObins failed, {e}[/red]")
+
+
+
 # Checking for available updates
-if args.check:
-    print(f"Current version: {__version__}")
-    # This is where we will contact the server for updates whenever i'm finished setting all of that up.
-    try:
-        with urllib.request.urlopen(UPDATE_URL + __version__, timeout=10) as resp:
-            update_info = json.loads(resp.read().decode())
-    except (urllib.error.URLError, json.JSONDecodeError) as e:
-        print(f"[-] Could not reach update server: {e}")
-        sys.exit(1)
-    latest = update_info.get("latest", "")
-    if latest == __version__:
-        print("[+] Up to date.")
-    else:
-        print(f"[*] Update available: {latest} (you are running {__version__})")
-        print(update_info.get("notes", ""))
-    sys.exit(0)
+try:
+    with urllib.request.urlopen(UPDATE_URL + __version__, timeout=10) as resp:
+        update_info = json.loads(resp.read().decode())
+except (urllib.error.URLError, json.JSONDecodeError) as e:
+    console.print(f"[red] Could not reach update server: {e} [/red]")
+    sys.exit(1)
+latest = update_info.get("latest", "")
+if latest == __version__:
+    pass
+else:
+    console.print(f"[magenta] Update available: {latest} (you are running {__version__}) [/magenta]")
+    console.print("[green] Enter 1 to update, enter 2 to continue on current version: [/green]")
+    usr_in = input()
+    match (usr_in):
+        case 1:
+            try:
+                # Updating gtfobins logic
+                subprocess.run([
+                    "curl",
+                    "https://gtfobins.org/api.json",
+                    "-o",
+                    GTFO_FILE
+                ])
+                print(f"GTFOBins updated at {GTFO_FILE}")
+            except Exception as e:
+                console.print(f"[red]Could not update GTFOBins, {e}[/red]")
+            try:
+                download_update(update_info["url"], latest)
+            except Exception as e:
+                if os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
+                raise e
+
+            try:
+                extract_dir = extract_update(update_info["url"])
+
+            except Exception:
+                console.print(f"[red]{Exception}[/red]")
+                exit(-1)
+            try:
+                install_update(extract_dir)
+            except Exception:
+                console.print(f"[red]{Exception}[/red]")
+                exit(-1)
+            console.print("[green]Update Successful![/green]")
+
 
 if args.timeout:
     timeout_var = int(input(f"[yellow]Enter custom timeout value: [/yellow]"))
@@ -199,50 +263,18 @@ if args.update in ("run", "close"):
     except Exception as e:
         console.print(f"[red]Could not update GTFOBins, {e}[/red]")
     try:
-        def download_update(url,expected_hash):
-            fd, tmp_path = tempfile.mkstemp(suffix=".tar.gz")
-            os.close(fd)
-            hasher = hashlib.sha256()
-            try:
-                with urllib.request.urlopen(url, timeout=10) as resp, open(tmp_path, "wb") as out:
-                    while chunk := resp.read(65536):
-                        out.write(chunk)
-                        hasher.update(chunk)
-                    if hasher.hexdigest() != expected_hash:
-                        os.unlink(tmp_path)
-                        raise RuntimeError("Checksum mismatch- download aborted")
-            except Exception as e:
-                if os.path.exists(tmp_path):
-                    os.unlink(tmp_path)
-                raise e
+        download_update(update_info["url"], latest)
+    except Exception as e:
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+        raise e
+    try:
+        extract_dir = extract_update(update_info["url"])
     except Exception:
         console.print(f"[red]{Exception}[/red]")
         exit(-1)
     try:
-        def extract_update(tmp_path):
-            extract_dir = tempfile.mkdtemp()
-            with tarfile.open(tmp_path, "r:gz") as tar:
-                tar.extractall(extract_dir, filter="data")
-
-            required = ["slipperypenguin.py", "art.txt", "flags.json"]
-            extracted_names = os.listdir(extract_dir)
-            for name in required:
-                if name not in extracted_names:
-                    raise RuntimeError(
-                        "Incomplete package, download aborted"
-                    )
-            return extract_dir
-    except Exception:
-        console.print(f"[red]{Exception}[/red]")
-        exit(-1)
-    try:
-        def install_update(extract_dir):
-            install_root = os.path.dirname(os.path.abspath(__file__))
-            for fname in os.listdir(extract_dir):
-                src = os.path.join(extract_dir, fname)
-                dst = os.path.join(install_root, fname)
-                os.replace(src, dst)
-            shutil.rmtree(extract_dir)
+        install_update(extract_dir)
     except Exception:
         console.print(f"[red]{Exception}[/red]")
         exit(-1)
@@ -284,11 +316,9 @@ try:
 except FileNotFoundError as e:
     console.print("[red]Flags load failure: {e}[/red]")
     traceback.print_exc()
-
 if os.path.exists(CAP_OUT):
     with open(CAP_OUT, "r") as f:
         cap_append = json.loads(f.read())
-
 if os.path.exists(STRACE_OUT):
     with open(STRACE_OUT, "r") as f:
         strace_append = json.loads(f.read())
