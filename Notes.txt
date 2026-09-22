@@ -319,3 +319,5 @@ If anyone finds themselves both reading and using this before I finish it, it's 
 a lot to do today.
 
 I'll try to be back later if I can, if not then tomorrow.
+
+Note for myself: I want to put all of the results into a single html report, not multiple html reports
