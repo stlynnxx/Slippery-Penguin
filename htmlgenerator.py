@@ -29,10 +29,12 @@ def generate_report(b_exp, default_binary=None):
                     }
                     .header {
                         text-align: center;
-                        border: 2px solid #00ff00;
+                        border: 2px solid green;
                         border-radius: 10px;
                         padding: 20px;
                         margin-bottom: 20px;
+                        background: black;
+                        box-shadow:10px 10p 20px darkgrey;
                     }
                     .section {
                         margin: 15px 0;
@@ -70,7 +72,7 @@ def generate_report(b_exp, default_binary=None):
 
             # Dropdown
             with tag('h2'):
-                text('Binaries')
+                text('Binaries:')
             with tag('select', id='binary-select'):
                 for binary_path in sorted(b_exp.keys()):
                     display = binary_path.split('/')[-1]

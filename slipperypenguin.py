@@ -191,41 +191,41 @@ if latest == __version__:
     pass
 else:
     console.print(f"[magenta] Update available: {latest} (you are running {__version__}) [/magenta]")
-    console.print("[green] Enter 1 to update, enter 2 to continue on current version: [/green]")
-    usr_in = input()
-    match (usr_in):
-        case 1:
-            try:
-                # Updating gtfobins logic
-                subprocess.run([
-                    "curl",
-                    "https://gtfobins.org/api.json",
-                    "-o",
-                    GTFO_FILE
-                ])
-                print(f"GTFOBins updated at {GTFO_FILE}")
-            except Exception as e:
-                console.print(f"[red]Could not update GTFOBins, {e}[/red]")
-            try:
-                download_update(update_info["url"], latest)
-            except Exception as e:
-                if os.path.exists(tmp_path):
-                    os.unlink(tmp_path)
+    console.print("[green] Would you like to update, or stay on the current version?: [y/n][/green]")
+    usr_in = lower(input())
+    if (usr_in == "n"):
+        pass
+    else:
+        try:
+            # Updating gtfobins logic
+            subprocess.run([
+                "curl",
+                "https://gtfobins.org/api.json",
+                "-o",
+                GTFO_FILE
+            ])
+            print(f"GTFOBins updated at {GTFO_FILE}")
+        except Exception as e:
+            console.print(f"[red]Could not update GTFOBins, {e}[/red]")
+        try:
+            download_update(update_info["url"], latest)
+        except Exception as e:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
                 raise e
 
-            try:
-                extract_dir = extract_update(update_info["url"])
+        try:
+            extract_dir = extract_update(update_info["url"])
 
-            except Exception:
-                console.print(f"[red]{Exception}[/red]")
-                exit(-1)
-            try:
-                install_update(extract_dir)
-            except Exception:
-                console.print(f"[red]{Exception}[/red]")
-                exit(-1)
-            console.print("[green]Update Successful![/green]")
-
+        except Exception:
+            console.print(f"[red]{Exception}[/red]")
+            exit(-1)
+        try:
+            install_update(extract_dir)
+        except Exception:
+            console.print(f"[red]{Exception}[/red]")
+            exit(-1)
+        console.print("[green]Update Successful![/green]")
 
 if args.timeout:
     timeout_var = int(input(f"[yellow]Enter custom timeout value: [/yellow]"))
