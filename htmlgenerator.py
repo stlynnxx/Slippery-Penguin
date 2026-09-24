@@ -8,13 +8,9 @@ def generate_report(b_exp, default_binary=None):
     from yattag import Doc
 
     doc, tag, text = Doc().tagtext()
-
-    # Pick first binary if none specified
     if default_binary is None and b_exp:
         default_binary = next(iter(b_exp.keys()))
-
     with tag('html', lang='en'):
-        # === HEAD ===
         with tag('head'):
             with tag('meta', charset='utf-8'):
                 pass
@@ -64,7 +60,6 @@ def generate_report(b_exp, default_binary=None):
                     }
                 ''')
 
-        # === BODY ===
         with tag('body'):
             # Header
             with tag('div', klass='header'):
@@ -83,15 +78,13 @@ def generate_report(b_exp, default_binary=None):
                     with tag('option', value=binary_path, klass=selected):
                         text(f"{display}")
 
-            # Results container (populated by JS)
+
             with tag('div', id='results'):
                 pass
-
-            # Embed JSON data
             with tag('script', id='all-data', type='application/json'):
                 doc.asis(json.dumps(b_exp))
 
-            # JavaScript for interactivity
+            # JavaScript
             js_code = '''
             <script>
             (function() {
