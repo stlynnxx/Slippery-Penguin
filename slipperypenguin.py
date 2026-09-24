@@ -3,10 +3,10 @@ import tarfile, urllib.error
 from datetime import datetime
 from rich.console import Console
 from yattag import Doc
-import htmlgenerator
+from htmlgenerator import generate_report
 
 # Version
-__version__ = "2.2.1"
+__version__ = "2.3.0"
 console = Console()
 UPDATE_URL = "https://eclecticelectronics.fly.dev/api/check-update/"
 
@@ -27,6 +27,20 @@ parser.add_argument("--update", "-u", choices=["run", "close"], help="Download a
 parser.add_argument("--check", "-chk", action="store_true", help="Check the current version")
 parser.add_argument("--manual", "-man", action="store_true", help="Manual")
 parser.add_argument("--htmlreport", "-hr", action="store_true", help="Save results in HTML file")
+
+
+
+# Globals for passing data between functions
+strings_append = {}
+cap_append = {}
+strace_append = {}
+timeout_append = {}
+gtfo_append = {}
+find_append = {"results": []}
+getcap_append = {}
+flags_append = {}
+flags = {}
+b_exp = {}
 
 args = parser.parse_args()
 # sys.stdin = open('/dev/tty')
@@ -287,10 +301,12 @@ if args.update in ("run", "close"):
     if args.update in ("close"):
         exit(0)
 
+
+
 # Enumerates SUIDs and checking capabilites
 result = subprocess.run( ["find", "/", "-perm", "-4000", "-type", "f"], capture_output=True, text=True)
 agg_result = result.stdout.splitlines()
-find_append = agg_result
+find_append["results"] = agg_result
 if args.output in ("terminal", "both"):
     console.print(f"[yellow]SUIDs Found:[/yellow]")
     for suid in agg_result:
@@ -298,18 +314,7 @@ if args.output in ("terminal", "both"):
     console.print(f"[yellow]END SUIDs[/yellow]\n")
 if args.output in ("logs", "both"):
     with open(FIND_OUT, "w") as f:
-        json.dump(find_append, f)
-
-# Globals for passing data between functions
-strings_append = {}
-cap_append = {}
-strace_append = {}
-timeout_append = {}
-gtfo_append = {}
-find_append = {}
-getcap_append = {}
-flags_append = {}
-flags = {}
+        json.dump(find_append["results"], f)
 
 
 # loading the flags from json
@@ -577,17 +582,10 @@ def gtfo_write(b):
     except Exception as e:
         console.print(f"[red]gtfo write error : {e}[/red]")
 
-# html export
-def html_export(b, r):
-    report = htmlgenerator.generate_report(b, r)
-    with open(HTML_OUT, 'w', encoding='utf-8') as f:
-        f.write(report)
-
-
-    # New
 async def main():
+    global b_exp
+    global agg_result
     with (console.status("[blue]Sliding Around... [/blue]")):
-        #print("1000")
         try:
             for binary in agg_result:
                 if not binary.startswith("/usr/bin"):
@@ -598,20 +596,25 @@ async def main():
                         flags_write(binary),
                         strace_scan(binary),
                         gtfo_scan(binary),
+                        timeouts(binary),
                         return_exceptions=True
                     )
+
+                    b_exp.setdefault(binary, {})
+                    b_exp[binary]["strings"] = strings_append.get(binary, [])
+                    b_exp[binary]["flags"] = flags_append.get(binary, [])
+                    b_exp[binary]["strace"] = strace_append.get(binary, [])
+                    b_exp[binary]["gtfo"] = gtfo_append.get(binary, [])
+                    b_exp[binary]["timeouts"] = timeout_append.get(binary, [])
                 except (asyncio.CancelledError, Exception) as e:
                     console.print(f"[red]scan failure: {e}[/red]")
                     traceback.print_exc()
                     pass
                 try:
-                    # flags_write(binary)
                     getcap_write(binary)
                     gtfo_write(binary)
                     strace_write(binary)
                     strings_write(binary)
-                    if args.htmlreport:
-                        html_export(binary, "test"),
                     await get_scan()
                 except (Exception) as e:
                     console.print(f"[red]write failure: {e}[/red]")
@@ -620,6 +623,11 @@ async def main():
         except Exception as e:
             console.print(f"[red]main failure: {e}[/red]")
             traceback.print_exc()
+
+        if args.htmlreport and b_exp:
+            html = generate_report(b_exp, default_binary=next(iter(b_exp.keys()), None))
+            with open(HTML_OUT, 'w', encoding='utf-8') as f:
+                f.write(html)
 
         try:
             await timeouts(binary)

@@ -321,3 +321,19 @@ a lot to do today.
 I'll try to be back later if I can, if not then tomorrow.
 
 Note for myself: I want to put all of the results into a single html report, not multiple html reports
+
+9/23/2026-
+
+I spent more time in the html report today, getting both the python side of the generator and the html side together a
+bit better. I'm not sure it's finished yet, but it's at least usable, so that's a win itself!
+
+9/24/2026-
+
+It was a long, drawn out battle but with a sprinkling of javascript I was able to get the html report functioning as
+intended and now, in my opinion, is better than than json reports.
+
+I'm going to be making the next version v2.3.0, so, I'm going to take a bit more time to ensure there isn't anything else
+I want to do first before release and make it a larger one.
+
+But for now I'll push everything to dev.
+
