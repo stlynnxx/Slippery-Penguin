@@ -192,7 +192,8 @@ if latest == __version__:
 else:
     console.print(f"[magenta] Update available: {latest} (you are running {__version__}) [/magenta]")
     console.print("[green] Would you like to update, or stay on the current version?: [y/n][/green]")
-    usr_in = lower(input())
+    usr_in = input()
+    usr_in = usr_in.lower()
     if (usr_in == "n"):
         pass
     else:
