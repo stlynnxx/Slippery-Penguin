@@ -7,9 +7,18 @@ def generate_report(b_exp, default_binary=None):
     import json
     from yattag import Doc
 
+
+    try:
+        with open('art.txt', 'r') as f:
+            ascii_art = f.read()
+    except FileNotFoundError:
+        ascii_art = ""
+
     doc, tag, text = Doc().tagtext()
+
     if default_binary is None and b_exp:
         default_binary = next(iter(b_exp.keys()))
+
     with tag('html', lang='en'):
         with tag('head'):
             with tag('meta', charset='utf-8'):
@@ -20,30 +29,50 @@ def generate_report(b_exp, default_binary=None):
                 text('Slippery Penguin Report')
 
             with tag('style'):
-                doc.asis('''
-                    body { 
+                encoded = ascii_art.replace('\n', '\\A').replace('"', '\\"')
+                doc.asis(f'''
+                      body::before {{
+                        content: "{encoded}";
+                        position: fixed;
+                        top: 88%;  
+                        left: 90%;
+                        transform: translate(-50%, -50%);
+                        font-family: monospace;
+                        font-size: 10px;
+                        line-height: 8px;
+                        color: gba(0, 100, 0, 0.1);  
+                        white-space: pre;
+                        z-index: 0;  
+                        pointer-events: none;
+                        max-width: 80vw;
+                        overflow: hidden;
+                    }}
+
+                    body {{ 
                         margin: 0;
                         padding: 20px;
                         background: #1a1a1a;
                         color: #00ff00;
-                    }
-                    .header {
+                        position: relative;  
+                    }}
+                    .header {{
                         text-align: center;
                         border: 2px solid green;
                         border-radius: 10px;
                         padding: 20px;
                         margin-bottom: 20px;
                         background: black;
-                        box-shadow:10px 10p 20px darkgrey;
-                    }
-                    .section {
+                        
+                    }}
+                    .section {{
                         margin: 15px 0;
                         padding: 15px;
                         background: #000;
                         border-left: 4px solid darkgreen;
                         border-bottom: 4px solid darkgreen;
-                    }
-                    pre {
+                        
+                    }}
+                    pre {{
                         background: #1a1a1a;
                         color: #00ff00;
                         padding: 10px;
@@ -51,15 +80,15 @@ def generate_report(b_exp, default_binary=None):
                         max-height: 200px;
                         overflow-y: scroll;
                         overflow-x: auto;
-                    }
-                    select { 
+                    }}
+                    select {{ 
                         padding: 8px;
                         font-size: 14px;
                         margin-bottom: 20px;
-                    }
-                    h1, h2, h3 { 
+                    }}
+                    h1, h2, h3 {{ 
                         color: #00ff00;
-                    }
+                    }}
                 ''')
 
         with tag('body'):

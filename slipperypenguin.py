@@ -189,6 +189,10 @@ except (urllib.error.URLError, json.JSONDecodeError) as e:
 latest = update_info.get("latest", "")
 if latest == __version__:
     pass
+
+# This is for those of us on the dev branch, so we don't have to turn down the update everytime we run the program
+if latest < __version__:
+    pass
 else:
     console.print(f"[magenta] Update available: {latest} (you are running {__version__}) [/magenta]")
     console.print("[green] Would you like to update, or stay on the current version? (y to update): [/green]")

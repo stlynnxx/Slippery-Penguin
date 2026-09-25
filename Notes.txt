@@ -338,3 +338,10 @@ I want to do first before release and make it a larger one.
 But for now I'll push everything to dev.
 
 I also rewrote the update check in slipperypenguin.py
+
+9/25/2026-
+
+I'm a little sleepy this morning, so i'm just getting some light work done; I added the penguin art to the HTML form!
+It took a little bit of trial and error to get it looking nice, but I think I like it as it is now. :)
+
+I also added a quick line for the dev branch version to skip the update prompt.
