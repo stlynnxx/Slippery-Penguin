@@ -4,6 +4,7 @@ from datetime import datetime
 from rich.console import Console
 from yattag import Doc
 from htmlgenerator import generate_report
+from weasyprint import HTML
 
 # Version
 __version__ = "2.3.0"
@@ -17,7 +18,7 @@ with open('art.txt', 'r') as file:
 
 # Setting up argparse
 parser = argparse.ArgumentParser("SUID enumeration and vulnerability scanning")
-parser.add_argument("--output", "-o", choices=["terminal", "logs", "both"], default="terminal", help="Output mode")
+parser.add_argument("--output", "-o", choices=["terminal", "logs","both"], default="terminal", help="Output mode")
 parser.add_argument("--storage", "-s", type=str, default="./logs", help="Log storage directory")
 parser.add_argument("--update-gtfobins", "-upgt", action="store_true", help="Download/update GTFOBins database")
 parser.add_argument("--del-logs", "-dl", choices=["run", "close"],  default=None, help="Delete Logs")
@@ -27,6 +28,7 @@ parser.add_argument("--update", "-u", choices=["run", "close"], help="Download a
 parser.add_argument("--check", "-chk", action="store_true", help="Check the current version")
 parser.add_argument("--manual", "-man", action="store_true", help="Manual")
 parser.add_argument("--htmlreport", "-hr", action="store_true", help="Save results in HTML file")
+parser.add_argument("--pdfreport", "-pdf", action="store_true", help="Save results in PDF file")
 
 
 
@@ -632,6 +634,8 @@ async def main():
 
         if args.htmlreport and b_exp:
             html = generate_report(b_exp, default_binary=next(iter(b_exp.keys()), None))
+            if args.pdfreport:
+                HTML(string=html).write_pdf(f"{RUN_DIR}/report_{RUN_ID}.pdf")
             with open(HTML_OUT, 'w', encoding='utf-8') as f:
                 f.write(html)
 

@@ -345,3 +345,12 @@ I'm a little sleepy this morning, so i'm just getting some light work done; I ad
 It took a little bit of trial and error to get it looking nice, but I think I like it as it is now. :)
 
 I also added a quick line for the dev branch version to skip the update prompt.
+
+9/28/2026-
+
+It's Monday morning and i've been gone from in here for the last few days burying myself in other projects so i'm getting
+back to things slowly. Following the addition of the html report i'm now also adding a pdf report using the html with
+weasyprint. I have the logic running and a report is made and now I need to format the report itself a bit as the JS
+dropdown won't work in the pdf.
+
+Progress is progress!
