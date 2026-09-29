@@ -3,7 +3,7 @@ import tarfile, urllib.error
 from datetime import datetime
 from rich.console import Console
 from yattag import Doc
-from htmlgenerator import generate_report
+from htmlgenerator import generate_report, generate_PDF
 from weasyprint import HTML
 
 # Version
@@ -43,6 +43,7 @@ getcap_append = {}
 flags_append = {}
 flags = {}
 b_exp = {}
+agg_result = []
 
 args = parser.parse_args()
 # sys.stdin = open('/dev/tty')
@@ -634,10 +635,12 @@ async def main():
 
         if args.htmlreport and b_exp:
             html = generate_report(b_exp, default_binary=next(iter(b_exp.keys()), None))
-            if args.pdfreport:
-                HTML(string=html).write_pdf(f"{RUN_DIR}/report_{RUN_ID}.pdf")
             with open(HTML_OUT, 'w', encoding='utf-8') as f:
                 f.write(html)
+        if args.pdfreport:
+            pdf = generate_PDF(b_exp)
+            HTML(string=pdf).write_pdf(f"{RUN_DIR}/report_{RUN_ID}.pdf")
+
 
         try:
             await timeouts(binary)

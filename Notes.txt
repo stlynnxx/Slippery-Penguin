@@ -354,3 +354,9 @@ weasyprint. I have the logic running and a report is made and now I need to form
 dropdown won't work in the pdf.
 
 Progress is progress!
+
+9/29/2026-
+
+I've been spending some time ironing out the last few bugs in the pdf report so I can move on, I've gotten it mostly
+functioning and now needs some visual improvements and we'll be able to move on from it!
+
