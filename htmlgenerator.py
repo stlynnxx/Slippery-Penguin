@@ -125,6 +125,9 @@ def generate_PDF(b_exp):
                     text('Results Reporting')
 
             # Binary Results
+            if not b_exp:
+                with tag('p'):
+                    text('No results available')
             for binary_path in sorted(b_exp.keys()):
                 with tag('div', klass='section'):
                     with tag('h3', klass='binary-title'):
@@ -146,7 +149,9 @@ def generate_PDF(b_exp):
                             text('Flags:')
                         with tag('pre'):
                             flags = binary_data.get("flags", [])
-                            if isinstance(flags, list):
+                            if not flags:
+                                text("No results available")
+                            elif isinstance(flags, list):
                                 for flag in flags[:20]:
                                     if isinstance(flag, dict):
                                         display = flag.get('string', 'N/A') + flag.get('severity', 'N/A')
@@ -160,7 +165,9 @@ def generate_PDF(b_exp):
                             text('Strace:')
                         with tag('pre'):
                             strace = binary_data.get("strace", [])
-                            if isinstance(strace, list):
+                            if not strace:
+                                text("No results available")
+                            elif isinstance(strace, list):
                                 text('\n'.join(str(s) for s in strace[:50]))
                             else:
                                 text(strace if strace else "No data")
@@ -170,7 +177,9 @@ def generate_PDF(b_exp):
                             text('GTFOBins Matches:')
                         with tag('pre'):
                             gtfo = binary_data.get("gtfo", [])
-                            if isinstance(gtfo, list):
+                            if not gtfo:
+                                text("No results available")
+                            elif isinstance(gtfo, list):
                                 text('\n'.join(str(s) for s in gtfo[:50]))
                             else:
                                 text(gtfo if gtfo else "No data")
@@ -180,7 +189,9 @@ def generate_PDF(b_exp):
                             text('Timeouts:')
                         with tag('pre'):
                             timeouts = binary_data.get("timeouts", [])
-                            if isinstance(timeouts, list):
+                            if not timeouts:
+                                text("No results available")
+                            elif isinstance(timeouts, list):
                                 text('\n'.join(str(t) for t in timeouts[:50]))
                             else:
                                 text(timeouts if timeouts else "No data")
