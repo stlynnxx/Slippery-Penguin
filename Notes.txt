@@ -360,3 +360,9 @@ Progress is progress!
 I've been spending some time ironing out the last few bugs in the pdf report so I can move on, I've gotten it mostly
 functioning and now needs some visual improvements and we'll be able to move on from it!
 
+10/2/2026-
+
+Today I've been working on the PDF report a bit more, and I think that i've gotten it more or less well enough for now.
+
+I have a small roadmap for going forward, this was the first of several more steps I'm going to be taking with the
+project. I'll probably do another small release soon to add the html and pdf reports!

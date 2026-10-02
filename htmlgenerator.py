@@ -4,15 +4,12 @@ import json
 
 
 def generate_PDF(b_exp):
-    print("Generating PDF")
     try:
         with open('art.txt', 'r') as f:
             ascii_art = f.read()
     except FileNotFoundError:
         ascii_art = ""
-
     doc, tag, text = Doc().tagtext()
-
     with tag('html', lang='en'):
         with tag('head'):
             with tag('meta', charset='utf-8'):
@@ -24,31 +21,33 @@ def generate_PDF(b_exp):
             with tag('style'):
                 doc.asis('''
                     @page {
-                        margin: 2cm;
+                        margin: 2cm 2cm 8cm 2cm;;
                         size: A4;
                     }
                 ''')
 
-            # MAIN STYLES
+
             with tag('style'):
-                encoded = ascii_art.replace('\n', '\\A').replace('"', '\\"')
                 doc.asis(f'''
                     body::before {{
-                        content: "{encoded}";
                         position: fixed;
+                        bottom: 10px;
                         top: 88%;
-                        left: 90%;
-                        transform: translate(-50%, -50%);
+                        left: 50%;
+                        transform: translate(-50%, 0);
                         font-family: monospace;
                         font-size: 10px;
                         line-height: 8px;
-                        color: rgba(0, 100, 0, 0.1);
+                        color: rgba(0, 100, 0, 0.05);  
                         white-space: pre;
                         z-index: 0;
+                        pointer-events: none;
+                        width: 100%;      
+                        text-align: center; 
                     }}
 
                     body {{
-                        margin: 0;
+                        margin: 20;
                         padding: 20px;
                         background: #1a1a1a;
                         color: #00ff00;
@@ -65,18 +64,22 @@ def generate_PDF(b_exp):
                     }}
 
                     .section {{
-                        margin: 15px 0;
+                        margin-top: 30px 0;
+                        margin-bottom: 30px 0;
                         padding: 15px;
                         background: #000;
                         border-left: 4px solid darkgreen;
+                        border-right: 4px solid darkgreen;
                         border-bottom: 4px solid darkgreen;
-                        page-break-after: always;  /* CRITICAL: New page per binary */
+                        border-top: 4px solid darkgreen;
+                        border-radius: 10px;
+                        page-break-after: always;  
                         page-break-inside: avoid;
                     }}
 
                     .binary-title {{
                         color: #00ff00;
-                        border-bottom: 1px dashed #00ff00;
+                        border-bottom: 1px solid #00ff00;
                         padding-bottom: 8px;
                         margin-top: 20px;
                     }}
@@ -85,6 +88,8 @@ def generate_PDF(b_exp):
                         margin: 10px 0;
                         padding: 10px;
                         background: #111;
+                        border-left: 1px dashed darkgreen;
+                        border-bottom: 1px dashed darkgreen;
                         border-radius: 4px;
                         page-break-inside: avoid;
                     }}
@@ -100,8 +105,8 @@ def generate_PDF(b_exp):
                         color: #00ff00;
                         padding: 10px;
                         border-radius: 5px;
-                        max-height: 150px;  /* Smaller height for PDF */
-                        overflow: hidden;   /* Clip, not scroll */
+                        max-height: 150px;  
+                        overflow: hidden;   
                         margin: 0;
                         font-size: 10px;
                     }}
@@ -126,6 +131,16 @@ def generate_PDF(b_exp):
                         text(binary_path)
                     binary_data = b_exp[binary_path]
 
+                    #with tag('pre'):
+                    #    strings = binary_data.get("strings", [])
+                    #    if strings:
+                    #        for s in strings:
+                    #            text(s)
+                    #            doc.stag('br')
+                    #    else:
+                    #        text("No data")
+
+
                     with tag('div', klass='result-block'):
                         with tag('div', klass='result-label'):
                             text('Flags:')
@@ -134,11 +149,11 @@ def generate_PDF(b_exp):
                             if isinstance(flags, list):
                                 for flag in flags[:20]:
                                     if isinstance(flag, dict):
-                                        text(f"{flag.get('string', 'N/A')} ({flag.get('severity', 'N/A')})\n")
-                                    else:
-                                        text(f"{flag}\n")
-                            else:
-                                text(flags if flags else "No data")
+                                        display = flag.get('string', 'N/A') + flag.get('severity', 'N/A')
+                                        if display:
+                                            text(f"{flag.get('string', 'N/A')} ({flag.get('severity', 'N/A')})\n")
+                                        else:
+                                            text(flags if flags else "No data")
 
                     with tag('div', klass='result-block'):
                         with tag('div', klass='result-label'):
