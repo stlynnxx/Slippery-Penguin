@@ -20,19 +20,19 @@ def generate_PDF(b_exp):
 
             with tag('style'):
                 doc.asis('''
-                    @page {
-                        margin: 2cm 2cm 8cm 2cm;;
-                        size: A4;
-                    }
-                ''')
-
+                @page {
+                    margin: 0.5cm;              
+                    size: Letter;                 
+                    @top-right {
+                        content: "Page " counter(page) " of " counter(pages);}}
+''')
 
             with tag('style'):
                 doc.asis(f'''
                     body::before {{
                         position: fixed;
-                        bottom: 10px;
-                        top: 88%;
+                        bottom: 5px;
+                        top: 50%;
                         left: 50%;
                         transform: translate(-50%, 0);
                         font-family: monospace;
@@ -47,7 +47,7 @@ def generate_PDF(b_exp):
                     }}
 
                     body {{
-                        margin: 20;
+                        margin: 10;
                         padding: 20px;
                         background: #1a1a1a;
                         color: #00ff00;
@@ -62,16 +62,15 @@ def generate_PDF(b_exp):
                         background: black;
                         page-break-after: avoid;
                     }}
-
                     .section {{
-                        margin-top: 30px 0;
-                        margin-bottom: 30px 0;
-                        padding: 15px;
+                        margin: 0;         
+                        padding: 8px;    
                         background: #000;
                         border-left: 4px solid darkgreen;
-                        border-right: 4px solid darkgreen;
                         border-bottom: 4px solid darkgreen;
+                        border-right: 4px solid darkgreen;
                         border-top: 4px solid darkgreen;
+                        border-left: 4px solid darkgreen;
                         border-radius: 10px;
                         page-break-after: always;  
                         page-break-inside: avoid;
@@ -85,7 +84,7 @@ def generate_PDF(b_exp):
                     }}
 
                     .result-block {{
-                        margin: 10px 0;
+                        margin: 5px 0;
                         padding: 10px;
                         background: #111;
                         border-left: 1px dashed darkgreen;
@@ -105,7 +104,7 @@ def generate_PDF(b_exp):
                         color: #00ff00;
                         padding: 10px;
                         border-radius: 5px;
-                        max-height: 150px;  
+                          
                         overflow: hidden;   
                         margin: 0;
                         font-size: 10px;

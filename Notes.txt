@@ -366,3 +366,11 @@ Today I've been working on the PDF report a bit more, and I think that i've gott
 
 I have a small roadmap for going forward, this was the first of several more steps I'm going to be taking with the
 project. I'll probably do another small release soon to add the html and pdf reports!
+
+10/5/2026-
+
+I'm back after taking a few days off; I've mergred a contribution to the pdf report and also
+done some more formatting in there myself and I think I'm ready to do that release I mentioned in my last entry.
+
+v2.3.0!
+
