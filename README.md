@@ -15,8 +15,11 @@ binary strings, checking the results against a ranked
 list of possible indicators for exploration.
 
 *Version:*\
-This is v2.2.0, the official release.
+This the the dev branch,  an ongoing work in progress. 
+This is where I push my work to as I build the new version, and where pull requests are
+initially merged to. 
 
+You may use it if you'd like, but you may encounter bugs. 
 
 *Features:*\
 -SUID binary enumeration across the filesystem\
@@ -27,6 +30,8 @@ This is v2.2.0, the official release.
 -JSON Logging\
 -Automatic updating and update checking
 -Automatic GTFOBins data comparison
+- Optional HTML Report Generation
+- Optional PDF Report Generation
 
 *Requirements:*\
 -Linux\
@@ -34,12 +39,14 @@ This is v2.2.0, the official release.
 -strace\
 -getcap\
 -curl\
--git
+-weasyprint
 
 The JSON files are stored in /SlipperyPenguin/logs, within timestamped directories.
 Each form of output has it's own json file within the timestamped directory. 
 
 Note: The curl command will download the official release, not the dev branch.
+
+Make sure to run setup.sh on the first install lest ye may face dependency issues. 
 Quick installation-
 ```bash
 curl -L https://eclecticelectronics.fly.dev/api/download/2.2.0 -o slipperypenguin-2.2.0.tar.gz
