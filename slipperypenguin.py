@@ -2,9 +2,12 @@ import signal, subprocess,os, json, argparse, sys, shutil, urllib.request, tempf
 import tarfile, urllib.error
 from datetime import datetime
 from rich.console import Console
+from yattag import Doc
+from htmlgenerator import generate_report, generate_PDF
+from weasyprint import HTML
 
 # Version
-__version__ = "2.2.0"
+__version__ = "2.3.0"
 console = Console()
 UPDATE_URL = "https://eclecticelectronics.fly.dev/api/check-update/"
 
@@ -15,7 +18,7 @@ with open('art.txt', 'r') as file:
 
 # Setting up argparse
 parser = argparse.ArgumentParser("SUID enumeration and vulnerability scanning")
-parser.add_argument("--output", "-o", choices=["terminal", "logs", "both"], default="terminal", help="Output mode")
+parser.add_argument("--output", "-o", choices=["terminal", "logs","both"], default="terminal", help="Output mode")
 parser.add_argument("--storage", "-s", type=str, default="./logs", help="Log storage directory")
 parser.add_argument("--update-gtfobins", "-upgt", action="store_true", help="Download/update GTFOBins database")
 parser.add_argument("--del-logs", "-dl", choices=["run", "close"],  default=None, help="Delete Logs")
@@ -24,6 +27,23 @@ parser.add_argument("--cleanup", "-c", action="store_true", help="Deletes all da
 parser.add_argument("--update", "-u", choices=["run", "close"], help="Download and install the latest version")
 parser.add_argument("--check", "-chk", action="store_true", help="Check the current version")
 parser.add_argument("--manual", "-man", action="store_true", help="Manual")
+parser.add_argument("--htmlreport", "-hr", action="store_true", help="Save results in HTML file")
+parser.add_argument("--pdfreport", "-pdf", action="store_true", help="Save results in PDF file")
+
+
+
+# Globals for passing data between functions
+strings_append = {}
+cap_append = {}
+strace_append = {}
+timeout_append = {}
+gtfo_append = {}
+find_append = {"results": []}
+getcap_append = {}
+flags_append = {}
+flags = {}
+b_exp = {}
+agg_result = []
 
 args = parser.parse_args()
 # sys.stdin = open('/dev/tty')
@@ -172,43 +192,49 @@ except (urllib.error.URLError, json.JSONDecodeError) as e:
 latest = update_info.get("latest", "")
 if latest == __version__:
     pass
+
+# This is for those of us on the dev branch, so we don't have to turn down the update everytime we run the program
+if latest < __version__:
+    pass
 else:
     console.print(f"[magenta] Update available: {latest} (you are running {__version__}) [/magenta]")
-    console.print("[green] Enter 1 to update, enter 2 to continue on current version: [/green]")
+    console.print("[green] Would you like to update, or stay on the current version? (y to update): [/green]")
+    console.print("[magenta](y/n)[/magenta]")
     usr_in = input()
-    match (usr_in):
-        case 1:
-            try:
-                # Updating gtfobins logic
-                subprocess.run([
-                    "curl",
-                    "https://gtfobins.org/api.json",
-                    "-o",
-                    GTFO_FILE
-                ])
-                print(f"GTFOBins updated at {GTFO_FILE}")
-            except Exception as e:
-                console.print(f"[red]Could not update GTFOBins, {e}[/red]")
-            try:
-                download_update(update_info["url"], latest)
-            except Exception as e:
-                if os.path.exists(tmp_path):
-                    os.unlink(tmp_path)
+    usr_in = usr_in.lower()
+    if (usr_in == "n"):
+        pass
+    else:
+        try:
+            # Updating gtfobins logic
+            subprocess.run([
+                "curl",
+                "https://gtfobins.org/api.json",
+                "-o",
+                GTFO_FILE
+            ])
+            print(f"GTFOBins updated at {GTFO_FILE}")
+        except Exception as e:
+            console.print(f"[red]Could not update GTFOBins, {e}[/red]")
+        try:
+            download_update(update_info["url"], latest)
+        except Exception as e:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
                 raise e
 
-            try:
-                extract_dir = extract_update(update_info["url"])
+        try:
+            extract_dir = extract_update(update_info["url"])
 
-            except Exception:
-                console.print(f"[red]{Exception}[/red]")
-                exit(-1)
-            try:
-                install_update(extract_dir)
-            except Exception:
-                console.print(f"[red]{Exception}[/red]")
-                exit(-1)
-            console.print("[green]Update Successful![/green]")
-
+        except Exception:
+            console.print(f"[red]{Exception}[/red]")
+            exit(-1)
+        try:
+            install_update(extract_dir)
+        except Exception:
+            console.print(f"[red]{Exception}[/red]")
+            exit(-1)
+        console.print("[green]Update Successful![/green]")
 
 if args.timeout:
     timeout_var = int(input(f"[yellow]Enter custom timeout value: [/yellow]"))
@@ -234,7 +260,7 @@ FIND_OUT = os.path.join(RUN_DIR, "find-out.json")
 STRACE_OUT = os.path.join(RUN_DIR, "strace-out.json")
 TIMEOUT_OUT = os.path.join(RUN_DIR, "timeout-out.json")
 GTFO_OUT = os.path.join(RUN_DIR, "gfto-out.json")
-
+HTML_OUT = os.path.join(RUN_DIR, "html-out.html")
 
 
 
@@ -284,10 +310,12 @@ if args.update in ("run", "close"):
     if args.update in ("close"):
         exit(0)
 
+
+
 # Enumerates SUIDs and checking capabilites
 result = subprocess.run( ["find", "/", "-perm", "-4000", "-type", "f"], capture_output=True, text=True)
 agg_result = result.stdout.splitlines()
-find_append = agg_result
+find_append["results"] = agg_result
 if args.output in ("terminal", "both"):
     console.print(f"[yellow]SUIDs Found:[/yellow]")
     for suid in agg_result:
@@ -295,18 +323,7 @@ if args.output in ("terminal", "both"):
     console.print(f"[yellow]END SUIDs[/yellow]\n")
 if args.output in ("logs", "both"):
     with open(FIND_OUT, "w") as f:
-        json.dump(find_append, f)
-
-# Globals for passing data between functions
-strings_append = {}
-cap_append = {}
-strace_append = {}
-timeout_append = {}
-gtfo_append = {}
-find_append = {}
-getcap_append = {}
-flags_append = {}
-flags = {}
+        json.dump(find_append["results"], f)
 
 
 # loading the flags from json
@@ -574,48 +591,61 @@ def gtfo_write(b):
     except Exception as e:
         console.print(f"[red]gtfo write error : {e}[/red]")
 
-
-# New
 async def main():
-        with (console.status("[blue]Sliding Around... [/blue]")):
-            #print("1000")
-            try:
-                for binary in agg_result:
-                    if not binary.startswith("/usr/bin"):
-                        continue
-                    try:
-                        results = await asyncio.gather(
-                            strings_scan(binary),
-                            flags_write(binary),
-                            strace_scan(binary),
-                            gtfo_scan(binary),
-                            return_exceptions=True
+    global b_exp
+    global agg_result
+    with (console.status("[blue]Sliding Around... [/blue]")):
+        try:
+            for binary in agg_result:
+                if not binary.startswith("/usr/bin"):
+                    continue
+                try:
+                    results = await asyncio.gather(
+                        strings_scan(binary),
+                        flags_write(binary),
+                        strace_scan(binary),
+                        gtfo_scan(binary),
+                        timeouts(binary),
+                        return_exceptions=True
+                    )
+
+                    b_exp.setdefault(binary, {})
+                    b_exp[binary]["strings"] = strings_append.get(binary, [])
+                    b_exp[binary]["flags"] = flags_append.get(binary, [])
+                    b_exp[binary]["strace"] = strace_append.get(binary, [])
+                    b_exp[binary]["gtfo"] = gtfo_append.get(binary, [])
+                    b_exp[binary]["timeouts"] = timeout_append.get(binary, [])
+                except (asyncio.CancelledError, Exception) as e:
+                    console.print(f"[red]scan failure: {e}[/red]")
+                    traceback.print_exc()
+                    pass
+                try:
+                    getcap_write(binary)
+                    gtfo_write(binary)
+                    strace_write(binary)
+                    strings_write(binary)
+                    await get_scan()
+                except (Exception) as e:
+                    console.print(f"[red]write failure: {e}[/red]")
+                    traceback.print_exc()
+                    pass
+        except Exception as e:
+            console.print(f"[red]main failure: {e}[/red]")
+            traceback.print_exc()
+
+        if args.htmlreport and b_exp:
+            html = generate_report(b_exp, default_binary=next(iter(b_exp.keys()), None))
+            with open(HTML_OUT, 'w', encoding='utf-8') as f:
+                f.write(html)
+        if args.pdfreport:
+            pdf = generate_PDF(b_exp)
+            HTML(string=pdf).write_pdf(f"{RUN_DIR}/report_{RUN_ID}.pdf")
 
 
-                        )
-                    except (asyncio.CancelledError, Exception) as e:
-                        console.print(f"[red]scan failure: {e}[/red]")
-                        traceback.print_exc()
-                        pass
-                    try:
-                        # flags_write(binary)
-                        getcap_write(binary)
-                        gtfo_write(binary)
-                        strace_write(binary)
-                        strings_write(binary)
-                        await get_scan()
-                    except (Exception) as e:
-                        console.print(f"[red]write failure: {e}[/red]")
-                        traceback.print_exc()
-                        pass
-            except Exception as e:
-                console.print(f"[red]main failure: {e}[/red]")
-                traceback.print_exc()
-                pass
-            try:
-                await timeouts(binary)
-            except (Exception) as e:
-                console.print({e})
-        return 0
+        try:
+            await timeouts(binary)
+        except (Exception) as e:
+            console.print({e})
+            return 0
 asyncio.run(main())
 console.print(f"[bold bright_green]Done![/bold bright_green]")
