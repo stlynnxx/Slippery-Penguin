@@ -15,7 +15,7 @@ binary strings, checking the results against a ranked
 list of possible indicators for exploration.
 
 *Version:*\
-This the the dev branch,  an ongoing work in progress. 
+This the the dev branch, an ongoing work in progress. 
 This is where I push my work to as I build the new version, and where pull requests are
 initially merged to. 
 
@@ -48,17 +48,17 @@ Note: The curl command will download the official release, not the dev branch.
 
 Make sure to run setup.sh on the first install lest ye may face dependency issues. 
 Quick installation-
-```bash
-curl -L https://eclecticelectronics.fly.dev/api/download/2.2.0 -o slipperypenguin-2.2.0.tar.gz
-sha256sum slipperypenguin-2.2.0.tar.gz
-```
-##### Or
-
+(This will get you the dev branch)
 ```bash
 git clone -b master https://github.com/stlynnxx/Slippery-Penguin.git
 cd Slippery-Penguin
 chmod +x setup.sh
 sudo ./setup.sh
+```
+##### Or 
+```bash
+curl -L https://eclecticelectronics.fly.dev/api/download/2.3.2 -o slipperypenguin-2.3.2.tar.gz
+sha256sum slipperypenguin-2.3.2.tar.gz
 ```
 
 Usage:
