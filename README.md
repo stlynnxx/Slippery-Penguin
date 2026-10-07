@@ -15,7 +15,7 @@ binary strings, checking the results against a ranked
 list of possible indicators for exploration.
 
 *Version:*\
-This is v2.2.0, the official release.
+This is v2.3.1, the official release.
 
 
 *Features:*\
@@ -25,8 +25,11 @@ This is v2.2.0, the official release.
 -Binary string analysis against a severity rated watchlist\
 -Configurable path filtering and timeout handling\
 -JSON Logging\
--Automatic updating and update checking
--Automatic GTFOBins data comparison
+-Automatic updating and update checking\
+-Automatic GTFOBins data comparison\
+- Optional HTML Report Generation
+- Optional PDF Report Generation via Weasyprint
+  
 
 *Requirements:*\
 -Linux\
@@ -34,16 +37,18 @@ This is v2.2.0, the official release.
 -strace\
 -getcap\
 -curl\
--git
+-weasyprint
 
 The JSON files are stored in /SlipperyPenguin/logs, within timestamped directories.
 Each form of output has it's own json file within the timestamped directory. 
 
-Note: The curl command will download the official release, not the dev branch.
+
+If you have dependency issues on first install, run setup.sh
+
 Quick installation-
 ```bash
-curl -L https://eclecticelectronics.fly.dev/api/download/2.2.0 -o slipperypenguin-2.2.0.tar.gz
-sha256sum slipperypenguin-2.2.0.tar.gz
+curl -L https://eclecticelectronics.fly.dev/api/download/2.3.1 -o slipperypenguin-2.3.1.tar.gz
+sha256sum slipperypenguin-2.3.1.tar.gz
 ```
 ##### Or
 
@@ -54,7 +59,7 @@ chmod +x setup.sh
 sudo ./setup.sh
 ```
 
-Usage:
+## Usage:
 ### To write output to log files only-
  ```bash
 python3 slipperypenguin.py --output logs

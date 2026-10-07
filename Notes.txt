@@ -374,3 +374,20 @@ done some more formatting in there myself and I think I'm ready to do that relea
 
 v2.3.0!
 
+10/7/2026-
+
+Today's work!
+
+I rearragned the json logs into a single file, and also fixed the version checking as it was prompting to update
+even whenver the numbers matched. I may make this a small release later, or do some more work first!
+
+I wound up also just doing some reorganizing, moving some helper functions into their own file. Howeever, it took
+me a bit longer than anticipated and I still have several other things to do today so I think the release may come tomorrow,
+or later tonight at the earliest.
+
+I'm obviously pushing to the dev branch now.
+
+Or well, that's what I typed before I realized that I just did all of that work on the master branch. Guess i'm releasing
+today.
+
+
