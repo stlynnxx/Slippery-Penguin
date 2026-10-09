@@ -11,7 +11,7 @@ import subprocess
 import tarfile
 console = Console()
 # Version
-__version__ = "2.3.3"
+__version__ = "2.3.4"
 UPDATE_URL = "https://eclecticelectronics.fly.dev/api/check-update/"
 
 
