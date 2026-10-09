@@ -9,10 +9,9 @@ import hashlib
 import shutil
 import subprocess
 import tarfile
-
-# Version
-__version__ = "2.3.3"
 console = Console()
+# Version
+__version__ = "2.3.4"
 UPDATE_URL = "https://eclecticelectronics.fly.dev/api/check-update/"
 
 
