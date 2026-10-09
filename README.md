@@ -15,7 +15,7 @@ binary strings, checking the results against a ranked
 list of possible indicators for exploration.
 
 *Version:*\
-This is v2.3.2, the official release.
+This is v2.3.3, the official release.
 
 
 *Features:*\
@@ -53,10 +53,10 @@ sha256sum slipperypenguin-2.3.3.tar.gz
 ##### Or
 
 ```bash
-git clone -b master https://github.com/stlynnxx/Slippery-Penguin.git
-cd Slippery-Penguin
-chmod +x setup.sh
-sudo ./setup.sh
+git clone https://github.com/stlynnxx/Slippery-Penguin
+cd slippery-penguin
+./setup.sh
+./run.sh --output both
 ```
 
 ## Usage:
