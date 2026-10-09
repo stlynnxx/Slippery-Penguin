@@ -2,13 +2,14 @@ import signal, subprocess,os, json, argparse, sys, shutil, urllib.request, tempf
 import tarfile, urllib.error
 from datetime import datetime
 from rich.console import Console
-from yattag import Doc
 from htmlgenerator import generate_report, generate_PDF
 from weasyprint import HTML
-from updatehelpers import download_update, extract_update, install_update, gtfo_update, update_chk
 
-
+# Version
+__version__ = "2.3.3"
 console = Console()
+UPDATE_URL = "https://eclecticelectronics.fly.dev/api/check-update/"
+
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
 with open('art.txt', 'r') as file:
     content = file.read()
@@ -42,27 +43,22 @@ flags_append = {}
 flags = {}
 b_exp = {}
 agg_result = []
-write_dict = {
-    "getcap" : {},
-    "gtfo" : {},
-    "strace": {},
-    "flags": {},
-    "find": {},
-    "timeouts": {}
 
-}
-update_info = {}
 args = parser.parse_args()
-# This is the only part of the update process living in here
-# Checking for available updates
-update_info = update_chk()
-
 # sys.stdin = open('/dev/tty')
 timeout_var = 2
 
 # Setting up dirs
 STORAGE_ROOT = args.storage
 
+try:
+    from yattag import Doc
+    from weasyprint import HTML
+except ImportError as e:
+    console.print(f"[red]Missing dependency: {e.name}. Run: pip install -r requirements.txt[/red]")
+    sys.exit(1)
+
+GTFO_FILE = os.path.join("gtfobins.json")
 if args.del_logs == "run":
     if not os.path.exists(STORAGE_ROOT):
         print(f"[-] No logs directory found at {STORAGE_ROOT}")
@@ -138,23 +134,122 @@ if args.manual:
           "with -update-gtfobins being optional if your data is up to date.")
     sys.exit(0)
 
+# Update helper functions
+def download_update(url, expected_hash):
+    fd, tmp_path = tempfile.mkstemp(suffix=".tar.gz")
+    os.close(fd)
+    hasher = hashlib.sha256()
+    try:
+        with urllib.request.urlopen(url, timeout=10) as resp, open(tmp_path, "wb") as out:
+            while chunk := resp.read(65536):
+                out.write(chunk)
+                hasher.update(chunk)
+            if hasher.hexdigest() != expected_hash:
+                os.unlink(tmp_path)
+                raise RuntimeError("Checksum mismatch- download aborted")
+    except Exception as e:
+        console.print(f"[red]{e}[/red]")
+
+def extract_update(tmp_path):
+    extract_dir = tempfile.mkdtemp()
+    with tarfile.open(tmp_path, "r:gz") as tar:
+        tar.extractall(extract_dir, filter="data")
+        required = ["slipperypenguin.py", "art.txt", "flags.json"]
+        extracted_names = os.listdir(extract_dir)
+        for name in required:
+            if name not in extracted_names:
+                raise RuntimeError(
+                    "Incomplete package, download aborted"
+                )
+                return extract_dir
+
+def install_update(extract_dir):
+    install_root = os.path.dirname(os.path.abspath(__file__))
+    for fname in os.listdir(extract_dir):
+        src = os.path.join(extract_dir, fname)
+        dst = os.path.join(install_root, fname)
+        os.replace(src, dst)
+        shutil.rmtree(extract_dir)
 
 
-######
+# Updating gtfobins logic
+try:
+    if args.update_gtfobins:
+        subprocess.run([
+            "curl",
+            "https://gtfobins.org/api.json",
+            "-o",
+            GTFO_FILE
+        ])
+        print(f"GTFOBins updated at {GTFO_FILE}")
+        sys.exit(0)
+except Exception as e:
+    console.print(f"[red]Updating GTFObins failed, {e}[/red]")
 
+
+
+# Checking for available updates
+try:
+    with urllib.request.urlopen(UPDATE_URL + __version__, timeout=10) as resp:
+        update_info = json.loads(resp.read().decode())
+except (urllib.error.URLError, json.JSONDecodeError) as e:
+    console.print(f"[red] Could not reach update server: {e} [/red]")
+    sys.exit(1)
+latest = update_info.get("latest", "")
+if latest == __version__:
+    pass
+
+# This is for those of us on the dev branch, so we don't have to turn down the update everytime we run the program
+if latest < __version__:
+    pass
+else:
+    console.print(f"[magenta] Update available: {latest} (you are running {__version__}) [/magenta]")
+    console.print("[green] Would you like to update, or stay on the current version? (y to update): [/green]")
+    console.print("[magenta](y/n)[/magenta]")
+    usr_in = input()
+    usr_in = usr_in.lower()
+    if (usr_in == "n"):
+        pass
+    else:
+        try:
+            # Updating gtfobins logic
+            subprocess.run([
+                "curl",
+                "https://gtfobins.org/api.json",
+                "-o",
+                GTFO_FILE
+            ])
+            print(f"GTFOBins updated at {GTFO_FILE}")
+        except Exception as e:
+            console.print(f"[red]Could not update GTFOBins, {e}[/red]")
+        try:
+            download_update(update_info["url"], latest)
+        except Exception as e:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+                raise e
+
+        try:
+            extract_dir = extract_update(update_info["url"])
+
+        except Exception:
+            console.print(f"[red]{Exception}[/red]")
+            exit(-1)
+        try:
+            install_update(extract_dir)
+        except Exception:
+            console.print(f"[red]{Exception}[/red]")
+            exit(-1)
+        console.print("[green]Update Successful![/green]")
 
 if args.timeout:
     timeout_var = int(input(f"[yellow]Enter custom timeout value: [/yellow]"))
-GTFO_FILE = os.path.join("gtfobins.json")
 
 # Loading the gtfobins data
 gtfo_data = {}
 if os.path.exists(GTFO_FILE) and os.path.getsize(GTFO_FILE) > 0:
     with open(GTFO_FILE, "r") as f:
         gtfo_data = json.load(f)
-
-if args.update_gtfobins:
-    gtfo_update()
 
 
 
@@ -165,53 +260,64 @@ RUN_DIR = os.path.join(STORAGE_ROOT, RUN_ID)
 os.makedirs(RUN_DIR, exist_ok=True)
 
 STR_OUT = os.path.join(RUN_DIR, "str-out.json")
-STRACE_OUT = os.path.join(RUN_DIR, "strace-out.json")
+
 CAP_OUT = os.path.join(RUN_DIR, "cap-out.json")
 FIND_OUT = os.path.join(RUN_DIR, "find-out.json")
-JSON_OUT = os.path.join(RUN_DIR, "logs.json")
+STRACE_OUT = os.path.join(RUN_DIR, "strace-out.json")
 TIMEOUT_OUT = os.path.join(RUN_DIR, "timeout-out.json")
 GTFO_OUT = os.path.join(RUN_DIR, "gfto-out.json")
 HTML_OUT = os.path.join(RUN_DIR, "html-out.html")
 
+
+
 border = "-----"
+
+
+
+
 
 if os.path.exists(FIND_OUT):
     with open(FIND_OUT, "r") as f:
         find_append = json.loads(f.read())
 
-tmp_path = ""
+
+# Updating logic helper functions
 if args.update in ("run", "close"):
-    # First check if update_info exists from earlier call
-    if update_info is None:
-        console.print("[yellow]No update available (already on latest or dev version)[/yellow]")
-        console.print("[yellow]To force re-check, use -chk after this runs[/yellow]")
-        if args.update == "close":
-            sys.exit(0)
-        else:
-            pass
-    else:
-        try:
-            # Updating gtfobins logic
-            subprocess.run(["curl", "https://gtfobins.org/api.json", "-o", GTFO_FILE])
-            console.print(f"[green]GTFOBins updated at {GTFO_FILE}[/green]")
-        except Exception as e:
-            console.print(f"[red]Could not update GTFOBins, {e}[/red]")
+    try:
+        # Updating gtfobins logic
+        subprocess.run([
+            "curl",
+            "https://gtfobins.org/api.json",
+            "-o",
+            GTFO_FILE
+        ])
+        print(f"GTFOBins updated at {GTFO_FILE}")
+    except Exception as e:
+        console.print(f"[red]Could not update GTFOBins, {e}[/red]")
+    try:
+        download_update(update_info["url"], latest)
+    except Exception as e:
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+        raise e
+    try:
+        extract_dir = extract_update(update_info["url"])
+    except Exception:
+        console.print(f"[red]{Exception}[/red]")
+        exit(-1)
+    try:
+        install_update(extract_dir)
+    except Exception:
+        console.print(f"[red]{Exception}[/red]")
+        exit(-1)
+    console.print("[green]Update Successful![/green]")
+    if args.update in ("run"):
+        pass
+    if args.update in ("close"):
+        exit(0)
 
-        try:
-            downloaded_path = download_update(update_info["url"], update_info.get("latest", "unknown"))
-            if downloaded_path is None:
-                raise RuntimeError("Download failed")
 
-            extract_dir = extract_update(downloaded_path)
-            install_update(extract_dir)
-            console.print("[green]Update Successful![/green]")
-        except Exception as e:
-            console.print(f"[red]Update failed: {e}[/red]")
-            if args.update == "close":
-                sys.exit(-1)
 
-        if args.update == "close":
-            sys.exit(0)
 # Enumerates SUIDs and checking capabilites
 result = subprocess.run( ["find", "/", "-perm", "-4000", "-type", "f"], capture_output=True, text=True)
 agg_result = result.stdout.splitlines()
@@ -222,8 +328,8 @@ if args.output in ("terminal", "both"):
         console.print(f"  [green]{suid}[/green]")
     console.print(f"[yellow]END SUIDs[/yellow]\n")
 if args.output in ("logs", "both"):
-    write_dict["find"] = find_append
-
+    with open(FIND_OUT, "w") as f:
+        json.dump(find_append["results"], f)
 
 
 # loading the flags from json
@@ -394,7 +500,8 @@ async def timeouts(b):
             for t in timeout_append:
                 console.print(f"\n[green] {t}[/green]")
         if args.output in ("logs", "both"):
-            write_dict["timeout"] = timeout_append
+            with open(TIMEOUT_OUT, "w") as f:
+                    json.dump(timeout_append, f)
     except Exception as e:
         console.print(f"[red]timeouts failure: {e}[/red]")
         traceback.print_exc()
@@ -409,8 +516,9 @@ def strace_write(b):
     global strace_append
     try:
         if args.output in ("logs", "both"):
-            # strace write global dict
-            write_dict["strace"] = strace_append
+            # strace write to file
+            with open(STRACE_OUT, "w") as f:
+                json.dump(strace_append, f)
     except Exception as e:
         console.print(f"[red]strace write failure: {e}[/red]")
         traceback.print_exc()
@@ -431,7 +539,8 @@ def strings_write(b):
             else:
                 passer = {}
             passer[b] = strings_append.get(b, {})
-            write_dict["strings"] = passer[b]
+            with open(STR_OUT, "w", encoding='utf-8') as f:
+                json.dump(passer, f)
     except Exception as e:
         console.print(f"[red]strings write failure: {e}[/red]")
         traceback.print_exc()
@@ -460,9 +569,8 @@ async def flags_write(b):
                     flags_append[b].append(appendItem)
 
         if args.output in ("logs", "both"):
-            # flags write to global dict
-            write_dict["flags"] = flags_append
-
+            with open("flags.json", 'w') as file:
+                json.dump(flags_append, file)
     except Exception as e:
         console.print(f"[red]Flags dump failure: {e}[/red]")
         traceback.print_exc()
@@ -472,7 +580,8 @@ def getcap_write(b):
     global cap_append
     try:
         if args.output in ("logs", "both"):
-            write_dict["getcap"] = cap_append
+            with open(CAP_OUT, "w", encoding='utf-8') as f:
+                json.dump(cap_append, f)
     except Exception as e:
         console.print(f"[red]gtfo error: {e}[/red]")
         traceback.print_exc()
@@ -483,13 +592,10 @@ def gtfo_write(b):
     global gtfo_append
     try:
         if args.output in ("logs", "both"):
-            write_dict["gtfo"] = gtfo_append
+            with open(GTFO_OUT, "w", encoding='utf-8') as f:
+                json.dump(gtfo_append, f)
     except Exception as e:
         console.print(f"[red]gtfo write error : {e}[/red]")
-def write_to_file():
-    global write_dict
-    with open(JSON_OUT, "w", encoding='utf-8') as f:
-        json.dump(write_dict, f)
 
 async def main():
     global b_exp
@@ -524,7 +630,6 @@ async def main():
                     gtfo_write(binary)
                     strace_write(binary)
                     strings_write(binary)
-                    write_to_file()
                     await get_scan()
                 except (Exception) as e:
                     console.print(f"[red]write failure: {e}[/red]")
