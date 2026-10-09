@@ -2,11 +2,12 @@ import signal, subprocess,os, json, argparse, sys, shutil, urllib.request, tempf
 import tarfile, urllib.error
 from datetime import datetime
 from rich.console import Console
+from yattag import Doc
 from htmlgenerator import generate_report, generate_PDF
 from weasyprint import HTML
 
 # Version
-__version__ = "2.3.3"
+__version__ = "2.3.1"
 console = Console()
 UPDATE_URL = "https://eclecticelectronics.fly.dev/api/check-update/"
 
@@ -50,13 +51,6 @@ timeout_var = 2
 
 # Setting up dirs
 STORAGE_ROOT = args.storage
-
-try:
-    from yattag import Doc
-    from weasyprint import HTML
-except ImportError as e:
-    console.print(f"[red]Missing dependency: {e.name}. Run: pip install -r requirements.txt[/red]")
-    sys.exit(1)
 
 GTFO_FILE = os.path.join("gtfobins.json")
 if args.del_logs == "run":
