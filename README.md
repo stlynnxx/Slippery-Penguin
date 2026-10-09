@@ -15,7 +15,7 @@ binary strings, checking the results against a ranked
 list of possible indicators for exploration.
 
 *Version:*\
-This is v2.3.4, the official release.
+This is v2.3.5, the official release.
 
 
 *Features:*\
@@ -47,8 +47,8 @@ If you have dependency issues on first install, run setup.sh
 
 Quick installation-
 ```bash
-curl -L https://eclecticelectronics.fly.dev/api/download/2.3.4 -o slipperypenguin-2.3.4.tar.gz
-sha256sum slipperypenguin-2.3.4.tar.gz
+curl -L https://eclecticelectronics.fly.dev/api/download/2.3.5 -o slipperypenguin-2.3.5.tar.gz
+sha256sum slipperypenguin-2.3.5.tar.gz
 ```
 ##### Or
 
