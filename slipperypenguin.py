@@ -4,7 +4,7 @@ from datetime import datetime
 from rich.console import Console
 from htmlgenerator import generate_report, generate_PDF
 from weasyprint import HTML
-
+console = Console()
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
 with open('art.txt', 'r') as file:
     content = file.read()

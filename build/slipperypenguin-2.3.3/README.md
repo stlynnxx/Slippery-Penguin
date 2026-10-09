@@ -47,8 +47,8 @@ If you have dependency issues on first install, run setup.sh
 
 Quick installation-
 ```bash
-curl -L https://eclecticelectronics.fly.dev/api/download/2.3.2 -o slipperypenguin-2.3.2.tar.gz
-sha256sum slipperypenguin-2.3.2.tar.gz
+curl -L https://eclecticelectronics.fly.dev/api/download/2.3.3 -o slipperypenguin-2.3.3.tar.gz
+sha256sum slipperypenguin-2.3.3.tar.gz
 ```
 ##### Or
 
