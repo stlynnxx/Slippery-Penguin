@@ -391,6 +391,3 @@ Or well, that's what I typed before I realized that I just did all of that work 
 today.
 
 
-10/8/2026-
-
-I added a requirements.txt as well as a check in the program itself in order to mitigate the recent dependency issue!
