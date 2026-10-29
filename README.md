@@ -6,7 +6,7 @@ Use responsibly and in accordance with all applicable local, state, and federal 
 
 # Slippery Penguin
 
-
+**This is the development branch, where new work gets pushed to as the next release is built. It may have features not present in the current release, and may be less stable than the latest release.**
 
 **SUID Enumeration and Vulnerability Scanning Tool**
 
@@ -57,9 +57,10 @@ pip install -r requirements.txt
 python3 slipperypenguin.py --update-gtfobins
 ```
 Downloading the .tar.gz from www.eclecticelectrionics.com (https://github.com/stlynnxx/EclecticElectronics)
+Note: **This installs the latest release, not the development branch**
 ```bash
-curl -L https://eclecticelectronics.fly.dev/api/download/2.4.3 -o slipperypenguin-2.4.3.tar.gz
-sha256sum slipperypenguin-2.4.3.tar.gz
+curl -L https://eclecticelectronics.fly.dev/api/download/2.5.0 -o slipperypenguin-2.5.0.tar.gz
+sha256sum slipperypenguin-2.5.0.tar.gz
 
 pip install -r requirements.txt
 
