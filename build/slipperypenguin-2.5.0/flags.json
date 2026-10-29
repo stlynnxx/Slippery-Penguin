@@ -1,0 +1,1357 @@
+[
+  {
+    "string": "execve",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Binary executes another program. If called with user-influenced arguments while elevated, could be used to execute arbitrary code with elevated privileges."
+  },
+  {
+    "string": "ENCRYPT_METHOD",
+    "severity": "HIGH",
+    "context": "References encryption method configuration, typically sourced from /etc/login.defs. A SUID binary reading or influencing encryption method selection could weaken system-wide password hashing if the method is manipulable or insufficiently strong."
+  },
+  {
+    "string": "PASS_MIN_LEN",
+    "severity": "MEDIUM",
+    "context": "References minimum password length configuration. If this binary reads or writes password policy, misconfiguration could weaken system authentication."
+  },
+  {
+    "string": "PASS_MAX_LEN",
+    "severity": "MEDIUM",
+    "context": "References maximum password length configuration. Some implementations truncate passwords silently, which can weaken security or indicate policy manipulation."
+  },
+  {
+    "string": "FAIL_DELAY",
+    "severity": "MEDIUM",
+    "context": "References the delay after a failed authentication attempt. If manipulable, an attacker could reduce or eliminate brute force delay."
+  },
+  {
+    "string": "FAKE_SHELL",
+    "severity": "HIGH",
+    "context": "Explicit reference to a fake or substitute shell. Presence in a SUID binary is highly suspicious and warrants immediate investigation."
+  },
+  {
+    "string": "SYS_GID_MAX",
+    "severity": "HIGH",
+    "context": "References system group ID boundaries. A SUID binary reading or writing GID configuration could be used to manipulate group membership or escalate group privileges."
+  },
+  {
+    "string": "fchown",
+    "severity": "LOW",
+    "context": "Binary can change file ownership. If called while elevated and the target path is user-influenced, could be used to take ownership of sensitive files."
+  },
+  {
+    "string": "fchmod",
+    "severity": "LOW",
+    "context": "Binary can change file permissions. If called while elevated and the target path is user-influenced, could be used to make sensitive files world-readable or executable."
+  },
+  {
+    "string": "tcsetattr",
+    "severity": "LOW",
+    "context": "Binary modifies terminal attributes. Can affect terminal input handling. If not restored properly, may leave the terminal in an insecure or broken state."
+  },
+  {
+    "string": "fork",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Binary spawns child processes. Combined with execve or shell references in the same binary, may indicate a pattern worth investigating for process injection or privilege inheritance."
+  },
+  {
+    "string": "getlogin",
+    "severity": "LOW",
+    "context": "Binary reads the current login name. If used for authentication or authorization decisions without proper validation, could be spoofed in some environments."
+  },
+  {
+    "string": "%s: failed to drop privileges (%s)",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Binary attempted to drop elevated privileges and failed. If execution continues after this failure, the binary may be running with unintended elevated privileges."
+  },
+  {
+    "string": "SUDO_ASKPASS",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Binary references the sudo password helper path. If this environment variable is read without sanitization, an attacker could point it to a malicious program to intercept sudo password prompts."
+  },
+  {
+    "string": "allow_root",
+    "severity": "MEDIUM",
+    "context": "FUSE mount option that permits root to access a user-mounted filesystem. Combined with a permissive /etc/fuse.conf, could allow a malicious userspace filesystem to intercept root file access."
+  },
+  {
+    "string": "/bin/sh",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Binary spawns a shell. If privileges are not dropped before the shell is executed, the spawned shell may inherit elevated privileges."
+  },
+  {
+    "string": "/usr/sbin:/usr/bin:/sbin:/bin:%s/bin",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Binary constructs a PATH dynamically with a variable component. If the variable is user-influenced, an attacker may be able to inject a malicious directory into the PATH and hijack binary execution. Associated with CVE-2021-4034 in pkexec."
+  },
+  {
+    "string": "setuid",
+    "severity": "MEDIUM",
+    "context": "Binary calls setuid() system call. If not properly managed, could retain elevated privileges after initialization or allow privilege escalation."
+  },
+  {
+    "string": "setgid",
+    "severity": "MEDIUM",
+    "context": "Binary calls setgid() system call. If not properly managed, could retain elevated group privileges after initialization."
+  },
+  {
+    "string": "geteuid",
+    "severity": "LOW",
+    "context": "Binary checks effective user ID. Indicates awareness of privilege state. Verify privilege dropping occurs after this check completes."
+  },
+  {
+    "string": "getegid",
+    "severity": "LOW",
+    "context": "Binary checks effective group ID. Indicates awareness of privilege state. Verify privilege dropping occurs after this check completes."
+  },
+  {
+    "string": "initgroups",
+    "severity": "LOW",
+    "context": "Binary initializes supplementary group access. May indicate privilege dropping routine, but verify groups are reduced appropriately."
+  },
+  {
+    "string": "chroot",
+    "severity": "HIGH",
+    "context": "Binary changes root directory. If escape vectors exist in the jail, an attacker with elevated privileges could break out and access the full filesystem."
+  },
+  {
+    "string": "pivot_root",
+    "severity": "HIGH",
+    "context": "Binary changes the root mount point. Similar risks to chroot, but with additional complexity. Privilege escalation through improper isolation is a known attack vector."
+  },
+  {
+    "string": "ptrace",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Binary can trace/debug other processes. With elevated privileges, could inspect or modify memory of system processes, extract credentials, or bypass security controls."
+  },
+  {
+    "string": "capset",
+    "severity": "HIGH",
+    "context": "Binary sets Linux capabilities. Misconfigured capability assignments could grant dangerous permissions without full root, enabling targeted privilege escalation."
+  },
+  {
+    "string": "capget",
+    "severity": "LOW",
+    "context": "Binary reads process capabilities. Indicates awareness of capability state. Verify capabilities are appropriately restricted."
+  },
+  {
+    "string": "prctl",
+    "severity": "MEDIUM",
+    "context": "Binary invokes prctl() for various process control operations. Some options can alter privilege behavior, memory protection, or debugging restrictions."
+  },
+  {
+    "string": "mmap",
+    "severity": "LOW",
+    "context": "Binary allocates memory mapping. With MAP_SHARED or specific protections, could enable exploitation techniques like heap spraying or return-to-libc attacks."
+  },
+  {
+    "string": "execvp",
+    "severity": "MEDIUM",
+    "context": "Binary executes programs searching PATH. If PATH is influenced by untrusted input, could execute attacker-controlled binaries with elevated privileges."
+  },
+  {
+    "string": "system",
+    "severity": "HIGH",
+    "context": "Binary invokes shell command execution. Any unvalidated input passed here constitutes a command injection vulnerability when combined with SUID privileges."
+  },
+  {
+    "string": "popen",
+    "severity": "HIGH",
+    "context": "Binary opens a pipe to a command processor. Similar risk to system(), allows command injection if arguments derive from untrusted sources."
+  },
+  {
+    "string": "execl",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Binary executes another program directly. Verify all arguments are validated; format string vulnerabilities in arguments could enable exploitation."
+  },
+  {
+    "string": "execle",
+    "severity": "HIGH",
+    "context": "Binary executes with explicit environment. If environment variables are user-controllable, could set LD_PRELOAD or similar to hijack execution."
+  },
+  {
+    "string": "LD_PRELOAD",
+    "severity": "CRITICAL",
+    "context": "Binary references dynamic linker preload. SUID binaries must sanitize or ignore this environment variable, otherwise attackers can load malicious shared libraries with root privileges."
+  },
+  {
+    "string": "LD_LIBRARY_PATH",
+    "severity": "HIGH",
+    "context": "Binary references library search path. Similar risk to LD_PRELOAD - uncontrolled values can redirect library loading to attacker-provided code."
+  },
+  {
+    "string": "HOME",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Binary reads HOME directory. If used to locate config files or scripts, user-controlled home paths could point to malicious resources."
+  },
+  {
+    "string": "TMPDIR",
+    "severity": "MEDIUM",
+    "context": "Binary uses custom temporary directory. Unprivileged users may create symlinks or race conditions in controlled temp locations, enabling TOCTOU attacks."
+  },
+  {
+    "string": "/etc/passwd",
+    "severity": "MEDIUM",
+    "context": "Binary accesses passwd file. Write access enables account creation or privilege manipulation; read-only access is generally safe but indicates privilege checks."
+  },
+  {
+    "string": "/etc/shadow",
+    "severity": "HIGH",
+    "context": "Binary accesses shadow password file. Unauthorized read or write access compromises authentication security and enables credential theft or manipulation."
+  },
+  {
+    "string": "/etc/sudoers",
+    "severity": "CRITICAL",
+    "context": "Binary modifies sudoers configuration. Enables persistent privilege escalation for any user. Extremely high-risk operation for a SUID binary."
+  },
+  {
+    "string": "crontab",
+    "severity": "MEDIUM",
+    "context": "Binary manages cron jobs. With elevated privileges, could schedule tasks that persist beyond session, creating backdoors or data exfiltration mechanisms."
+  },
+  {
+    "string": "passwd",
+    "severity": "MEDIUM",
+    "context": "Binary references password management. Legitimate use exists (e.g., /usr/bin/passwd), but verify it follows secure password-changing protocols."
+  },
+  {
+    "string": "sudo",
+    "severity": "MEDIUM",
+    "context": "Binary references sudo command. May indicate privilege escalation chaining or integration with sudo authentication mechanisms."
+  },
+  {
+    "string": "su",
+    "severity": "MEDIUM",
+    "context": "Binary references su command. May spawn subshells with privilege transitions. Verify input validation and session handling."
+  },
+  {
+    "string": "mount",
+    "severity": "HIGH",
+    "context": "Binary performs filesystem mounting. Could mount privileged filesystems or bind-mount sensitive directories with elevated access."
+  },
+  {
+    "string": "umount",
+    "severity": "MEDIUM",
+    "context": "Binary unmounts filesystems. Could deny service by unmounting critical mounts or disrupt system availability."
+  },
+  {
+    "string": "mknod",
+    "severity": "HIGH",
+    "context": "Binary creates special device nodes. With SUID privileges, could create character/block devices granting direct hardware or kernel interface access."
+  },
+  {
+    "string": "link",
+    "severity": "LOW",
+    "context": "Binary creates hard links. Limited impact but could enable symlink race conditions or overwrite protected files if permissions allow."
+  },
+  {
+    "string": "symlink",
+    "severity": "LOW",
+    "context": "Binary creates symbolic links. Similar risk to link() - could facilitate TOCTOU attacks on protected resources."
+  },
+  {
+    "string": "unlink",
+    "severity": "LOW",
+    "context": "Binary deletes files. With elevated privileges, could remove security logs, configuration files, or evidence of compromise."
+  },
+  {
+    "string": "rename",
+    "severity": "LOW",
+    "context": "Binary renames files. Could disrupt security controls by moving configuration files or interfering with backup/archive systems."
+  },
+  {
+    "string": "chown",
+    "severity": "LOW",
+    "context": "Binary changes file ownership. Similar to fchown but operates by pathname, introducing symlink race vulnerabilities in the lookup phase."
+  },
+  {
+    "string": "chmod",
+    "severity": "LOW",
+    "context": "Binary changes file permissions. Similar to fchmod but operates by pathname, introducing symlink race vulnerabilities in the lookup phase."
+  },
+  {
+    "string": "getpwnam",
+    "severity": "LOW",
+    "context": "Binary looks up user by name. Part of normal privilege checking routines, but verify resulting UID/GID calculations are applied safely."
+  },
+  {
+    "string": "getgrnam",
+    "severity": "LOW",
+    "context": "Binary looks up group by name. Part of normal privilege checking routines, but verify resulting group memberships are applied safely."
+  },
+  {
+    "string": "setgroups",
+    "severity": "MEDIUM",
+    "context": "Binary sets supplementary group list. With elevated privileges, could add user to privileged groups (wheel, sudo, etc.) enabling persistent escalation."
+  },
+  {
+    "string": "dup2",
+    "severity": "LOW",
+    "context": "Binary duplicates file descriptors. Could redirect input/output of privileged operations to attacker-controlled files or network sockets."
+  },
+  {
+    "string": "socket",
+    "severity": "MEDIUM",
+    "context": "Binary creates network sockets. With elevated privileges, could establish covert channels, bypass firewall rules, or connect to privileged ports."
+  },
+  {
+    "string": "connect",
+    "severity": "MEDIUM",
+    "context": "Binary initiates network connections. Could exfiltrate data, communicate with remote attacker C2, or abuse network-level access controls."
+  },
+  {
+    "string": "bind",
+    "severity": "MEDIUM",
+    "context": "Binary binds to network ports. Could listen on privileged ports (<1024), impersonate legitimate services, or establish unauthorized daemons."
+  },
+  {
+    "string": "listen",
+    "severity": "MEDIUM",
+    "context": "Binary listens for incoming connections. Combined with bind(), could create network services running with elevated privileges."
+  },
+  {
+    "string": "accept",
+    "severity": "MEDIUM",
+    "context": "Binary accepts incoming connections. Could receive commands or data from remote sources with elevated privilege context."
+  },
+  {
+    "string": "sendto",
+    "severity": "LOW",
+    "context": "Binary sends network data. Potential for data exfiltration or abuse of network privileges depending on destination."
+  },
+  {
+    "string": "recvfrom",
+    "severity": "LOW",
+    "context": "Binary receives network data. Could ingest commands or payloads from untrusted sources."
+  },
+  {
+    "string": "ioctl",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Binary performs device I/O control. Device-specific commands may expose kernel interfaces, hardware controls, or memory access depending on target device."
+  },
+  {
+    "string": "access",
+    "severity": "LOW",
+    "context": "Binary checks file accessibility. Use of access() is often unsafe due to TOCTOU races; verify realpath() or similar is used for actual operations."
+  },
+  {
+    "string": "realpath",
+    "severity": "LOW",
+    "context": "Binary resolves canonical path. Positive sign indicating awareness of symlink attacks, but verify results are validated before use."
+  },
+  {
+    "string": "stat",
+    "severity": "LOW",
+    "context": "Binary retrieves file metadata. Part of normal file operations but verify results are validated before permission decisions."
+  },
+  {
+    "string": "lstat",
+    "severity": "LOW",
+    "context": "Binary retrieves file metadata without following symlinks. Better than stat() for security-sensitive checks, but verify symlink targets are validated."
+  },
+  {
+    "string": "readlink",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Binary reads symbolic link target. May indicate awareness of symlink attacks, but verify targets are validated before operations."
+  },
+  {
+    "string": "getcwd",
+    "severity": "LOW",
+    "context": "Binary reads current working directory. If used in path construction, relative paths could escape intended directories."
+  },
+  {
+    "string": "chdir",
+    "severity": "LOW",
+    "context": "Binary changes working directory. If target is user-influenced, could escape sandboxed directories or operate on unexpected locations."
+  },
+  {
+    "string": "flock",
+    "severity": "LOW",
+    "context": "Binary locks files. Could deny service by holding locks on critical resources or create race conditions with improper lock release."
+  },
+  {
+    "string": "alarm",
+    "severity": "LOW",
+    "context": "Binary sets alarm timer. Could interfere with timeout mechanisms or timing-dependent security controls."
+  },
+  {
+    "string": "signal",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Binary handles signals. Improper signal handlers could enable race conditions, signal injection, or privilege retention through handler bugs."
+  },
+  {
+    "string": "kill",
+    "severity": "MEDIUM",
+    "context": "Binary sends signals to processes. With elevated privileges, could terminate critical services, crash system processes, or trigger privileged code paths."
+  },
+  {
+    "string": "nice",
+    "severity": "LOW",
+    "context": "Binary adjusts process priority. Could deny CPU resources to legitimate processes or prioritize malicious operations."
+  },
+  {
+    "string": "getpriority",
+    "severity": "LOW",
+    "context": "Binary reads process priority. Generally benign but indicates process management capabilities."
+  },
+  {
+    "string": "setpriority",
+    "severity": "LOW",
+    "context": "Binary sets process priority. Could affect system responsiveness or prioritize malicious processes."
+  },
+  {
+    "string": "ulimit",
+    "severity": "LOW",
+    "context": "Binary queries or sets resource limits. Could remove constraints on file descriptors, memory, or other resources enabling resource exhaustion attacks."
+  },
+  {
+    "string": "hostname",
+    "severity": "LOW",
+    "context": "Binary reads or sets system hostname. If writable, could affect hostname-based access controls or audit logs."
+  },
+  {
+    "string": "uname",
+    "severity": "LOW",
+    "context": "Binary retrieves system information. Generally benign but could leak kernel version for exploit targeting."
+  },
+  {
+    "string": "gethostname",
+    "severity": "LOW",
+    "context": "Binary retrieves system hostname. Used for identification or access control decisions."
+  },
+  {
+    "string": "getuid",
+    "severity": "LOW",
+    "context": "Binary retrieves real user ID. Standard privilege check, but verify effective UID is checked separately."
+  },
+  {
+    "string": "getgid",
+    "severity": "LOW",
+    "context": "Binary retrieves real group ID. Standard privilege check, but verify effective GID is checked separately."
+  },
+  {
+    "string": "getppid",
+    "severity": "LOW",
+    "context": "Binary retrieves parent process ID. Could be used to detect execution context (e.g., spawned from restricted shells)."
+  },
+  {
+    "string": "getpid",
+    "severity": "LOW",
+    "context": "Binary retrieves its own process ID. Standard operation, generally benign."
+  },
+  {
+    "string": "wait",
+    "severity": "LOW",
+    "context": "Binary waits for child process completion. Part of normal fork/exec patterns, verify child cleanup is thorough."
+  },
+  {
+    "string": "waitpid",
+    "severity": "LOW",
+    "context": "Binary waits for specific child process. Similar to wait() but allows more control over child reaping."
+  },
+  {
+    "string": "_exit",
+    "severity": "LOW",
+    "context": "Binary terminates without cleanup. Could leave locked resources or incomplete operations if called prematurely."
+  },
+  {
+    "string": "abort",
+    "severity": "LOW",
+    "context": "Binary terminates abnormally. May dump core with sensitive memory contents if core dumps are enabled."
+  },
+  {
+    "string": "atexit",
+    "severity": "LOW",
+    "context": "Binary registers exit handlers. Could clean up resources but also hide cleanup of malicious state."
+  },
+  {
+    "string": "putenv",
+    "severity": "HIGH",
+    "context": "Binary sets environment variables. With elevated privileges, could set dangerous variables (LD_PRELOAD, PATH) affecting subsequent executions."
+  },
+  {
+    "string": "setenv",
+    "severity": "HIGH",
+    "context": "Binary sets environment variables. Similar risk to putenv() - verify all environment modifications are intentional and safe."
+  },
+  {
+    "string": "unsetenv",
+    "severity": "LOW",
+    "context": "Binary clears environment variables. Good security practice for stripping dangerous variables, verify all dangerous vars are cleared."
+  },
+  {
+    "string": "clearenv",
+    "severity": "LOW",
+    "context": "Binary clears entire environment. Strong security practice if followed by selective restoration of safe variables."
+  },
+  {
+    "string": "random",
+    "severity": "LOW",
+    "context": "Binary generates random values. Verify source is cryptographically secure (/dev/urandom or getrandom()) not predictably seeded."
+  },
+  {
+    "string": "rand",
+    "severity": "LOW",
+    "context": "Binary uses rand() function. Typically predictably seeded; verify usage doesn't affect security-sensitive operations."
+  },
+  {
+    "string": "srand",
+    "severity": "LOW",
+    "context": "Binary seeds random number generator. Poor seeding enables prediction of 'random' values used in security contexts."
+  },
+  {
+    "string": "scanf",
+    "severity": "MEDIUM",
+    "context": "Binary parses formatted input. Buffer overflow risk if input size not bounded; format string bugs possible if user input reaches format string."
+  },
+  {
+    "string": "printf",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Binary outputs formatted data. If format string derives from user input, format string vulnerability enables memory disclosure/overwrite."
+  },
+  {
+    "string": "sprintf",
+    "severity": "HIGH",
+    "context": "Binary formats strings into buffers. Classic buffer overflow risk if buffer size not validated; prefer snprintf()."
+  },
+  {
+    "string": "strcpy",
+    "severity": "HIGH",
+    "context": "Binary copies strings without bounds checking. Guaranteed overflow if source exceeds destination size; use strncpy() or strlcpy()."
+  },
+  {
+    "string": "strncpy",
+    "severity": "LOW",
+    "context": "Binary copies strings with bounds. Safer than strcpy() but null termination issues possible; verify dest is always null-terminated."
+  },
+  {
+    "string": "memcpy",
+    "severity": "MEDIUM",
+    "context": "Binary copies memory regions. Buffer overflow risk if count exceeds destination bounds; verify sizes carefully."
+  },
+  {
+    "string": "memmove",
+    "severity": "MEDIUM",
+    "context": "Binary moves overlapping memory regions. Similar overflow risk as memcpy() but handles overlaps safely."
+  },
+  {
+    "string": "memset",
+    "severity": "LOW",
+    "context": "Binary fills memory with pattern. Often used to clear sensitive data; verify it isn't optimized away by compiler for security purposes."
+  },
+  {
+    "string": "malloc",
+    "severity": "LOW",
+    "context": "Binary allocates heap memory. Heap corruption vulnerabilities possible if size calculation overflows or free() is misused."
+  },
+  {
+    "string": "calloc",
+    "severity": "LOW",
+    "context": "Binary allocates zeroed heap memory. Same heap corruption risks as malloc(); zero-initialization helps prevent information leakage."
+  },
+  {
+    "string": "realloc",
+    "severity": "MEDIUM",
+    "context": "Binary resizes heap allocation. Size parameter validation critical; integer overflow in size calculation could lead to undersized allocations."
+  },
+  {
+    "string": "free",
+    "severity": "LOW",
+    "context": "Binary frees heap memory. Double-free, use-after-free, and heap corruption vulnerabilities possible; verify pointer validity."
+  },
+  {
+    "string": "execv",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Binary executes a program using an argument vector. Review the executable path, argument sources, and whether elevated privileges are dropped first."
+  },
+  {
+    "string": "execvpe",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Executes a program while searching PATH and accepting an explicit environment. Review PATH and environment sanitization when invoked with elevated privileges."
+  },
+  {
+    "string": "execlp",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Executes a program by searching PATH. A writable or attacker-influenced PATH can cause unintended executable selection."
+  },
+  {
+    "string": "posix_spawn",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Creates a process and executes a program. Review executable selection, inherited file descriptors, environment, and privilege transitions."
+  },
+  {
+    "string": "posix_spawnp",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Creates a process by searching PATH. Review PATH control and privilege handling."
+  },
+  {
+    "string": "popen(",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Potential command-pipe use. Confirm whether shell commands incorporate untrusted input; the string alone does not prove a vulnerability."
+  },
+  {
+    "string": "/bin/bash",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References Bash. Determine whether it can be invoked with elevated privileges and whether privilege-dropping behavior is enforced."
+  },
+  {
+    "string": "/bin/dash",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References Dash shell. Investigate why a shell is used and whether arguments or environment are attacker-controlled."
+  },
+  {
+    "string": "/bin/zsh",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References Zsh shell. Investigate shell invocation and privilege transitions."
+  },
+  {
+    "string": "sh -c",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Command string passed to a shell. If the command includes untrusted data, command injection may be possible."
+  },
+  {
+    "string": "bash -c",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Command string passed to Bash. Review input handling and execution privileges."
+  },
+  {
+    "string": "PATH",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References executable search path. Check for relative, empty, or user-writable directories and environment sanitization."
+  },
+  {
+    "string": "IFS",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References shell field-splitting configuration. Risk depends on whether it is used in shell execution or environment handling."
+  },
+  {
+    "string": "ENV",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References environment configuration. Determine whether environment values can affect shell startup or privileged execution."
+  },
+  {
+    "string": "BASH_ENV",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Bash may use this variable to select a startup file in noninteractive contexts. Review whether it is honored in a privileged execution path."
+  },
+  {
+    "string": "PYTHONPATH",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Python module search path may allow loading attacker-controlled modules if inherited by a privileged process."
+  },
+  {
+    "string": "PERL5LIB",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Perl library search path can influence module loading. Review environment sanitization in privileged execution."
+  },
+  {
+    "string": "RUBYLIB",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Ruby library search path can influence code loading. Review environment sanitization in privileged execution."
+  },
+  {
+    "string": "GCONV_PATH",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References the glibc character-conversion module path. Historically relevant to privilege escalation when unsafe environment values are honored; verify platform and mitigations."
+  },
+  {
+    "string": "NSS_MODULES_PATH",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References a name-service module path. Determine whether attacker-controlled modules could be loaded in a privileged process."
+  },
+  {
+    "string": "LD_AUDIT",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Dynamic-linker auditing environment variable. Verify privileged execution does not honor unsafe loader environment settings."
+  },
+  {
+    "string": "LD_DEBUG",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Dynamic-linker debugging variable. Usually diagnostic, but check whether sensitive loader output or environment handling matters."
+  },
+  {
+    "string": "mktemp",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Temporary-file creation is referenced. Check for predictable names, unsafe permissions, and whether creation is atomic."
+  },
+  {
+    "string": "mkstemp",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Secure temporary-file creation primitive. Verify correct use, permissions, and cleanup."
+  },
+  {
+    "string": "mkdtemp",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Temporary-directory creation primitive. Verify permissions, path handling, and cleanup."
+  },
+  {
+    "string": "tempnam",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Legacy temporary-name function can be race-prone. Prefer secure creation APIs such as mkstemp."
+  },
+  {
+    "string": "tmpnam",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Legacy temporary-name function can introduce race conditions because it returns a name without securely creating the file."
+  },
+  {
+    "string": "open",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Opens a file or device. Review flags, permissions, path validation, and symlink handling; this common symbol alone is not a finding."
+  },
+  {
+    "string": "openat",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Opens a path relative to a directory descriptor. Review use of directory descriptors and flags such as O_NOFOLLOW where appropriate."
+  },
+  {
+    "string": "openat2",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Uses Linux openat2 path-resolution controls. Verify restrictive resolution flags are applied when security boundaries matter."
+  },
+  {
+    "string": "O_NOFOLLOW",
+    "severity": "LOW WITH CONTEXT",
+    "context": "References a flag that can prevent following a final symlink. Confirm it is applied to the relevant open operation; presence alone does not guarantee safety."
+  },
+  {
+    "string": "O_CREAT",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Creates files. Review requested permissions, umask, symlink behavior, and directory ownership."
+  },
+  {
+    "string": "O_EXCL",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Exclusive file creation flag. Check that it is paired appropriately with O_CREAT and used on a trustworthy filesystem."
+  },
+  {
+    "string": "fopen",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Opens a stream by pathname. Review path control, permissions, and symlink/race handling."
+  },
+  {
+    "string": "freopen",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Reopens a stream. Review target paths and effects on standard input/output/error in privileged code."
+  },
+  {
+    "string": "fdopen",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Wraps an existing file descriptor in a stream. Review descriptor provenance and access mode."
+  },
+  {
+    "string": "read",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Reads from a file descriptor. Check return values, length bounds, and whether untrusted input is validated."
+  },
+  {
+    "string": "write",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Writes to a file descriptor. Review destination descriptor, permissions, partial writes, and sensitive-file exposure."
+  },
+  {
+    "string": "fread",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Reads data into a buffer. Verify size/count calculations and handling of short reads."
+  },
+  {
+    "string": "fwrite",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Writes buffered data. Verify length calculations and whether sensitive data can be written to unintended destinations."
+  },
+  {
+    "string": "gets",
+    "severity": "CRITICAL",
+    "context": "Unsafe C input function with no bounds checking. If present as an imported or reachable function, investigate immediately; modern toolchains may remove it."
+  },
+  {
+    "string": "strcat",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Concatenates strings without destination-size checking. Review destination capacity and all input lengths."
+  },
+  {
+    "string": "strncat",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Bounded string concatenation can still be misused if the bound is not the remaining destination capacity or termination is mishandled."
+  },
+  {
+    "string": "vsprintf",
+    "severity": "HIGH",
+    "context": "Formats data into a buffer without a size limit. Prefer vsnprintf and verify format strings are trusted."
+  },
+  {
+    "string": "snprintf",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Size-bounded formatting function. Verify return-value handling and ensure truncation does not create security issues."
+  },
+  {
+    "string": "vsnprintf",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Size-bounded formatted output. Verify buffer size and return-value handling."
+  },
+  {
+    "string": "strtok",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Tokenizes strings in place. Review parsing assumptions and shared-state behavior when handling untrusted input."
+  },
+  {
+    "string": "strdup",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Duplicates a string. Check allocation failure handling and the trustworthiness/size of the input."
+  },
+  {
+    "string": "strndup",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Duplicates a bounded string. Check size limits and allocation failure handling."
+  },
+  {
+    "string": "getsockopt",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Reads socket options. Usually benign; review network trust boundaries and error handling."
+  },
+  {
+    "string": "setsockopt",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Changes socket options. Determine whether options affect security, binding, packet handling, or access controls."
+  },
+  {
+    "string": "send(",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Sends data on a socket. Review what data is transmitted and whether the peer is trusted."
+  },
+  {
+    "string": "recv(",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Receives data from a socket. Validate lengths, framing, and all data before use."
+  },
+  {
+    "string": "getaddrinfo",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Resolves host/service information. Review whether attacker-controlled names or service values influence privileged network activity."
+  },
+  {
+    "string": "gethostbyname",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Legacy hostname resolution API. Review input validation, resolver behavior, and error handling."
+  },
+  {
+    "string": "crypt",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Password-hashing API reference. Verify algorithm choice, salt handling, and correct comparison/storage behavior."
+  },
+  {
+    "string": "crypt_r",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Reentrant password-hashing API. Verify algorithm selection and safe handling of password material."
+  },
+  {
+    "string": "getspnam",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Looks up shadow-password records. Confirm access is intentional and password hashes are not exposed to untrusted users."
+  },
+  {
+    "string": "pam_start",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Starts a PAM authentication transaction. Review PAM configuration, service name, and error handling."
+  },
+  {
+    "string": "pam_authenticate",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Performs PAM authentication. Verify failures are handled securely and authentication cannot be bypassed."
+  },
+  {
+    "string": "pam_setcred",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Sets PAM credentials. Review credential establishment and cleanup across success/failure paths."
+  },
+  {
+    "string": "pam_open_session",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Opens a PAM session. Review session setup, logging, and cleanup."
+  },
+  {
+    "string": "authenticate",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Generic authentication-related symbol/string. Investigate surrounding code; this marker alone does not establish an authentication flaw."
+  },
+  {
+    "string": "Authorization",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Authorization-related text. Review checks at sensitive operations; a string match alone is not proof of a defect."
+  },
+  {
+    "string": "sudoers",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References sudoers policy. Determine whether the program reads or modifies policy and whether paths/permissions are secure."
+  },
+  {
+    "string": "authorized_keys",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References SSH authorized_keys. Review whether the program can modify SSH access controls or write attacker-controlled keys."
+  },
+  {
+    "string": "known_hosts",
+    "severity": "LOW WITH CONTEXT",
+    "context": "References SSH host-key records. Review trust decisions and whether host-key checking is bypassed."
+  },
+  {
+    "string": "/etc/ssh/sshd_config",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References SSH daemon configuration. Review any privileged write path for authorization and atomic safe updates."
+  },
+  {
+    "string": "/etc/ld.so.preload",
+    "severity": "CRITICAL WITH CONTEXT",
+    "context": "References the system-wide dynamic-loader preload file. Any reachable privileged write path warrants immediate investigation."
+  },
+  {
+    "string": "/etc/ld.so.conf",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References dynamic-loader configuration. Review whether privileged code can alter library search configuration."
+  },
+  {
+    "string": "/etc/cron.d",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References a cron configuration directory. Review whether untrusted users can influence files placed there."
+  },
+  {
+    "string": "/etc/cron.daily",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References daily cron jobs. Determine whether the binary can write executable content into privileged scheduled-task locations."
+  },
+  {
+    "string": "/etc/cron.hourly",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References hourly cron jobs. Determine whether privileged scheduled tasks can be modified."
+  },
+  {
+    "string": "/etc/systemd/system",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References system-wide systemd unit files. Review whether the program can create or modify privileged service definitions."
+  },
+  {
+    "string": "system(",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Shell command execution API reference. If this appears in a binary, inspect the call path and command construction; a string match alone does not prove exploitability."
+  },
+  {
+    "string": "capabilities",
+    "severity": "LOW WITH CONTEXT",
+    "context": "References Linux capabilities. Inspect actual file/process capability assignments and whether the granted set is minimal."
+  },
+  {
+    "string": "CAP_SYS_ADMIN",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References a broad Linux capability with extensive system-level authority. Verify whether it is granted or merely mentioned."
+  },
+  {
+    "string": "CAP_SETUID",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References the capability to manipulate user IDs. Verify actual capability assignments and privilege-transition logic."
+  },
+  {
+    "string": "CAP_SETGID",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References the capability to manipulate group IDs. Verify actual capability assignments and privilege-transition logic."
+  },
+  {
+    "string": "CAP_DAC_OVERRIDE",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References bypassing discretionary file permission checks. Verify whether it is granted and constrained."
+  },
+  {
+    "string": "CAP_DAC_READ_SEARCH",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References bypassing file read/search permission checks. Verify whether it is granted and constrained."
+  },
+  {
+    "string": "CAP_NET_RAW",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References raw/packet socket capability. Determine whether the binary actually receives it and whether network access is necessary."
+  },
+  {
+    "string": "seccomp",
+    "severity": "LOW WITH CONTEXT",
+    "context": "References syscall filtering. Review whether a restrictive filter is installed before processing untrusted input."
+  },
+  {
+    "string": "seccomp_init",
+    "severity": "LOW WITH CONTEXT",
+    "context": "References libseccomp filter setup. Verify the filter is loaded successfully and denies the intended syscalls."
+  },
+  {
+    "string": "no_new_privs",
+    "severity": "LOW WITH CONTEXT",
+    "context": "References Linux no_new_privs behavior. Confirm it is set at the appropriate point if relied upon as a security boundary."
+  },
+  {
+    "string": "PR_SET_NO_NEW_PRIVS",
+    "severity": "LOW WITH CONTEXT",
+    "context": "References prctl option to prevent gaining new privileges through exec. Verify successful application and scope."
+  },
+  {
+    "string": "PR_SET_SECCOMP",
+    "severity": "LOW WITH CONTEXT",
+    "context": "References seccomp setup through prctl. Verify the selected mode/filter and error handling."
+  },
+  {
+    "string": "setresuid",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Changes real, effective, and saved user IDs. Review ordering, return-value checks, and whether all saved privileges are dropped."
+  },
+  {
+    "string": "setresgid",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Changes real, effective, and saved group IDs. Review ordering and whether all saved privileges are dropped."
+  },
+  {
+    "string": "seteuid",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Changes effective user ID. Verify whether saved IDs allow privileges to be regained and whether failures are handled."
+  },
+  {
+    "string": "setegid",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Changes effective group ID. Verify whether group privileges are dropped completely and failures are handled."
+  },
+  {
+    "string": "setfsuid",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Changes filesystem user ID. Review filesystem permission semantics and privilege transition logic."
+  },
+  {
+    "string": "setfsgid",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Changes filesystem group ID. Review filesystem permission semantics and privilege transition logic."
+  },
+  {
+    "string": "capability",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Generic capability-related marker. Verify actual process/file capability state rather than relying on string presence."
+  },
+  {
+    "string": "audit_log_user_message",
+    "severity": "LOW WITH CONTEXT",
+    "context": "References audit logging. Verify security-relevant failures and privilege transitions are logged without leaking secrets."
+  },
+  {
+    "string": "syslog",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Writes system log messages. Review format-string use and whether attacker-controlled content can forge or corrupt log entries."
+  },
+  {
+    "string": "openlog",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Initializes syslog. Review identity/tag choices and whether sensitive data is logged."
+  },
+  {
+    "string": "umask",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Sets default file-creation permissions. Check that restrictive values are set before creating sensitive files."
+  },
+  {
+    "string": "renameat",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Renames paths relative to directory descriptors. Review directory trust, race handling, and atomic update assumptions."
+  },
+  {
+    "string": "unlinkat",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Removes a path relative to a directory descriptor. Review path validation and directory permissions."
+  },
+  {
+    "string": "fstat",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Reads metadata from an open descriptor. Prefer descriptor-based checks when avoiding pathname races; verify checks apply to the descriptor later used."
+  },
+  {
+    "string": "faccessat",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Checks access to a path relative to a directory descriptor. Review TOCTOU exposure and whether the result is followed by a separate path operation."
+  },
+  {
+    "string": "realpath(",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Canonical path resolution call marker. Ensure the result is checked against an intended directory and not used as the sole defense against races."
+  },
+  {
+    "string": "systemd-run",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References launching systemd transient units. Determine whether untrusted users can influence unit commands or properties."
+  },
+  {
+    "string": "docker",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References Docker tooling. If invoked with elevated privileges or access to the Docker socket, review whether it grants host-level control."
+  },
+  {
+    "string": "podman",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References Podman tooling. Review privileged mode, mounted host paths, and whether user-controlled arguments affect execution."
+  },
+  {
+    "string": "mount namespace",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References mount namespace behavior. Verify namespace creation and mount propagation provide the intended isolation."
+  },
+  {
+    "string": "unshare",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Creates namespaces. Review namespace flags and privileged operations performed inside them."
+  },
+  {
+    "string": "setns",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Joins an existing namespace. Verify target namespace descriptors are trusted and access is authorized."
+  },
+  {
+    "string": "keyctl",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Interacts with the kernel key-retention service. Review key permissions, namespace, and sensitive key material handling."
+  },
+  {
+    "string": "request_key",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Requests a kernel key. Review key descriptions, request policy, and exposure of returned key material."
+  },
+  {
+    "string": "reboot",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References reboot functionality. Confirm privileged reboot operations are authorized and not triggerable by untrusted input."
+  },
+  {
+    "string": "iopl",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Changes I/O privilege level on supported architectures. If reachable, investigate closely because it can grant broad hardware access."
+  },
+  {
+    "string": "ioperm",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Changes process I/O port permissions. Verify privileged access is necessary and tightly constrained."
+  },
+  {
+    "string": "kexec_load",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References loading a new kernel for kexec. Review privilege requirements and whether untrusted data can influence the image."
+  },
+  {
+    "string": "init_module",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Loads a kernel module. Verify authorization and integrity of module paths/content."
+  },
+  {
+    "string": "finit_module",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Loads a kernel module from a file descriptor. Verify authorization and integrity of module content."
+  },
+  {
+    "string": "delete_module",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "Removes a kernel module. Verify authorization and whether service/security impact is controlled."
+  },
+  {
+    "string": "bpf",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References the BPF syscall. Review program type, verifier constraints, kernel version, and privilege checks."
+  },
+  {
+    "string": "perf_event_open",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Opens performance monitoring events. Review access controls and potential information exposure."
+  },
+  {
+    "string": "useradd",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References user-account creation. Determine whether account creation is intended and input/authorization checks are enforced."
+  },
+  {
+    "string": "usermod",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References modifying user accounts. Review group, shell, home-directory, and privilege changes."
+  },
+  {
+    "string": "groupadd",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References group creation. Review authorization and whether privileged group membership can be manipulated."
+  },
+  {
+    "string": "chpasswd",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References bulk password changes. Verify input source, authorization, and protection of password data."
+  },
+  {
+    "string": "visudo",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References sudoers editing utility. Review how it is invoked and whether arbitrary files or editor commands can be selected."
+  },
+  {
+    "string": "EDITOR",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Editor-selection environment variable. If a privileged program launches an editor using this value, review command execution and environment sanitization."
+  },
+  {
+    "string": "PAGER",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Pager-selection environment variable. Some pagers support shell escapes; review privileged invocation and environment handling."
+  },
+  {
+    "string": "LESSOPEN",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Less preprocessor environment variable. Review whether a privileged process invokes less or honors this variable."
+  },
+  {
+    "string": "MANPATH",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Manual-page search path. Review only if it affects privileged file selection or subprocess execution."
+  },
+  {
+    "string": "IFS=",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "Possible shell field-separator assignment. Inspect surrounding context; this substring can occur harmlessly."
+  },
+  {
+    "string": "debugfs",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References filesystem debugging tools that may permit low-level filesystem access. Determine whether privileged execution exposes raw device modification."
+  },
+  {
+    "string": "nmap",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References a network scanning tool. Review privileged invocation, script execution features, and user-controlled arguments."
+  },
+  {
+    "string": "busybox",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References BusyBox multi-call utilities. Determine which applet is invoked and whether command selection or paths are user-controlled."
+  },
+  {
+    "string": "find -exec",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References find command execution patterns. If used by privileged code, inspect command construction and directory/input trust."
+  },
+  {
+    "string": "tar",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References archive processing. Review extraction paths, symlink handling, and any privileged file writes."
+  },
+  {
+    "string": "rsync",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References file synchronization. Review remote-shell invocation, destination paths, and privileged file permissions."
+  },
+  {
+    "string": "scp",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References secure-copy functionality. Review paths, host selection, and whether user-controlled arguments reach a privileged subprocess."
+  },
+  {
+    "string": "curl",
+    "severity": "LOW WITH CONTEXT",
+    "context": "References HTTP transfer functionality. Review downloaded content integrity and whether privileged code executes or trusts remote data."
+  },
+  {
+    "string": "wget",
+    "severity": "LOW WITH CONTEXT",
+    "context": "References download functionality. Review destination paths, TLS verification, and whether downloaded content is later executed."
+  },
+  {
+    "string": "/etc/pam.d",
+    "severity": "HIGH WITH CONTEXT",
+    "context": "References PAM configuration. Review any privileged write path and the effect on authentication policy."
+  },
+  {
+    "string": "/etc/security",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References security configuration files. Determine whether the binary reads or modifies policy files and whether paths are trusted."
+  },
+  {
+    "string": "/etc/hosts",
+    "severity": "LOW WITH CONTEXT",
+    "context": "References host-name mapping configuration. Review privileged modifications and whether name resolution decisions can be manipulated."
+  },
+  {
+    "string": "/etc/resolv.conf",
+    "severity": "LOW WITH CONTEXT",
+    "context": "References DNS resolver configuration. Review privileged modifications and resulting name-resolution trust."
+  },
+  {
+    "string": "/etc/profile",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References system-wide shell startup configuration. Review any privileged write path that could affect future shell sessions."
+  },
+  {
+    "string": "/etc/environment",
+    "severity": "MEDIUM WITH CONTEXT",
+    "context": "References system-wide environment configuration. Review privileged write access and variables that affect executable/module lookup."
+  },
+  {
+    "string": "/etc/ld.so.cache",
+    "severity": "LOW WITH CONTEXT",
+    "context": "References the dynamic-linker cache. Usually system-managed; investigate if privileged code writes or replaces it."
+  },
+  {
+    "string": "getrandom",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Uses the kernel random source. Verify errors are handled and enough entropy is obtained for security-sensitive values."
+  },
+  {
+    "string": "RAND_bytes",
+    "severity": "LOW WITH CONTEXT",
+    "context": "OpenSSL cryptographic random API. Verify return values are checked and failures do not fall back to predictable randomness."
+  },
+  {
+    "string": "EVP_EncryptInit",
+    "severity": "LOW WITH CONTEXT",
+    "context": "References OpenSSL encryption setup. Review algorithm/mode selection, key/nonce handling, and authentication of ciphertext."
+  },
+  {
+    "string": "SSL_CTX_set_verify",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Configures TLS certificate verification. Check that verification is enabled and callbacks do not accept invalid certificates."
+  },
+  {
+    "string": "CURLOPT_SSL_VERIFYPEER",
+    "severity": "LOW WITH CONTEXT",
+    "context": "libcurl TLS peer-verification option. Ensure verification is enabled for connections where server identity matters."
+  },
+  {
+    "string": "CURLOPT_SSL_VERIFYHOST",
+    "severity": "LOW WITH CONTEXT",
+    "context": "libcurl hostname-verification option. Ensure hostname verification is enabled for authenticated TLS connections."
+  },
+  {
+    "string": "strerror",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Converts error codes to text. Usually benign; avoid exposing sensitive internals in user-facing errors."
+  },
+  {
+    "string": "assert",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Assertion marker. Confirm security-critical checks are not implemented only as assertions that may be disabled."
+  },
+  {
+    "string": "__stack_chk_fail",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Often indicates compiler stack-protector support. Positive hardening signal, but not proof that all unsafe paths are protected."
+  },
+  {
+    "string": "__fortify_fail",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Often indicates fortified libc checks. Positive hardening signal, but does not establish overall binary safety."
+  },
+  {
+    "string": "RELRO",
+    "severity": "LOW WITH CONTEXT",
+    "context": "Hardening marker. Verify actual ELF properties with tools such as checksec/readelf; string presence alone is not proof."
+  },
+  {
+    "string": "GNU_STACK",
+    "severity": "LOW WITH CONTEXT",
+    "context": "ELF stack metadata marker. Verify actual stack permissions in program headers rather than relying on string output."
+  },
+  {
+    "string": "GLIBC_",
+    "severity": "LOW WITH CONTEXT",
+    "context": "References glibc symbol-version metadata. Useful for compatibility triage, not itself a vulnerability indicator."
+  }
+]
