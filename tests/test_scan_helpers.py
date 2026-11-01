@@ -18,12 +18,15 @@ from scan_helpers import (
 
 class ScanHelperTests(unittest.TestCase):
     def test_find_output_is_nul_delimited_and_deduplicated(self) -> None:
-        output = b"/usr/bin/passwd\\0/opt/tool with space\\0/usr/bin/passwd\\0"
-        self.assertEqual(parse_find_output(output), ["/usr/bin/passwd", "/opt/tool with space"])
+        output = b"/usr/bin/passwd\0/opt/tool with space\0/usr/bin/passwd\0"
+        self.assertEqual(
+            parse_find_output(output),
+            ["/usr/bin/passwd", "/opt/tool with space"],
+        )
 
     def test_find_enumerates_suid_and_sgid_in_one_call(self) -> None:
         runner = Mock(return_value=subprocess.CompletedProcess(
-            args=["find"], returncode=0, stdout=b"/usr/bin/a\\0/usr/bin/b\\0", stderr=b""
+            args=["find"], returncode=0, stdout=b"/usr/bin/a\0/usr/bin/b\0", stderr=b""
         ))
         paths, warnings = discover_privileged_files("/fixture", runner=runner)
         self.assertEqual(paths, ["/usr/bin/a", "/usr/bin/b"])
@@ -35,8 +38,8 @@ class ScanHelperTests(unittest.TestCase):
 
     def test_find_keeps_partial_results_when_a_directory_is_inaccessible(self) -> None:
         runner = Mock(return_value=subprocess.CompletedProcess(
-            args=["find"], returncode=1, stdout=b"/usr/bin/known-suid\\0",
-            stderr=b"/root/private: Permission denied\\n"
+            args=["find"], returncode=1, stdout=b"/usr/bin/known-suid\0",
+            stderr=b"/root/private: Permission denied\n"
         ))
         paths, warnings = discover_privileged_files("/fixture", runner=runner)
         self.assertEqual(paths, ["/usr/bin/known-suid"])
@@ -44,20 +47,25 @@ class ScanHelperTests(unittest.TestCase):
 
     def test_getcap_parser_preserves_spaces_and_multiple_paths(self) -> None:
         output = (
-            "/usr/bin/ping cap_net_raw=ep\\n"
-            "/opt/my tool cap_net_bind_service=ep\\n"
-            "/opt/my tool cap_net_raw=ep\\n"
+            "/usr/bin/ping cap_net_raw=ep\n"
+            "/opt/my tool cap_net_bind_service=ep\n"
+            "/opt/my tool cap_net_raw=ep\n"
+            r"/opt/escaped\ path cap_net_raw=ep" "\n"
         )
-        self.assertEqual(parse_getcap_output(output), {
-            "/usr/bin/ping": ["cap_net_raw=ep"],
-            "/opt/my tool": ["cap_net_bind_service=ep", "cap_net_raw=ep"],
-        })
+        self.assertEqual(
+            parse_getcap_output(output),
+            {
+                "/usr/bin/ping": ["cap_net_raw=ep"],
+                "/opt/my tool": ["cap_net_bind_service=ep", "cap_net_raw=ep"],
+                "/opt/escaped path": ["cap_net_raw=ep"],
+            },
+        )
 
     def test_capability_scan_runs_once_and_keeps_partial_output_on_error(self) -> None:
         runner = Mock(return_value=subprocess.CompletedProcess(
             args=["getcap"], returncode=1,
-            stdout=b"/usr/bin/ping cap_net_raw=ep\\n",
-            stderr=b"/proc/1: Permission denied\\n"
+            stdout=b"/usr/bin/ping cap_net_raw=ep\n",
+            stderr=b"/proc/1: Permission denied\n"
         ))
         capabilities, warnings = scan_file_capabilities("/fixture", runner=runner)
         runner.assert_called_once()
@@ -91,16 +99,17 @@ class ScanHelperTests(unittest.TestCase):
         self.assertEqual(metadata, {})
         self.assertIn("access denied", warnings[0])
 
-    def test_inventory_runs_one_find_one_getcap_and_caches_cap_only_metadata(self) -> None:
+    def test_inventory_runs_one_find_one_getcap_and_caches_capability_only_metadata(self) -> None:
         calls: list[list[str]] = []
+
         def runner(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[bytes]:
             calls.append(command)
             if command[0] == "find":
-                return subprocess.CompletedProcess(command, 0, b"/usr/bin/ping\\0", b"")
+                return subprocess.CompletedProcess(command, 0, b"/usr/bin/ping\0", b"")
             return subprocess.CompletedProcess(
                 command, 0,
-                b"/usr/bin/ping cap_net_raw=ep\\n/opt/cap-only cap_net_bind_service=ep\\n",
-                b""
+                b"/usr/bin/ping cap_net_raw=ep\n/opt/cap-only cap_net_bind_service=ep\n",
+                b"",
             )
         info = os.stat_result(
             (stat.S_IFREG | stat.S_ISUID | 0o755, 123, 1, 1, 1000, 1000, 42, 10, 11, 12)
