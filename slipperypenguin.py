@@ -538,9 +538,6 @@ async def timeouts():
             console.print("[yellow]Timeouts:[/yellow]")
             for t in timeout_append:
                 console.print(f"\n[green] {t}[/green]")
-        if args.output in ("logs", "both"):
-            with open(TIMEOUT_OUT, "w") as f:
-                json.dump(timeout_append, f)
     except Exception as e:
         console.print(f"[red]timeouts failure: {e}[/red]")
         traceback.print_exc()
@@ -727,11 +724,6 @@ async def main():
         if args.output in ("terminal", "both"):
             console.print(f"[cyan]Total scan duration: {total_scan_seconds:.3f}s[/cyan]")
 
-        try:
-            await timeouts(binary)
-        except Exception as e:
-            console.print({e})
-            return 0
 
 
 asyncio.run(main())
