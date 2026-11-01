@@ -1,8 +1,4 @@
-"""Synthetic benchmark for the repeated getcap subprocess overhead.
-
-This compares per-file recursive calls with a single recursive inventory pass.
-It measures subprocess launch overhead, not total production filesystem time.
-"""
+"""Synthetic benchmark for repeated getcap subprocess overhead."""
 from __future__ import annotations
 
 import argparse
@@ -41,17 +37,17 @@ def main() -> None:
         counter = root / "calls.txt"
         fake = bindir / "getcap"
         fake.write_text(
-            "#!/bin/sh\\n"
-            'printf "call\\n" >> "$GETCAP_COUNTER"\\n'
-            f"sleep {args.delay}\\n"
-            'for arg do target="$arg"; done\\n'
-            'if [ -d "$target" ]; then\\n'
-            '  for path in "$target"/binary-*; do\\n'
-            '    [ -f "$path" ] && printf "%s cap_net_bind_service=ep\\n" "$path"\\n'
-            '  done\\n'
-            'elif [ -f "$target" ]; then\\n'
-            '  printf "%s cap_net_bind_service=ep\\n" "$target"\\n'
-            "fi\\n",
+            "#!/bin/sh\n"
+            'printf "call\n" >> "$GETCAP_COUNTER"\n'
+            f"sleep {args.delay}\n"
+            'for arg do target="$arg"; done\n'
+            'if [ -d "$target" ]; then\n'
+            '  for path in "$target"/binary-*; do\n'
+            '    [ -f "$path" ] && printf "%s cap_net_bind_service=ep\n" "$path"\n'
+            '  done\n'
+            'elif [ -f "$target" ]; then\n'
+            '  printf "%s cap_net_bind_service=ep\n" "$target"\n'
+            "fi\n",
             encoding="utf-8",
         )
         fake.chmod(0o755)
@@ -61,13 +57,20 @@ def main() -> None:
 
         started = time.perf_counter()
         for path in files:
-            subprocess.run(["getcap", "-r", str(path)], capture_output=True,
-                           text=True, check=False, env=env)
+            subprocess.run(
+                ["getcap", "-r", str(path)],
+                capture_output=True,
+                text=True,
+                check=False,
+                env=env,
+            )
         legacy_seconds = time.perf_counter() - started
         legacy_calls = len(counter.read_text(encoding="utf-8").splitlines())
         counter.unlink(missing_ok=True)
 
-        def runner(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        def runner(
+            command: list[str], **kwargs: object
+        ) -> subprocess.CompletedProcess[str]:
             return subprocess.run(command, env=env, **kwargs)  # type: ignore[arg-type,return-value]
 
         started = time.perf_counter()
