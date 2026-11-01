@@ -18,7 +18,7 @@ Now featured in the Xerj Corpus! Check Xerj out at https://github.com/xerj-org/x
 
 ##  Features
 
-**SUID Enumeration**: Recursively scans filesystem for SUID binaries (`-perm -4000`) 
+**SUID/SGID Enumeration**: Recursively scans filesystem for privileged binaries (`-perm -4000` or `-perm -2000`) 
 **Capability Scanning**: Detects Linux capabilities on binaries via `getcap` 
 **Strings Analysis**: Extracts strings from binaries for hidden credentials/paths 
 **Strace Monitoring**: Tracks system calls made by SUID binaries 
