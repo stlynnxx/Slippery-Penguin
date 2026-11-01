@@ -15,6 +15,8 @@ Runner = Callable[..., subprocess.CompletedProcess[Any]]
 
 @dataclass(frozen=True)
 class ScanInventory:
+    """All discovery results that can be reused throughout one scan."""
+
     privileged_files: list[str]
     capabilities_by_file: dict[str, list[str]]
     file_metadata: dict[str, dict[str, int | bool]]
@@ -36,7 +38,8 @@ def _decode_output(value: str | bytes | None) -> str:
 
 def _decode_getcap_path(path: str) -> str:
     path = re.sub(r"\\x([0-9a-fA-F]{2})", lambda m: chr(int(m.group(1), 16)), path)
-    return re.sub(r"\\([0-7]{3})", lambda m: chr(int(m.group(1), 8)), path)
+    path = re.sub(r"\\([0-7]{3})", lambda m: chr(int(m.group(1), 8)), path)
+    return path.replace(r"\ ", " ")
 
 
 def deduplicate_paths(paths: Iterable[str]) -> list[str]:
@@ -48,16 +51,18 @@ def deduplicate_paths(paths: Iterable[str]) -> list[str]:
 
 
 def parse_find_output(output: str | bytes | None) -> list[str]:
+    """Parse find -print0 output, including paths with spaces or newlines."""
     if output is None:
         return []
     if isinstance(output, bytes):
-        paths = [os.fsdecode(part) for part in output.split(b"\\0") if part]
+        paths = [os.fsdecode(part) for part in output.split(b"\0") if part]
     else:
-        paths = [part for part in output.split("\\0") if part]
+        paths = [part for part in output.split("\0") if part]
     return deduplicate_paths(paths)
 
 
 def parse_getcap_output(output: str | bytes | None) -> dict[str, list[str]]:
+    """Parse getcap output into normalised path -> capability expressions."""
     capabilities: dict[str, list[str]] = {}
     for line in _decode_output(output).splitlines():
         line = line.strip()
@@ -115,6 +120,7 @@ def discover_privileged_files(
     runner: Runner | None = None,
     timeout: float | None = 300,
 ) -> tuple[list[str], list[str]]:
+    """Find regular SUID and SGID files in a single filesystem traversal."""
     run = runner or subprocess.run
     command = [
         "find", root, "-type", "f", "(", "-perm", "-4000", "-o",
@@ -132,6 +138,7 @@ def scan_file_capabilities(
     runner: Runner | None = None,
     timeout: float | None = 300,
 ) -> tuple[dict[str, list[str]], list[str]]:
+    """Run one recursive getcap scan and keep any stdout returned on failure."""
     run = runner or subprocess.run
     stdout, _stderr, _returncode, warning = _run_command(
         ["getcap", "-r", root], runner=run, timeout=timeout, text=True
@@ -144,6 +151,7 @@ def collect_file_metadata(
     *,
     stat_func: Callable[[str], os.stat_result] | None = None,
 ) -> tuple[dict[str, dict[str, int | bool]], list[str]]:
+    """Cache stat metadata once per unique relevant file path."""
     get_stat = stat_func or os.stat
     metadata: dict[str, dict[str, int | bool]] = {}
     warnings: list[str] = []
@@ -173,6 +181,7 @@ def collect_scan_inventory(
     stat_func: Callable[[str], os.stat_result] | None = None,
     command_timeout: float | None = 300,
 ) -> ScanInventory:
+    """Collect find, getcap, and reusable metadata once per scan."""
     run = runner or subprocess.run
     total_started = time.perf_counter()
 
@@ -188,7 +197,6 @@ def collect_scan_inventory(
     )
     getcap_seconds = time.perf_counter() - started
 
-    # Cache metadata for both privileged files and capability-bearing files.
     started = time.perf_counter()
     file_metadata, metadata_warnings = collect_file_metadata(
         [*privileged_files, *capabilities.keys()], stat_func=stat_func
