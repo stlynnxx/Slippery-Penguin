@@ -682,6 +682,18 @@ async def main():
             console.print(f"[red]main failure: {e}[/red]")
             traceback.print_exc()
 
+        # Include every capability-bearing file in reports, even when it is
+        # outside the existing /usr/bin analysis scope.
+        for capability_path, expressions in cap_append.items():
+            report_data = b_exp.setdefault(capability_path, {})
+            report_data.setdefault("strings", [])
+            report_data.setdefault("strace", [])
+            report_data.setdefault("flags", [])
+            report_data.setdefault("gtfo", [])
+            report_data.setdefault("timeouts", [])
+            report_data["capabilities"] = expressions
+            report_data["file_metadata"] = file_metadata.get(capability_path, {})
+
         if args.htmlreport and b_exp:
             html = generate_report(b_exp, default_binary=next(iter(b_exp.keys()), None))
             with open(HTML_OUT, "w", encoding="utf-8") as f:
