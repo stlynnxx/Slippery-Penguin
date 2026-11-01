@@ -161,6 +161,7 @@ slipperypenguin/
 │   └── YYYY-MM-DD_HH-MM-SS/
 │       ├── str-out.json
 │       ├── cap-out.json
+│       ├── scan-out.json
 │       ├── find-out.json
 │       ├── strace-out.json
 │       ├── timeout-out.json
@@ -175,20 +176,22 @@ slipperypenguin/
 
 ```bash
 flowchart TD
-    A[Start] --> B[Enumerate SUID Binaries]
-    B --> C[For Each Binary]
-    C --> D[strings Scan]
-    C --> E[strace Execution]
-    C --> F[GTFOBins Match]
-    C --> G[Flag Detection]
-    D & E & F & G --> H[Aggregate Results]
-    H --> I[Generate Report]
-    I --> J[End]
+    A[Start] --> B[Enumerate SUID/SGID Files Once]
+    B --> C[Recursive getcap Scan Once]
+    B --> D[For Each Binary]
+    D --> E[strings Scan]
+    D --> F[strace Execution]
+    D --> G[GTFOBins Match]
+    D --> H[Flag Detection]
+    C & E & F & G & H --> I[Aggregate Results]
+    I --> J[Generate Report]
+    J --> K[End]
 ```
 
 ### Concurrency Model
 
-- **Async Architecture**: Uses `asyncio` for concurrent binary scanning
+- **Async Architecture**: Uses `asyncio` for concurrent per-binary analysis
+- **Inventory pass**: Enumerates SUID/SGID files once and runs one recursive `getcap` pass; cached results are reused throughout the run
 - **Semaphore Limit**: 5 concurrent tasks maximum
 - **Lock Protection**: Thread-safe dictionary operations
 - **Timeout Handling**: Configurable per-binary timeout with graceful kill
@@ -198,8 +201,9 @@ flowchart TD
 | File | Contents |
 |------|----------|
 | `str-out.json` | Extracted strings from binaries |
-| `cap-out.json` | Linux capabilities detected |
-| `find-out.json` | SUID binary locations |
+| `cap-out.json` | Linux file capabilities collected by one recursive getcap pass |
+| `scan-out.json` | Scan timings, warnings, counts, and cached file metadata |
+| `find-out.json` | SUID and SGID binary locations |
 | `strace-out.json` | System call traces |
 | `timeout-out.json` | Timeout occurrences |
 | `gfto-out.json` | GTFOBins matches |
