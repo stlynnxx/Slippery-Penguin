@@ -169,7 +169,7 @@ def generate_PDF(b_exp):
                             if not capabilities:
                                 text("No file capabilities found")
                             else:
-                                text("\\n".join(str(value) for value in capabilities[:50]))
+                                text("\n".join(str(value) for value in capabilities[:50]))
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
