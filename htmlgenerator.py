@@ -384,7 +384,15 @@ def generate_report(b_exp, default_binary=None):
                         section.className = 'section';
 
                         const heading = document.createElement('h3');
-                        heading.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+                        const labels = {
+                            strings: 'Static analysis: Strings',
+                            flags: 'Static analysis: Flags',
+                            gtfo: 'Static analysis: GTFOBins matches',
+                            capabilities: 'Static analysis: Linux capabilities',
+                            strace: 'Runtime observations (strace)',
+                            timeouts: 'Analysis timeouts'
+                        };
+                        heading.textContent = labels[type] || type;
                         section.appendChild(heading);
 
                         const displayText = formatContent(type, data[type]);
