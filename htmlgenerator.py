@@ -173,7 +173,7 @@ def generate_PDF(b_exp):
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
-                            text("Strace:")
+                            text("Runtime observations (strace):")
                         with tag("pre"):
                             strace = binary_data.get("strace", [])
                             if not strace:
