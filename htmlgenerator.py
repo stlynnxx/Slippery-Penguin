@@ -163,6 +163,16 @@ def generate_PDF(b_exp):
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
+                            text("Capabilities:")
+                        with tag("pre"):
+                            capabilities = binary_data.get("capabilities", [])
+                            if not capabilities:
+                                text("No file capabilities found")
+                            else:
+                                text("\n".join(str(value) for value in capabilities[:50]))
+
+                    with tag("div", klass="result-block"):
+                        with tag("div", klass="result-label"):
                             text("Strace:")
                         with tag("pre"):
                             strace = binary_data.get("strace", [])
@@ -369,7 +379,7 @@ def generate_report(b_exp, default_binary=None):
                     const data = allData[binary] || {};
                     resultsDiv.innerHTML = '';
 
-                    ['strings', 'strace', 'flags', 'gtfo', 'timeouts'].forEach(function(type) {
+                    ['strings', 'strace', 'flags', 'gtfo', 'timeouts', 'capabilities'].forEach(function(type) {
                         const section = document.createElement('div');
                         section.className = 'section';
 
