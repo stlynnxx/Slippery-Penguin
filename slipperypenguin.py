@@ -671,7 +671,14 @@ async def main():
                     "Review each target before running any command; strace is not a sandbox.[/bold yellow]"
                 )
                 for candidate, reasons in candidates.items():
-                    trace_file = os.path.join(RUN_DIR, "runtime-traces", os.path.basename(candidate) + ".strace")
+                    trace_name = (
+                        os.path.basename(candidate)
+                        + "-"
+                        + hashlib.sha256(candidate.encode("utf-8")).hexdigest()[:12]
+                        + ".strace"
+                    )
+                    trace_file = os.path.join(RUN_DIR, "runtime-traces", trace_name)
+                    os.makedirs(os.path.dirname(trace_file), exist_ok=True)
                     command = [
                         "timeout", "--signal=TERM", "--kill-after=1s", str(timeout_var),
                         "strace", "-f", "-qq", "-e", "trace=execve", "-o", trace_file,
