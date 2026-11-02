@@ -8,7 +8,7 @@ Use responsibly and in accordance with all applicable local, state, and federal 
 
 **This is the development branch, where new work gets pushed to as the next release is built. It may have features not present in the current release, and may be less stable than the latest release.**
 
-**SUID Enumeration and Vulnerability Scanning Tool**
+**SUID/SGID Enumeration and Vulnerability Scanning Tool**
 
 Slippery Penguin is a security auditing tool designed to enumerate SUID binaries, scan for dangerous capabilities, and cross-reference findings against the GTFOBins database to identify potential privilege escalation vectors.
 
@@ -59,8 +59,8 @@ python3 slipperypenguin.py --update-gtfobins
 Downloading the .tar.gz from www.eclecticelectrionics.com (https://github.com/stlynnxx/EclecticElectronics)
 Note: **This installs the latest release, not the development branch**
 ```bash
-curl -L https://eclecticelectronics.fly.dev/api/download/2.5.0 -o slipperypenguin-2.5.0.tar.gz
-sha256sum slipperypenguin-2.5.0.tar.gz
+curl -L https://eclecticelectronics.fly.dev/api/download/2.5.1 -o slipperypenguin-2.5.1.tar.gz
+sha256sum slipperypenguin-2.5.1.tar.gz
 
 pip install -r requirements.txt
 
