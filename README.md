@@ -1,5 +1,5 @@
 ***Slippery Penguin is intended strictly for use on systems you own or have explicit authorization
-to test. This tool is provided for educational and security research purposes only. The author assumes no liability for misuse or damage caused by this tool. 
+to test. This tool is provided for educational and security research purposes only. The authors assumes no liability for misuse or damage caused by this tool. 
 Use responsibly and in accordance with all applicable local, state, and federal laws.***
 
 
