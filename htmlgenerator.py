@@ -143,7 +143,7 @@ def generate_PDF(b_exp):
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
-                            text("Flags:")
+                            text("Static analysis: Flags:")
                         with tag("pre"):
                             flags = binary_data.get("flags", [])
                             if not flags:
@@ -163,7 +163,7 @@ def generate_PDF(b_exp):
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
-                            text("Capabilities:")
+                            text("Static analysis: Capabilities:")
                         with tag("pre"):
                             capabilities = binary_data.get("capabilities", [])
                             if not capabilities:
@@ -185,7 +185,7 @@ def generate_PDF(b_exp):
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
-                            text("GTFOBins Matches:")
+                            text("Static analysis: GTFOBins Matches:")
                         with tag("pre"):
                             gtfo = binary_data.get("gtfo", [])
                             if not gtfo:
