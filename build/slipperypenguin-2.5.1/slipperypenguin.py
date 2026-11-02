@@ -1,7 +1,8 @@
-import signal, subprocess, os, json, argparse, sys, shutil, urllib.request, tempfile, hashlib, asyncio, traceback
+import signal, subprocess, os, json, argparse, sys, shutil, urllib.request, tempfile, hashlib, asyncio, traceback, time
 import tarfile, urllib.error, csv
 from datetime import datetime
 from rich.console import Console
+from scan_helpers import collect_scan_inventory, normalise_path
 from htmlgenerator import generate_report, generate_PDF
 from weasyprint import HTML
 
@@ -11,7 +12,7 @@ except ImportError:
     updatehelpers = None
 console = Console()
 # Version
-__version__ = "2.5.0"
+__version__ = "2.5.1"
 
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
 with open("art.txt", "r") as file:
@@ -85,7 +86,6 @@ strace_append = {}
 timeout_append = {}
 gtfo_append = {}
 find_append = {"results": []}
-getcap_append = {}
 flags_append = {}
 flags = {}
 b_exp = {}
@@ -351,30 +351,36 @@ GTFO_OUT = os.path.join(RUN_DIR, "gfto-out.json")
 FLAGS_OUT = os.path.join(RUN_DIR, "flags-out.json")
 HTML_OUT = os.path.join(RUN_DIR, "html-out.html")
 CSV_OUT = os.path.join(RUN_DIR, "report.csv")
+SCAN_OUT = os.path.join(RUN_DIR, "scan-out.json")
 
 
 border = "-----"
 
 
-if os.path.exists(FIND_OUT):
-    with open(FIND_OUT, "r") as f:
-        find_append = json.loads(f.read())
 
 
-# Enumerates SUIDs and checking capabilites
-result = subprocess.run(
-    ["find", "/", "-perm", "-4000", "-type", "f"], capture_output=True, text=True
-)
-agg_result = result.stdout.splitlines()
+# Build reusable filesystem and capability inventories once per run.
+SCAN_STARTED = time.perf_counter()
+inventory = collect_scan_inventory("/")
+agg_result = inventory.privileged_files
+cap_append = inventory.capabilities_by_file
+file_metadata = inventory.file_metadata
 find_append["results"] = agg_result
+
 if args.output in ("terminal", "both"):
-    console.print(f"[yellow]SUIDs Found:[/yellow]")
-    for suid in agg_result:
-        console.print(f"  [green]{suid}[/green]")
-    console.print(f"[yellow]END SUIDs[/yellow]\n")
-if args.output in ("logs", "both"):
-    with open(FIND_OUT, "w") as f:
-        json.dump(find_append["results"], f)
+    console.print("[yellow]SUID/SGID files found:[/yellow]")
+    for privileged_file in agg_result:
+        console.print(f"  [green]{privileged_file}[/green]")
+    console.print("[yellow]END SUID/SGID files[/yellow]")
+    console.print(
+        f"[cyan]Inventory: {len(agg_result)} privileged files, "
+        f"{len(cap_append)} capability-bearing files[/cyan]"
+    )
+    for capability_path, expressions in sorted(cap_append.items()):
+        console.print(f"  [green]{capability_path}[/green]: {', '.join(expressions)}")
+    console.print(f"[cyan]Inventory timings: {inventory.timings}[/cyan]")
+for warning in inventory.warnings:
+    console.print(f"[yellow]Scan warning: {warning}[/yellow]")
 
 
 # loading the flags from json
@@ -384,9 +390,6 @@ try:
 except FileNotFoundError as e:
     console.print("[red]Flags load failure: {e}[/red]")
     traceback.print_exc()
-if os.path.exists(CAP_OUT):
-    with open(CAP_OUT, "r") as f:
-        cap_append = json.loads(f.read())
 if os.path.exists(STRACE_OUT):
     with open(STRACE_OUT, "r") as f:
         strace_append = json.loads(f.read())
@@ -528,67 +531,13 @@ async def gtfo_scan(b):
         traceback.print_exc()
 
 
-# getcap scan - FIXED: now takes binary argument and iterates flags list correctly
-async def get_scan(b):
-    global getcap_append
-    global strings_append
-    global timeout_append
-    dt = str(datetime.now())
-    # Get the strings for THIS binary, not iterate flags_append
-    binary_strings = strings_append.get(b, [])
-    for flag in flags:  # Iterate the flag DEFINITIONS list, not flags_append dict
-        if flag["string"] in binary_strings:
-            try:
-                result = await asyncio.create_subprocess_exec(
-                    "getcap",
-                    "-r",
-                    b,  # Scan the actual binary path, not the flag string
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                )
-                try:
-                    stdout, stderr = await asyncio.wait_for(
-                        result.communicate(), timeout=timeout_var
-                    )
-                    try:
-                        if stdout:
-                            cap_append.setdefault(dt, [])
-                            cap_item = [
-                                f"Cap check {dt}: {result.stdout.decode().splitlines()}"
-                            ]
-                            await append(getcap_append, dt, cap_item)
-                            if args.output in ("terminal", "both"):
-                                console.print(
-                                    f"\n[yellow]getcap: [/yellow][green]{cap_append}[/green]"
-                                )
-                    except Exception as e:
-                        console.print(f"[red]get_scan failure: {e}[/red]")
-                        traceback.print_exc()
-                except TimeoutError:
-                    result.kill()
-            except (asyncio.CancelledError, Exception) as e:
-                console.print(f"getcap flag append failure {e}")
-                traceback.print_exc()
-            else:
-                pass
-            try:
-                await result.wait()
-            except (asyncio.CancelledError, Exception) as e:
-                pass
-            finally:
-                timeout_append[dt] = "timeout"
-
-
-async def timeouts(b):
+async def timeouts():
     global timeout_append
     try:
         if args.output in ("terminal", "both"):
             console.print("[yellow]Timeouts:[/yellow]")
             for t in timeout_append:
                 console.print(f"\n[green] {t}[/green]")
-        if args.output in ("logs", "both"):
-            with open(TIMEOUT_OUT, "w") as f:
-                json.dump(timeout_append, f)
     except Exception as e:
         console.print(f"[red]timeouts failure: {e}[/red]")
         traceback.print_exc()
@@ -597,43 +546,14 @@ async def timeouts(b):
 # File writing
 
 
-# strace results
-def strace_write(b):
-    global strace_append
-    try:
-        if args.output in ("logs", "both"):
-            # strace write to file
-            with open(STRACE_OUT, "w") as f:
-                json.dump(strace_append, f)
-    except Exception as e:
-        console.print(f"[red]strace write failure: {e}[/red]")
-        traceback.print_exc()
-
-
-# strings results
 def strings_write(b):
-    passer = {}
-    global strings_append
-    try:
-        if args.output in ("terminal", "both"):
-            console.print(
-                f"[yellow]Strings Found for [/yellow][magenta] {b}:[/magenta] "
-            )
-            for string in strings_append.get(b, {}):
-                console.print(f"    [green]{string}[/green]")
-        if args.output in ("logs", "both"):
-            if os.path.exists(STR_OUT):
-                with open(STR_OUT, "r") as f:
-                    passer = json.loads(f.read())
-            else:
-                passer = {}
-            passer[b] = strings_append.get(b, {})
-            with open(STR_OUT, "w", encoding="utf-8") as f:
-                json.dump(passer, f)
-    except Exception as e:
-        console.print(f"[red]strings write failure: {e}[/red]")
-        traceback.print_exc()
-        pass
+    """Print this binary's strings; all JSON files are persisted once per run."""
+    if args.output in ("terminal", "both"):
+        console.print(
+            f"[yellow]Strings Found for [/yellow][magenta] {b}:[/magenta] "
+        )
+        for string in strings_append.get(b, []):
+            console.print(f"    [green]{string}[/green]")
 
 
 # flags writing - no longer in gather(), called AFTER strings_scan completes
@@ -659,37 +579,27 @@ def flags_write(b):
                 if args.output in ("terminal", "both"):
                     console.print(f"[magenta]{flag['severity']}[/magenta]: {flag['string']}")
 
-        if args.output in ("logs", "both"):
-            with open(FLAGS_OUT, "w") as file:
-                json.dump(flags_append, file)
     except Exception as e:
         console.print(f"[red]Flags dump failure: {e}[/red]")
         traceback.print_exc()
 
 
-# getcap results writing
-def getcap_write(b):
-    global cap_append
-    try:
-        if args.output in ("logs", "both"):
-            with open(CAP_OUT, "w", encoding="utf-8") as f:
-                json.dump(cap_append, f)
-    except Exception as e:
-        console.print(f"[red]gtfo error: {e}[/red]")
-        traceback.print_exc()
-        pass
-
-
-# gtfobins results writing
-def gtfo_write(b):
-    global gtfo_append
-    try:
-        if args.output in ("logs", "both"):
-            with open(GTFO_OUT, "w", encoding="utf-8") as f:
-                json.dump(gtfo_append, f)
-    except Exception as e:
-        console.print(f"[red]gtfo write error : {e}[/red]")
-
+def write_scan_outputs():
+    """Persist accumulated output once, avoiding repeated per-binary disk writes."""
+    if args.output not in ("logs", "both"):
+        return
+    outputs = (
+        (FIND_OUT, find_append["results"]),
+        (CAP_OUT, cap_append),
+        (STR_OUT, strings_append),
+        (STRACE_OUT, strace_append),
+        (TIMEOUT_OUT, timeout_append),
+        (GTFO_OUT, gtfo_append),
+        (FLAGS_OUT, flags_append),
+    )
+    for output_path, payload in outputs:
+        with open(output_path, "w", encoding="utf-8") as output_file:
+            json.dump(payload, output_file, indent=2)
 
 
 def write_csv_report(results, output_path):
@@ -699,7 +609,7 @@ def write_csv_report(results, output_path):
         writer.writeheader()
 
         for binary, binary_data in sorted(results.items()):
-            for finding_type in ("strings", "strace", "flags", "gtfo", "timeouts"):
+            for finding_type in ("strings", "strace", "flags", "gtfo", "timeouts", "capabilities"):
                 findings = binary_data.get(finding_type)
                 if not findings:
                     continue
@@ -747,13 +657,11 @@ async def main():
                         strings_scan(binary),
                         strace_scan(binary),
                         gtfo_scan(binary),
-                        timeouts(binary),
                         return_exceptions=True,
                     )
 
                     # NOW safe: strings_append[binary] is populated
                     flags_write(binary)
-                    await get_scan(binary)  # Also needs to run after strings_scan
 
                     b_exp.setdefault(binary, {})
                     b_exp[binary]["strings"] = strings_append.get(binary, [])
@@ -761,22 +669,30 @@ async def main():
                     b_exp[binary]["strace"] = strace_append.get(binary, [])
                     b_exp[binary]["gtfo"] = gtfo_append.get(binary, [])
                     b_exp[binary]["timeouts"] = timeout_append.get(binary, [])
+                    binary_key = normalise_path(binary)
+                    b_exp[binary]["capabilities"] = cap_append.get(binary_key, [])
+                    b_exp[binary]["file_metadata"] = file_metadata.get(binary_key, {})
+                    strings_write(binary)
                 except (asyncio.CancelledError, Exception) as e:
                     console.print(f"[red]scan failure: {e}[/red]")
                     traceback.print_exc()
                     pass
-                try:
-                    getcap_write(binary)
-                    gtfo_write(binary)
-                    strace_write(binary)
-                    strings_write(binary)
-                except Exception as e:
-                    console.print(f"[red]write failure: {e}[/red]")
-                    traceback.print_exc()
-                    pass
+
         except Exception as e:
             console.print(f"[red]main failure: {e}[/red]")
             traceback.print_exc()
+
+        # Include every capability-bearing file in reports, even when it is
+        # outside the existing /usr/bin analysis scope.
+        for capability_path, expressions in cap_append.items():
+            report_data = b_exp.setdefault(capability_path, {})
+            report_data.setdefault("strings", [])
+            report_data.setdefault("strace", [])
+            report_data.setdefault("flags", [])
+            report_data.setdefault("gtfo", [])
+            report_data.setdefault("timeouts", [])
+            report_data["capabilities"] = expressions
+            report_data["file_metadata"] = file_metadata.get(capability_path, {})
 
         if args.htmlreport and b_exp:
             html = generate_report(b_exp, default_binary=next(iter(b_exp.keys()), None))
@@ -789,10 +705,37 @@ async def main():
             write_csv_report(b_exp, CSV_OUT)
 
         try:
-            await timeouts(binary)
+            await timeouts()
         except Exception as e:
-            console.print({e})
-            return 0
+            console.print(f"[red]Timeout summary failed: {e}[/red]")
+
+        write_scan_outputs()
+        total_scan_seconds = round(time.perf_counter() - SCAN_STARTED, 6)
+        inventory_seconds = float(inventory.timings["total_seconds"])
+        scan_summary = {
+            "run_id": RUN_ID,
+            "counts": {
+                "privileged_files": len(agg_result),
+                "capability_files": len(cap_append),
+                "metadata_cached_files": len(file_metadata),
+                "analysed_binaries": len(b_exp),
+            },
+            "timings_seconds": {
+                **inventory.timings,
+                "analysis_and_reporting_seconds": round(
+                    max(0.0, total_scan_seconds - inventory_seconds), 6
+                ),
+                "total_scan_seconds": total_scan_seconds,
+            },
+            "warnings": inventory.warnings,
+            "file_metadata": file_metadata,
+        }
+        if args.output in ("logs", "both"):
+            with open(SCAN_OUT, "w", encoding="utf-8") as summary_file:
+                json.dump(scan_summary, summary_file, indent=2)
+        if args.output in ("terminal", "both"):
+            console.print(f"[cyan]Total scan duration: {total_scan_seconds:.3f}s[/cyan]")
+
 
 
 asyncio.run(main())

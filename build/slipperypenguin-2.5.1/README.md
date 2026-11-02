@@ -1,12 +1,12 @@
 ***Slippery Penguin is intended strictly for use on systems you own or have explicit authorization
-to test. This tool is provided for educational and security research purposes only. The author assumes no liability for misuse or damage caused by this tool. 
+to test. This tool is provided for educational and security research purposes only. The authors assumes no liability for misuse or damage caused by this tool. 
 Use responsibly and in accordance with all applicable local, state, and federal laws.***
 
 
 
 # Slippery Penguin
 
-
+**This is the development branch, where new work gets pushed to as the next release is built. It may have features not present in the current release, and may be less stable than the latest release.**
 
 **SUID Enumeration and Vulnerability Scanning Tool**
 
@@ -18,7 +18,7 @@ Now featured in the Xerj Corpus! Check Xerj out at https://github.com/xerj-org/x
 
 ##  Features
 
-**SUID Enumeration**: Recursively scans filesystem for SUID binaries (`-perm -4000`) 
+**SUID/SGID Enumeration**: Recursively scans filesystem for privileged binaries (`-perm -4000` or `-perm -2000`) 
 **Capability Scanning**: Detects Linux capabilities on binaries via `getcap` 
 **Strings Analysis**: Extracts strings from binaries for hidden credentials/paths 
 **Strace Monitoring**: Tracks system calls made by SUID binaries 
@@ -57,9 +57,10 @@ pip install -r requirements.txt
 python3 slipperypenguin.py --update-gtfobins
 ```
 Downloading the .tar.gz from www.eclecticelectrionics.com (https://github.com/stlynnxx/EclecticElectronics)
+Note: **This installs the latest release, not the development branch**
 ```bash
-curl -L https://eclecticelectronics.fly.dev/api/download/2.4.3 -o slipperypenguin-2.4.3.tar.gz
-sha256sum slipperypenguin-2.4.3.tar.gz
+curl -L https://eclecticelectronics.fly.dev/api/download/2.5.0 -o slipperypenguin-2.5.0.tar.gz
+sha256sum slipperypenguin-2.5.0.tar.gz
 
 pip install -r requirements.txt
 
@@ -160,6 +161,7 @@ slipperypenguin/
 │   └── YYYY-MM-DD_HH-MM-SS/
 │       ├── str-out.json
 │       ├── cap-out.json
+│       ├── scan-out.json
 │       ├── find-out.json
 │       ├── strace-out.json
 │       ├── timeout-out.json
@@ -174,20 +176,22 @@ slipperypenguin/
 
 ```bash
 flowchart TD
-    A[Start] --> B[Enumerate SUID Binaries]
-    B --> C[For Each Binary]
-    C --> D[strings Scan]
-    C --> E[strace Execution]
-    C --> F[GTFOBins Match]
-    C --> G[Flag Detection]
-    D & E & F & G --> H[Aggregate Results]
-    H --> I[Generate Report]
-    I --> J[End]
+    A[Start] --> B[Enumerate SUID/SGID Files Once]
+    B --> C[Recursive getcap Scan Once]
+    B --> D[For Each Binary]
+    D --> E[strings Scan]
+    D --> F[strace Execution]
+    D --> G[GTFOBins Match]
+    D --> H[Flag Detection]
+    C & E & F & G & H --> I[Aggregate Results]
+    I --> J[Generate Report]
+    J --> K[End]
 ```
 
 ### Concurrency Model
 
-- **Async Architecture**: Uses `asyncio` for concurrent binary scanning
+- **Async Architecture**: Uses `asyncio` for concurrent per-binary analysis
+- **Inventory pass**: Enumerates SUID/SGID files once and runs one recursive `getcap` pass; cached results are reused throughout the run
 - **Semaphore Limit**: 5 concurrent tasks maximum
 - **Lock Protection**: Thread-safe dictionary operations
 - **Timeout Handling**: Configurable per-binary timeout with graceful kill
@@ -197,8 +201,9 @@ flowchart TD
 | File | Contents |
 |------|----------|
 | `str-out.json` | Extracted strings from binaries |
-| `cap-out.json` | Linux capabilities detected |
-| `find-out.json` | SUID binary locations |
+| `cap-out.json` | Linux file capabilities collected by one recursive getcap pass |
+| `scan-out.json` | Scan timings, warnings, counts, and cached file metadata |
+| `find-out.json` | SUID and SGID binary locations |
 | `strace-out.json` | System call traces |
 | `timeout-out.json` | Timeout occurrences |
 | `gfto-out.json` | GTFOBins matches |
