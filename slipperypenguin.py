@@ -3,6 +3,8 @@ import tarfile, urllib.error, csv
 from datetime import datetime
 from rich.console import Console
 from scan_helpers import collect_scan_inventory, normalise_path
+from runtime_tracing import select_trace_candidates
+import shlex
 from htmlgenerator import generate_report, generate_PDF
 from weasyprint import HTML
 
@@ -47,6 +49,11 @@ parser.add_argument(
     help="Used for changing timeout var, default is 10",
 )
 parser.add_argument(
+    "--runtime-trace",
+    action="store_true",
+    help="Prepare targeted runtime trace commands after static analysis",
+)
+parser.add_argument(
     "--cleanup",
     "-c",
     action="store_true",
@@ -83,6 +90,7 @@ parser.add_argument(
 strings_append = {}
 cap_append = {}
 strace_append = {}
+runtime_trace_plan = {}
 timeout_append = {}
 gtfo_append = {}
 find_append = {"results": []}
@@ -346,6 +354,7 @@ STR_OUT = os.path.join(RUN_DIR, "str-out.json")
 CAP_OUT = os.path.join(RUN_DIR, "cap-out.json")
 FIND_OUT = os.path.join(RUN_DIR, "find-out.json")
 STRACE_OUT = os.path.join(RUN_DIR, "strace-out.json")
+RUNTIME_TRACE_PLAN_OUT = os.path.join(RUN_DIR, "runtime-trace-plan.json")
 TIMEOUT_OUT = os.path.join(RUN_DIR, "timeout-out.json")
 GTFO_OUT = os.path.join(RUN_DIR, "gfto-out.json")
 FLAGS_OUT = os.path.join(RUN_DIR, "flags-out.json")
@@ -447,38 +456,7 @@ async def strings_scan(b):
         traceback.print_exc()
 
 
-# strace scanning
-async def strace_scan(b):
-    global strace_append, timeout_append
-    try:
-        process = await asyncio.create_subprocess_exec(
-            "timeout",
-            str(timeout_var),
-            "strace",
-            "-e",
-            "execve",
-            b,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            stdin=asyncio.subprocess.DEVNULL,
-        )
-        try:
-            stdout, stderr = await asyncio.wait_for(
-                process.communicate(), timeout=timeout_var
-            )
-            await append(strace_append, b, stderr.decode().splitlines())
-        except TimeoutError:
-            try:
-                os.killpg(os.getpgid(process.pid), signal.SIGKILL)
-            except (ProcessLookupError, PermissionError):
-                pass
-            await process.wait()
-            await append(timeout_append, b, "timeout")
-        if args.output in ("terminal", "both"):
-            print(f"\nStrace for {b}: {strace_append.get(b, [])}")
-    except Exception as e:
-        console.print(f"[red]strace_scan failure: {e}[/red]")
-        traceback.print_exc()
+# Runtime trace commands are prepared only after static analysis.
 
 
 # gtfobins comp
@@ -593,6 +571,7 @@ def write_scan_outputs():
         (CAP_OUT, cap_append),
         (STR_OUT, strings_append),
         (STRACE_OUT, strace_append),
+        (RUNTIME_TRACE_PLAN_OUT, runtime_trace_plan),
         (TIMEOUT_OUT, timeout_append),
         (GTFO_OUT, gtfo_append),
         (FLAGS_OUT, flags_append),
@@ -653,9 +632,8 @@ async def main():
                     # FIXED: strings_scan MUST complete BEFORE flags_write runs
                     # flags_write matches flag strings against strings_append[binary]
                     # If run concurrently via gather(), flags_write executes first and sees empty list
-                    results = await asyncio.gather(
+                    await asyncio.gather(
                         strings_scan(binary),
-                        strace_scan(binary),
                         gtfo_scan(binary),
                         return_exceptions=True,
                     )
@@ -681,6 +659,32 @@ async def main():
         except Exception as e:
             console.print(f"[red]main failure: {e}[/red]")
             traceback.print_exc()
+
+        # This option prepares commands only. The scanner never executes discovered binaries.
+        if args.runtime_trace:
+            candidates = select_trace_candidates(agg_result, b_exp)
+            if not candidates:
+                console.print("[yellow]No privileged binaries met the static-evidence criteria.[/yellow]")
+            else:
+                console.print(
+                    "[bold yellow]WARNING: the generated strace commands execute the selected programs. "
+                    "Review each target before running any command; strace is not a sandbox.[/bold yellow]"
+                )
+                for candidate, reasons in candidates.items():
+                    trace_file = os.path.join(RUN_DIR, "runtime-traces", os.path.basename(candidate) + ".strace")
+                    command = [
+                        "timeout", "--signal=TERM", "--kill-after=1s", str(timeout_var),
+                        "strace", "-f", "-qq", "-e", "trace=execve", "-o", trace_file,
+                        "--", candidate,
+                    ]
+                    runtime_trace_plan[candidate] = {
+                        "selection_reasons": reasons,
+                        "command": " ".join(shlex.quote(part) for part in command),
+                        "trace_file": trace_file,
+                        "status": "prepared_not_executed",
+                    }
+                    console.print(f"[cyan]{candidate}[/cyan]: {', '.join(reasons)}")
+                    console.print("[dim]" + runtime_trace_plan[candidate]["command"] + "[/dim]")
 
         # Include every capability-bearing file in reports, even when it is
         # outside the existing /usr/bin analysis scope.
