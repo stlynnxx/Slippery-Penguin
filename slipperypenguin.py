@@ -3,7 +3,7 @@ import tarfile, urllib.error, csv
 from datetime import datetime
 from rich.console import Console
 from scan_helpers import collect_scan_inventory, normalise_path
-from runtime_tracing import select_trace_candidates
+from runtime_tracing import confirm_runtime_trace, select_trace_candidates, trace_binary
 import shlex
 from htmlgenerator import generate_report, generate_PDF
 from weasyprint import HTML
@@ -51,7 +51,7 @@ parser.add_argument(
 parser.add_argument(
     "--runtime-trace",
     action="store_true",
-    help="Prepare targeted runtime trace commands after static analysis",
+    help="Run evidence-selected runtime traces after explicit confirmation",
 )
 parser.add_argument(
     "--cleanup",
@@ -91,6 +91,7 @@ strings_append = {}
 cap_append = {}
 strace_append = {}
 runtime_trace_plan = {}
+runtime_trace_results = {}
 timeout_append = {}
 gtfo_append = {}
 find_append = {"results": []}
@@ -355,6 +356,7 @@ CAP_OUT = os.path.join(RUN_DIR, "cap-out.json")
 FIND_OUT = os.path.join(RUN_DIR, "find-out.json")
 STRACE_OUT = os.path.join(RUN_DIR, "strace-out.json")
 RUNTIME_TRACE_PLAN_OUT = os.path.join(RUN_DIR, "runtime-trace-plan.json")
+RUNTIME_TRACE_RESULTS_OUT = os.path.join(RUN_DIR, "runtime-trace-results.json")
 TIMEOUT_OUT = os.path.join(RUN_DIR, "timeout-out.json")
 GTFO_OUT = os.path.join(RUN_DIR, "gfto-out.json")
 FLAGS_OUT = os.path.join(RUN_DIR, "flags-out.json")
@@ -572,6 +574,7 @@ def write_scan_outputs():
         (STR_OUT, strings_append),
         (STRACE_OUT, strace_append),
         (RUNTIME_TRACE_PLAN_OUT, runtime_trace_plan),
+        (RUNTIME_TRACE_RESULTS_OUT, runtime_trace_results),
         (TIMEOUT_OUT, timeout_append),
         (GTFO_OUT, gtfo_append),
         (FLAGS_OUT, flags_append),
@@ -588,7 +591,7 @@ def write_csv_report(results, output_path):
         writer.writeheader()
 
         for binary, binary_data in sorted(results.items()):
-            for finding_type in ("strings", "strace", "flags", "gtfo", "timeouts", "capabilities"):
+            for finding_type in ("strings", "strace", "runtime_trace", "flags", "gtfo", "timeouts", "capabilities"):
                 findings = binary_data.get(finding_type)
                 if not findings:
                     continue
@@ -609,7 +612,9 @@ def write_csv_report(results, output_path):
                         "severity": "",
                         "context": "",
                     }
-                    if finding_type == "flags" and isinstance(finding, dict):
+                    if finding_type == "runtime_trace" and isinstance(finding, dict):
+                        row["finding"] = json.dumps(finding, sort_keys=True)
+                    elif finding_type == "flags" and isinstance(finding, dict):
                         row["finding"] = str(finding.get("string") or "").strip()
                         row["severity"] = str(finding.get("severity") or "").strip()
                         row["context"] = str(finding.get("context") or "").strip()
@@ -660,38 +665,67 @@ async def main():
             console.print(f"[red]main failure: {e}[/red]")
             traceback.print_exc()
 
-        # This option prepares commands only. The scanner never executes discovered binaries.
+        # Runtime tracing is deliberately a second, opt-in phase after static analysis.
         if args.runtime_trace:
             candidates = select_trace_candidates(agg_result, b_exp)
             if not candidates:
                 console.print("[yellow]No privileged binaries met the static-evidence criteria.[/yellow]")
             else:
                 console.print(
-                    "[bold yellow]WARNING: the generated strace commands execute the selected programs. "
-                    "Review each target before running any command; strace is not a sandbox.[/bold yellow]"
+                    "[bold red]DANGER: runtime tracing EXECUTES each selected binary. "
+                    "Targets may modify files, access resources, or cause other side effects. "
+                    "strace is NOT a sandbox. Only continue on systems and binaries you are "
+                    "authorised to execute.[/bold red]"
                 )
                 for candidate, reasons in candidates.items():
-                    trace_name = (
-                        os.path.basename(candidate)
-                        + "-"
-                        + hashlib.sha256(candidate.encode("utf-8")).hexdigest()[:12]
-                        + ".strace"
-                    )
-                    trace_file = os.path.join(RUN_DIR, "runtime-traces", trace_name)
-                    os.makedirs(os.path.dirname(trace_file), exist_ok=True)
-                    command = [
-                        "timeout", "--signal=TERM", "--kill-after=1s", str(timeout_var),
-                        "strace", "-f", "-qq", "-e", "trace=execve", "-o", trace_file,
-                        "--", candidate,
-                    ]
+                    console.print(f"[cyan]{candidate}[/cyan]")
+                    for reason in reasons:
+                        console.print(f"  [dim]- {reason}[/dim]")
                     runtime_trace_plan[candidate] = {
                         "selection_reasons": reasons,
-                        "command": " ".join(shlex.quote(part) for part in command),
-                        "trace_file": trace_file,
-                        "status": "prepared_not_executed",
+                        "timeout_seconds": timeout_var,
+                        "status": "awaiting_confirmation",
                     }
-                    console.print(f"[cyan]{candidate}[/cyan]: {', '.join(reasons)}")
-                    console.print("[dim]" + runtime_trace_plan[candidate]["command"] + "[/dim]")
+
+                if not confirm_runtime_trace():
+                    console.print("[yellow]Runtime tracing cancelled; no selected binaries were executed.[/yellow]")
+                    for candidate in candidates:
+                        runtime_trace_plan[candidate]["status"] = "cancelled"
+                else:
+                    for candidate in candidates:
+                        runtime_trace_plan[candidate]["status"] = "running"
+                        try:
+                            result = await trace_binary(candidate, timeout=timeout_var)
+                            result_data = result.to_dict()
+                        except asyncio.CancelledError:
+                            runtime_trace_plan[candidate]["status"] = "cancelled"
+                            raise
+                        except Exception as exc:
+                            result_data = {
+                                "status": "failed",
+                                "returncode": None,
+                                "observations": [],
+                                "diagnostics": [f"Runtime tracing failed: {exc}"],
+                                "timed_out": False,
+                            }
+
+                        runtime_trace_results[candidate] = result_data
+                        strace_append[candidate] = result_data["observations"]
+                        runtime_trace_plan[candidate]["status"] = result_data["status"]
+                        binary_report = b_exp.setdefault(candidate, {})
+                        binary_report["strace"] = result_data["observations"]
+                        binary_report["runtime_trace"] = {
+                            "status": result_data["status"],
+                            "returncode": result_data["returncode"],
+                            "timed_out": result_data["timed_out"],
+                            "diagnostics": result_data["diagnostics"],
+                        }
+                        console.print(
+                            f"[cyan]{candidate}[/cyan]: runtime trace {result_data['status']} "
+                            f"({len(result_data['observations'])} observations)"
+                        )
+                        for diagnostic in result_data["diagnostics"]:
+                            console.print(f"[yellow]  {diagnostic}[/yellow]")
 
         # Include every capability-bearing file in reports, even when it is
         # outside the existing /usr/bin analysis scope.
