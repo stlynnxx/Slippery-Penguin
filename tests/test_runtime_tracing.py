@@ -6,7 +6,22 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from runtime_tracing import select_trace_candidates, trace_binary
+from runtime_tracing import confirm_runtime_trace, select_trace_candidates, trace_binary
+
+
+class ConfirmationTests(unittest.TestCase):
+    def test_only_exact_yes_confirms_execution(self):
+        self.assertTrue(confirm_runtime_trace(lambda _prompt: "yes"))
+        self.assertTrue(confirm_runtime_trace(lambda _prompt: " YES "))
+        self.assertFalse(confirm_runtime_trace(lambda _prompt: "y"))
+        self.assertFalse(confirm_runtime_trace(lambda _prompt: "no"))
+        self.assertFalse(confirm_runtime_trace(lambda _prompt: ""))
+
+    def test_eof_fails_closed(self):
+        def eof(_prompt):
+            raise EOFError
+
+        self.assertFalse(confirm_runtime_trace(eof))
 
 
 class CandidateSelectionTests(unittest.TestCase):
