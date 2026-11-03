@@ -206,3 +206,16 @@ async def trace_binary(
             os.unlink(trace_path)
         except FileNotFoundError:
             pass
+
+
+def confirm_runtime_trace(input_func=input) -> bool:
+    """Require an explicit affirmative response before executing any target.
+
+    EOF and every response other than the exact word 'yes' fail closed.
+    """
+    try:
+        return input_func(
+            "Type 'yes' to execute the listed runtime traces, or anything else to cancel: "
+        ).strip().lower() == "yes"
+    except (EOFError, KeyboardInterrupt):
+        return False
