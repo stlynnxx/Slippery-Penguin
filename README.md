@@ -132,7 +132,7 @@ python3 slipperypenguin.py -o logs -cr
 ```bash
 python3 slipperypenguin.py --runtime-trace --output both
 ```
-This completes static analysis first, then lists only privileged binaries supported by HIGH/CRITICAL flag findings or a GTFOBins SUID match. It prints a bounded `timeout` + `strace` command for each candidate and records the plan in `runtime-trace-plan.json`. Review every target and command before running it manually. The scanner itself does not execute discovered binaries.
+This completes static analysis first, then lists only privileged binaries supported by HIGH/CRITICAL flag findings or a GTFOBins SUID match. The CLI explains that tracing executes each selected binary and requires you to type `yes` before any target is run. Any other response, including end-of-input, cancels tracing. Traces use the isolated, timeout- and cancellation-aware `trace_binary()` helper. Results are saved in `strace-out.json` and `runtime-trace-results.json`, with execution status and diagnostics kept separate from static findings in generated reports.
 
 
 ### Full Privilege Escalation Assessment
