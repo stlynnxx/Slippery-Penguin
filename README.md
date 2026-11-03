@@ -21,7 +21,7 @@ Now featured in the Xerj Corpus! Check Xerj out at https://github.com/xerj-org/x
 **SUID/SGID Enumeration**: Recursively scans filesystem for privileged binaries (`-perm -4000` or `-perm -2000`) 
 **Capability Scanning**: Detects Linux capabilities on binaries via `getcap` 
 **Strings Analysis**: Extracts strings from binaries for hidden credentials/paths 
-**Strace Monitoring**: Tracks system calls made by SUID binaries 
+**Opt-in Runtime Trace Planning**: Selects privileged binaries with strong static findings and prepares bounded strace commands for operator review 
 **GTFOBins Matching**: Cross-references binaries against GTFOBins exploit database 
 **Report Generation**: Export results as HTML or PDF 
 **Auto-Updates**: Built-in update checker and installer 
@@ -37,7 +37,7 @@ pip install rich yattag weasyprint
 
 **External dependencies:**
 - `curl` - For updates and GTFOBins fetching
-- `strace` - For syscall tracing
+- `strace` - Optional; required only when `--runtime-trace` is requested
 - `find` - For SUID enumeration
 - `getcap` - For capability detection
 
@@ -86,6 +86,7 @@ can afford to do so, every penny helps out!
 | `--update-gtfobins` | `-upgt` | flag | Download/update GTFOBins database |
 | `--del-logs` | `-dl` | `run`/`close` | Delete existing logs |
 | `--timeout` | `-t` | flag | Set custom timeout (default: 2 seconds) |
+| `--runtime-trace` |  | flag | Run evidence-selected runtime traces after explicit confirmation |
 | `--cleanup` | `-c` | flag | Delete all data and uninstall |
 | `--update` | `-u` | `run`/`close` | Download and install latest version |
 | `--check` | `-chk` | flag | Check current version |
@@ -126,6 +127,12 @@ python3 slipperypenguin.py -o logs -hr -pdf
 ```bash
 python3 slipperypenguin.py -o logs -cr
 ```
+
+#### Prepare optional runtime tracing
+```bash
+python3 slipperypenguin.py --runtime-trace --output both
+```
+This completes static analysis first, then lists only privileged binaries supported by HIGH/CRITICAL flag findings or a GTFOBins SUID match. The CLI explains that tracing executes each selected binary and requires you to type `yes` before any target is run. Any other response, including end-of-input, cancels tracing. Traces use the isolated, timeout- and cancellation-aware `trace_binary()` helper. Results are saved in `strace-out.json` and `runtime-trace-results.json`, with execution status and diagnostics kept separate from static findings in generated reports.
 
 
 ### Full Privilege Escalation Assessment
@@ -178,14 +185,20 @@ slipperypenguin/
 flowchart TD
     A[Start] --> B[Enumerate SUID/SGID Files Once]
     B --> C[Recursive getcap Scan Once]
-    B --> D[For Each Binary]
-    D --> E[strings Scan]
-    D --> F[strace Execution]
-    D --> G[GTFOBins Match]
-    D --> H[Flag Detection]
-    C & E & F & G & H --> I[Aggregate Results]
-    I --> J[Generate Report]
-    J --> K[End]
+    B --> D[Static Analysis for Each Binary]
+    D --> E[Strings and Flag Analysis]
+    D --> F[GTFOBins Matching]
+    C & E & F --> G[Aggregate Static Findings]
+    G --> H{Runtime trace planning opted in?}
+    H -->|No| I[Generate Reports]
+    H -->|Yes| J[Select Evidence-Based Candidates]
+    J --> K[Show Targets and Reasons]
+    K --> M{User types yes?}
+    M -->|No| I
+    M -->|Yes| N[Run trace_binary with Timeout and Cancellation]
+    N --> O[Store Runtime Observations Separately]
+    O --> I
+    I --> L[End]
 ```
 
 ### Concurrency Model
@@ -204,10 +217,21 @@ flowchart TD
 | `cap-out.json` | Linux file capabilities collected by one recursive getcap pass |
 | `scan-out.json` | Scan timings, warnings, counts, and cached file metadata |
 | `find-out.json` | SUID and SGID binary locations |
-| `strace-out.json` | System call traces |
+| `strace-out.json` | Runtime syscall observations supplied separately; not produced by default scans |
+| `runtime-trace-plan.json` | Candidate selection reasons and per-target execution status |
 | `timeout-out.json` | Timeout occurrences |
 | `gfto-out.json` | GTFOBins matches |
 | `html-out.html` | Formatted HTML report |
+
+## Runtime Tracing Safety and Selection
+
+Runtime tracing is **disabled by default**. A normal scan performs static analysis only and does not execute discovered SUID/SGID binaries.
+
+To run runtime tracing, pass `--runtime-trace`. Static analysis completes first. The CLI displays each eligible target and its selection reasons, then requires the exact response `yes` before execution. Any other response, EOF, or Ctrl-C cancels tracing. A candidate must be present in the discovered privileged-file inventory and have at least one strong signal:
+- a configured `HIGH` or `CRITICAL` flag finding; or
+- a GTFOBins match explicitly marked for the `suid` context.
+
+LOW and MEDIUM findings alone do not qualify a binary. Candidate reasons and execution status are written to `runtime-trace-plan.json`. Traces are performed by the isolated `trace_binary()` helper, which applies timeout and cancellation cleanup. Runtime observations are saved separately from static findings. **strace executes the target and is not a sandbox**: file changes, resource access, network activity, and other side effects remain possible. Use it only on systems and binaries you are authorised to assess.
 
 ## Troubleshooting
 

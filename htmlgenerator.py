@@ -143,7 +143,7 @@ def generate_PDF(b_exp):
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
-                            text("Flags:")
+                            text("Static analysis: Flags:")
                         with tag("pre"):
                             flags = binary_data.get("flags", [])
                             if not flags:
@@ -163,7 +163,7 @@ def generate_PDF(b_exp):
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
-                            text("Capabilities:")
+                            text("Static analysis: Capabilities:")
                         with tag("pre"):
                             capabilities = binary_data.get("capabilities", [])
                             if not capabilities:
@@ -173,7 +173,17 @@ def generate_PDF(b_exp):
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
-                            text("Strace:")
+                            text("Runtime trace execution status and diagnostics:")
+                        with tag("pre"):
+                            runtime_trace = binary_data.get("runtime_trace", {})
+                            if not runtime_trace:
+                                text("Not executed")
+                            else:
+                                text(json.dumps(runtime_trace, indent=2, sort_keys=True))
+
+                    with tag("div", klass="result-block"):
+                        with tag("div", klass="result-label"):
+                            text("Runtime observations (strace):")
                         with tag("pre"):
                             strace = binary_data.get("strace", [])
                             if not strace:
@@ -185,7 +195,7 @@ def generate_PDF(b_exp):
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
-                            text("GTFOBins Matches:")
+                            text("Static analysis: GTFOBins Matches:")
                         with tag("pre"):
                             gtfo = binary_data.get("gtfo", [])
                             if not gtfo:
@@ -357,6 +367,10 @@ def generate_report(b_exp, default_binary=None):
                     }
 
 
+                    if (type === 'runtime_trace' && typeof raw === 'object') {
+                        return JSON.stringify(raw, null, 2);
+                    }
+
                     if (type === 'timeouts') {
                         // Stored as a bare string ("timeout") for a single hit,
                         // or as an array when multiple scans timed out.
@@ -379,12 +393,21 @@ def generate_report(b_exp, default_binary=None):
                     const data = allData[binary] || {};
                     resultsDiv.innerHTML = '';
 
-                    ['strings', 'strace', 'flags', 'gtfo', 'timeouts', 'capabilities'].forEach(function(type) {
+                    ['strings', 'flags', 'gtfo', 'capabilities', 'runtime_trace', 'strace', 'timeouts'].forEach(function(type) {
                         const section = document.createElement('div');
                         section.className = 'section';
 
                         const heading = document.createElement('h3');
-                        heading.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+                        const labels = {
+                            strings: 'Static analysis: Strings',
+                            flags: 'Static analysis: Flags',
+                            gtfo: 'Static analysis: GTFOBins matches',
+                            capabilities: 'Static analysis: Linux capabilities',
+                            runtime_trace: 'Runtime trace execution status and diagnostics',
+                            strace: 'Runtime observations (strace)',
+                            timeouts: 'Analysis timeouts'
+                        };
+                        heading.textContent = labels[type] || type;
                         section.appendChild(heading);
 
                         const displayText = formatContent(type, data[type]);

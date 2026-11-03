@@ -1,8 +1,9 @@
-import signal, subprocess, os, json, argparse, sys, shutil, urllib.request, tempfile, hashlib, asyncio, traceback, time
+import signal, subprocess, os, json, argparse, sys, shutil, urllib.request, tempfile, asyncio, traceback, time
 import tarfile, urllib.error, csv
 from datetime import datetime
 from rich.console import Console
 from scan_helpers import collect_scan_inventory, normalise_path
+from runtime_tracing import confirm_runtime_trace, select_trace_candidates, trace_binary
 from htmlgenerator import generate_report, generate_PDF
 from weasyprint import HTML
 
@@ -47,6 +48,11 @@ parser.add_argument(
     help="Used for changing timeout var, default is 10",
 )
 parser.add_argument(
+    "--runtime-trace",
+    action="store_true",
+    help="Run evidence-selected runtime traces after explicit confirmation",
+)
+parser.add_argument(
     "--cleanup",
     "-c",
     action="store_true",
@@ -83,6 +89,8 @@ parser.add_argument(
 strings_append = {}
 cap_append = {}
 strace_append = {}
+runtime_trace_plan = {}
+runtime_trace_results = {}
 timeout_append = {}
 gtfo_append = {}
 find_append = {"results": []}
@@ -346,6 +354,8 @@ STR_OUT = os.path.join(RUN_DIR, "str-out.json")
 CAP_OUT = os.path.join(RUN_DIR, "cap-out.json")
 FIND_OUT = os.path.join(RUN_DIR, "find-out.json")
 STRACE_OUT = os.path.join(RUN_DIR, "strace-out.json")
+RUNTIME_TRACE_PLAN_OUT = os.path.join(RUN_DIR, "runtime-trace-plan.json")
+RUNTIME_TRACE_RESULTS_OUT = os.path.join(RUN_DIR, "runtime-trace-results.json")
 TIMEOUT_OUT = os.path.join(RUN_DIR, "timeout-out.json")
 GTFO_OUT = os.path.join(RUN_DIR, "gfto-out.json")
 FLAGS_OUT = os.path.join(RUN_DIR, "flags-out.json")
@@ -447,38 +457,7 @@ async def strings_scan(b):
         traceback.print_exc()
 
 
-# strace scanning
-async def strace_scan(b):
-    global strace_append, timeout_append
-    try:
-        process = await asyncio.create_subprocess_exec(
-            "timeout",
-            str(timeout_var),
-            "strace",
-            "-e",
-            "execve",
-            b,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            stdin=asyncio.subprocess.DEVNULL,
-        )
-        try:
-            stdout, stderr = await asyncio.wait_for(
-                process.communicate(), timeout=timeout_var
-            )
-            await append(strace_append, b, stderr.decode().splitlines())
-        except TimeoutError:
-            try:
-                os.killpg(os.getpgid(process.pid), signal.SIGKILL)
-            except (ProcessLookupError, PermissionError):
-                pass
-            await process.wait()
-            await append(timeout_append, b, "timeout")
-        if args.output in ("terminal", "both"):
-            print(f"\nStrace for {b}: {strace_append.get(b, [])}")
-    except Exception as e:
-        console.print(f"[red]strace_scan failure: {e}[/red]")
-        traceback.print_exc()
+# Runtime trace commands are prepared only after static analysis.
 
 
 # gtfobins comp
@@ -593,6 +572,8 @@ def write_scan_outputs():
         (CAP_OUT, cap_append),
         (STR_OUT, strings_append),
         (STRACE_OUT, strace_append),
+        (RUNTIME_TRACE_PLAN_OUT, runtime_trace_plan),
+        (RUNTIME_TRACE_RESULTS_OUT, runtime_trace_results),
         (TIMEOUT_OUT, timeout_append),
         (GTFO_OUT, gtfo_append),
         (FLAGS_OUT, flags_append),
@@ -609,7 +590,7 @@ def write_csv_report(results, output_path):
         writer.writeheader()
 
         for binary, binary_data in sorted(results.items()):
-            for finding_type in ("strings", "strace", "flags", "gtfo", "timeouts", "capabilities"):
+            for finding_type in ("strings", "strace", "runtime_trace", "flags", "gtfo", "timeouts", "capabilities"):
                 findings = binary_data.get(finding_type)
                 if not findings:
                     continue
@@ -630,7 +611,9 @@ def write_csv_report(results, output_path):
                         "severity": "",
                         "context": "",
                     }
-                    if finding_type == "flags" and isinstance(finding, dict):
+                    if finding_type == "runtime_trace" and isinstance(finding, dict):
+                        row["finding"] = json.dumps(finding, sort_keys=True)
+                    elif finding_type == "flags" and isinstance(finding, dict):
                         row["finding"] = str(finding.get("string") or "").strip()
                         row["severity"] = str(finding.get("severity") or "").strip()
                         row["context"] = str(finding.get("context") or "").strip()
@@ -653,9 +636,8 @@ async def main():
                     # FIXED: strings_scan MUST complete BEFORE flags_write runs
                     # flags_write matches flag strings against strings_append[binary]
                     # If run concurrently via gather(), flags_write executes first and sees empty list
-                    results = await asyncio.gather(
+                    await asyncio.gather(
                         strings_scan(binary),
-                        strace_scan(binary),
                         gtfo_scan(binary),
                         return_exceptions=True,
                     )
@@ -681,6 +663,68 @@ async def main():
         except Exception as e:
             console.print(f"[red]main failure: {e}[/red]")
             traceback.print_exc()
+
+        # Runtime tracing is deliberately a second, opt-in phase after static analysis.
+        if args.runtime_trace:
+            candidates = select_trace_candidates(agg_result, b_exp)
+            if not candidates:
+                console.print("[yellow]No privileged binaries met the static-evidence criteria.[/yellow]")
+            else:
+                console.print(
+                    "[bold red]DANGER: runtime tracing EXECUTES each selected binary. "
+                    "Targets may modify files, access resources, or cause other side effects. "
+                    "strace is NOT a sandbox. Only continue on systems and binaries you are "
+                    "authorised to execute.[/bold red]"
+                )
+                for candidate, reasons in candidates.items():
+                    console.print(f"[cyan]{candidate}[/cyan]")
+                    for reason in reasons:
+                        console.print(f"  [dim]- {reason}[/dim]")
+                    runtime_trace_plan[candidate] = {
+                        "selection_reasons": reasons,
+                        "timeout_seconds": timeout_var,
+                        "status": "awaiting_confirmation",
+                    }
+
+                if not confirm_runtime_trace():
+                    console.print("[yellow]Runtime tracing cancelled; no selected binaries were executed.[/yellow]")
+                    for candidate in candidates:
+                        runtime_trace_plan[candidate]["status"] = "cancelled"
+                else:
+                    for candidate in candidates:
+                        runtime_trace_plan[candidate]["status"] = "running"
+                        try:
+                            result = await trace_binary(candidate, timeout=timeout_var)
+                            result_data = result.to_dict()
+                        except asyncio.CancelledError:
+                            runtime_trace_plan[candidate]["status"] = "cancelled"
+                            raise
+                        except Exception as exc:
+                            result_data = {
+                                "status": "failed",
+                                "returncode": None,
+                                "observations": [],
+                                "diagnostics": [f"Runtime tracing failed: {exc}"],
+                                "timed_out": False,
+                            }
+
+                        runtime_trace_results[candidate] = result_data
+                        strace_append[candidate] = result_data["observations"]
+                        runtime_trace_plan[candidate]["status"] = result_data["status"]
+                        binary_report = b_exp.setdefault(candidate, {})
+                        binary_report["strace"] = result_data["observations"]
+                        binary_report["runtime_trace"] = {
+                            "status": result_data["status"],
+                            "returncode": result_data["returncode"],
+                            "timed_out": result_data["timed_out"],
+                            "diagnostics": result_data["diagnostics"],
+                        }
+                        console.print(
+                            f"[cyan]{candidate}[/cyan]: runtime trace {result_data['status']} "
+                            f"({len(result_data['observations'])} observations)"
+                        )
+                        for diagnostic in result_data["diagnostics"]:
+                            console.print(f"[yellow]  {diagnostic}[/yellow]")
 
         # Include every capability-bearing file in reports, even when it is
         # outside the existing /usr/bin analysis scope.
