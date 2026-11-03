@@ -17,11 +17,15 @@ class ConfirmationTests(unittest.TestCase):
         self.assertFalse(confirm_runtime_trace(lambda _prompt: "no"))
         self.assertFalse(confirm_runtime_trace(lambda _prompt: ""))
 
-    def test_eof_fails_closed(self):
+    def test_eof_and_keyboard_interrupt_fail_closed(self):
         def eof(_prompt):
             raise EOFError
 
+        def interrupted(_prompt):
+            raise KeyboardInterrupt
+
         self.assertFalse(confirm_runtime_trace(eof))
+        self.assertFalse(confirm_runtime_trace(interrupted))
 
 
 class CandidateSelectionTests(unittest.TestCase):
@@ -80,6 +84,25 @@ class RuntimeTraceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.status, "completed")
         self.assertEqual(len(result.observations), 1)
         self.assertEqual(result.diagnostics, ["strace diagnostic"])
+
+    async def test_nonzero_target_exit_is_preserved_with_observations(self):
+        process = FakeProcess(returncode=7)
+
+        async def spawn(*command, **kwargs):
+            trace_path = command[command.index("-o") + 1]
+            Path(trace_path).write_text('execve("/fixture", ["/fixture"], 0x0) = 0\\n')
+            return process
+
+        with patch("runtime_tracing.asyncio.create_subprocess_exec", side_effect=spawn):
+            result = await trace_binary("/fixture", timeout=1)
+
+        self.assertEqual(result.status, "completed_nonzero_exit")
+        self.assertEqual(result.returncode, 7)
+        self.assertTrue(result.observations)
+
+    async def test_invalid_timeout_is_rejected_before_execution(self):
+        with self.assertRaises(ValueError):
+            await trace_binary("/fixture", timeout=0)
 
     async def test_missing_strace_is_not_reported_as_an_observation(self):
         async def missing(*args, **kwargs):
