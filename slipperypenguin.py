@@ -1,10 +1,9 @@
-import signal, subprocess, os, json, argparse, sys, shutil, urllib.request, tempfile, hashlib, asyncio, traceback, time
+import signal, subprocess, os, json, argparse, sys, shutil, urllib.request, tempfile, asyncio, traceback, time
 import tarfile, urllib.error, csv
 from datetime import datetime
 from rich.console import Console
 from scan_helpers import collect_scan_inventory, normalise_path
 from runtime_tracing import confirm_runtime_trace, select_trace_candidates, trace_binary
-import shlex
 from htmlgenerator import generate_report, generate_PDF
 from weasyprint import HTML
 
