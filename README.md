@@ -86,7 +86,7 @@ can afford to do so, every penny helps out!
 | `--update-gtfobins` | `-upgt` | flag | Download/update GTFOBins database |
 | `--del-logs` | `-dl` | `run`/`close` | Delete existing logs |
 | `--timeout` | `-t` | flag | Set custom timeout (default: 2 seconds) |
-| `--runtime-trace` |  | flag | Prepare targeted runtime-trace commands after static analysis; does not execute them |
+| `--runtime-trace` |  | flag | Run evidence-selected runtime traces after explicit confirmation |
 | `--cleanup` | `-c` | flag | Delete all data and uninstall |
 | `--update` | `-u` | `run`/`close` | Download and install latest version |
 | `--check` | `-chk` | flag | Check current version |
@@ -192,8 +192,12 @@ flowchart TD
     G --> H{Runtime trace planning opted in?}
     H -->|No| I[Generate Reports]
     H -->|Yes| J[Select Evidence-Based Candidates]
-    J --> K[Print Bounded Trace Commands for Operator Review]
-    K --> I
+    J --> K[Show Targets and Reasons]
+    K --> M{User types yes?}
+    M -->|No| I
+    M -->|Yes| N[Run trace_binary with Timeout and Cancellation]
+    N --> O[Store Runtime Observations Separately]
+    O --> I
     I --> L[End]
 ```
 
@@ -214,7 +218,7 @@ flowchart TD
 | `scan-out.json` | Scan timings, warnings, counts, and cached file metadata |
 | `find-out.json` | SUID and SGID binary locations |
 | `strace-out.json` | Runtime syscall observations supplied separately; not produced by default scans |
-| `runtime-trace-plan.json` | Candidate selection reasons and bounded commands; commands are not executed by the scanner |
+| `runtime-trace-plan.json` | Candidate selection reasons and per-target execution status |
 | `timeout-out.json` | Timeout occurrences |
 | `gfto-out.json` | GTFOBins matches |
 | `html-out.html` | Formatted HTML report |
@@ -223,13 +227,11 @@ flowchart TD
 
 Runtime tracing is **disabled by default**. A normal scan performs static analysis only and does not execute discovered SUID/SGID binaries.
 
-To prepare runtime tracing commands, pass `--runtime-trace`. Static analysis completes first. A candidate must be present in the discovered privileged-file inventory and have at least one strong signal:
+To run runtime tracing, pass `--runtime-trace`. Static analysis completes first. The CLI displays each eligible target and its selection reasons, then requires the exact response `yes` before execution. Any other response, EOF, or Ctrl-C cancels tracing. A candidate must be present in the discovered privileged-file inventory and have at least one strong signal:
 - a configured `HIGH` or `CRITICAL` flag finding; or
 - a GTFOBins match explicitly marked for the `suid` context.
 
-LOW and MEDIUM findings alone do not qualify a binary. Candidate reasons and bounded commands are written to `runtime-trace-plan.json`. **The scanner does not run these commands**: review each binary and execute a command manually only when authorised.
-
-The generated command uses GNU `timeout` with TERM/KILL escalation and writes strace output to a separate per-binary file. Runtime observations must not be confused with static findings. `strace` runs the target program and is not a sandbox; file changes, resource access, network activity, and other side effects remain possible. Use it only on systems you own or are authorised to assess.
+LOW and MEDIUM findings alone do not qualify a binary. Candidate reasons and execution status are written to `runtime-trace-plan.json`. Traces are performed by the isolated `trace_binary()` helper, which applies timeout and cancellation cleanup. Runtime observations are saved separately from static findings. **strace executes the target and is not a sandbox**: file changes, resource access, network activity, and other side effects remain possible. Use it only on systems and binaries you are authorised to assess.
 
 ## Troubleshooting
 
