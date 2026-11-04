@@ -169,7 +169,9 @@ def generate_PDF(b_exp):
                             if not capabilities:
                                 text("No file capabilities found")
                             else:
-                                text("\n".join(str(value) for value in capabilities[:50]))
+                                text(
+                                    "\n".join(str(value) for value in capabilities[:50])
+                                )
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
@@ -179,7 +181,9 @@ def generate_PDF(b_exp):
                             if not runtime_trace:
                                 text("Not executed")
                             else:
-                                text(json.dumps(runtime_trace, indent=2, sort_keys=True))
+                                text(
+                                    json.dumps(runtime_trace, indent=2, sort_keys=True)
+                                )
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):

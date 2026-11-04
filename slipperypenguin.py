@@ -212,7 +212,9 @@ except Exception as e:
 # afterwards (with the old code, still in memory), "close" exits.
 if args.update in ("run", "close"):
     if updatehelpers is None:
-        console.print("[red]Error: updatehelpers.py not found next to slipperypenguin.py[/red]")
+        console.print(
+            "[red]Error: updatehelpers.py not found next to slipperypenguin.py[/red]"
+        )
         sys.exit(1)
 
     update_info = updatehelpers.check_for_update(__version__)
@@ -227,7 +229,9 @@ if args.update in ("run", "close"):
     if updatehelpers.parse_version(latest) <= updatehelpers.parse_version(__version__):
         console.print(f"[purple]No update available (running {__version__}).[/purple]")
     else:
-        console.print(f"[magenta]Update available: {latest} (you are running {__version__})[/magenta]")
+        console.print(
+            f"[magenta]Update available: {latest} (you are running {__version__})[/magenta]"
+        )
 
         # GTFOBins refresh, as before
         try:
@@ -239,7 +243,9 @@ if args.update in ("run", "close"):
         url = update_info.get("url")
         sha = update_info.get("sha256")
         if not url or not sha:
-            console.print("[red]Update server supplied no 'url'/'sha256'; aborting.[/red]")
+            console.print(
+                "[red]Update server supplied no 'url'/'sha256'; aborting.[/red]"
+            )
             sys.exit(1)
 
         tarball = updatehelpers.download_release(url, sha)
@@ -251,20 +257,26 @@ if args.update in ("run", "close"):
             sys.exit(1)
 
         if not updatehelpers.install_release(extract_dir):
-            console.print("[red]Package contained no recognised files; nothing replaced.[/red]")
+            console.print(
+                "[red]Package contained no recognised files; nothing replaced.[/red]"
+            )
             sys.exit(1)
 
         console.print("[green]Update Successful![/green]")
 
     if args.update == "close":
         sys.exit(0)
-    console.print("[yellow]Continuing with the currently loaded version; restart to run the new code.[/yellow]")
+    console.print(
+        "[yellow]Continuing with the currently loaded version; restart to run the new code.[/yellow]"
+    )
 
 
 # --check: report status only, no install.
 if args.check:
     if updatehelpers is None:
-        console.print("[red]Error: updatehelpers.py not found next to slipperypenguin.py[/red]")
+        console.print(
+            "[red]Error: updatehelpers.py not found next to slipperypenguin.py[/red]"
+        )
         sys.exit(1)
 
     update_info = updatehelpers.check_for_update(__version__)
@@ -273,7 +285,9 @@ if args.check:
 
     latest = str(update_info.get("latest", "")).strip()
     if updatehelpers.parse_version(latest) > updatehelpers.parse_version(__version__):
-        console.print(f"[magenta]Update available: {latest} (you are running {__version__})[/magenta]")
+        console.print(
+            f"[magenta]Update available: {latest} (you are running {__version__})[/magenta]"
+        )
     else:
         # Covers both "equal" and "dev build ahead of the published release".
         console.print(f"[green]No update available ({__version__}).[/green]")
@@ -295,7 +309,9 @@ if args.update is None and not args.skip_update_check and updatehelpers is not N
         # release) and matching versions both fall through silently -
         # same as the old `if latest < __version__: pass` and the
         # `if latest == __version__: pass`, but now '2.3.10' > '2.3.9'.
-        if updatehelpers.parse_version(latest) > updatehelpers.parse_version(__version__):
+        if updatehelpers.parse_version(latest) > updatehelpers.parse_version(
+            __version__
+        ):
             console.print(
                 f"[magenta] Update available: {latest} (you are running {__version__}) [/magenta]"
             )
@@ -310,7 +326,9 @@ if args.update is None and not args.skip_update_check and updatehelpers is not N
             else:
                 # Updating gtfobins logic
                 try:
-                    subprocess.run(["curl", "https://gtfobins.org/api.json", "-o", GTFO_FILE])
+                    subprocess.run(
+                        ["curl", "https://gtfobins.org/api.json", "-o", GTFO_FILE]
+                    )
                     print(f"GTFOBins updated at {GTFO_FILE}")
                 except Exception as e:
                     console.print(f"[red]Could not update GTFOBins, {e}[/red]")
@@ -318,7 +336,9 @@ if args.update is None and not args.skip_update_check and updatehelpers is not N
                 url = update_info.get("url")
                 sha = update_info.get("sha256")
                 if not url or not sha:
-                    console.print("[red]Update server supplied no 'url'/'sha256'.[/red]")
+                    console.print(
+                        "[red]Update server supplied no 'url'/'sha256'.[/red]"
+                    )
                 else:
                     tarball = updatehelpers.download_release(url, sha)
                     if tarball is not None:
@@ -326,9 +346,13 @@ if args.update is None and not args.skip_update_check and updatehelpers is not N
                         if extract_dir is not None:
                             if updatehelpers.install_release(extract_dir):
                                 console.print("[green]Update Successful![/green]")
-                                console.print("[yellow]Restart to run the new version.[/yellow]")
+                                console.print(
+                                    "[yellow]Restart to run the new version.[/yellow]"
+                                )
                             else:
-                                console.print("[red]Package contained no recognised files; nothing replaced.[/red]")
+                                console.print(
+                                    "[red]Package contained no recognised files; nothing replaced.[/red]"
+                                )
 elif updatehelpers is None:
     console.print("[yellow]updatehelpers.py not found; skipping update check.[/yellow]")
 
@@ -365,8 +389,6 @@ SCAN_OUT = os.path.join(RUN_DIR, "scan-out.json")
 
 
 border = "-----"
-
-
 
 
 # Build reusable filesystem and capability inventories once per run.
@@ -474,7 +496,9 @@ async def gtfo_scan(b):
 
         entry = executables.get(binary_name)
         if not entry:
-            console.print(f"[dim]ℹ No GTFOBins entry for {binary_name} (not in database)[/dim]")
+            console.print(
+                f"[dim]ℹ No GTFOBins entry for {binary_name} (not in database)[/dim]"
+            )
             return
 
         functions = entry.get("functions", {})
@@ -488,11 +512,13 @@ async def gtfo_scan(b):
                         console.print(f"[cyan]  SUID exploit: {func_type}[/cyan]")
 
                         gtfo_append.setdefault(b, [])
-                        gtfo_append[b].append({
-                            "type": func_type,
-                            "context": "suid",
-                            "method": str(method)
-                        })
+                        gtfo_append[b].append(
+                            {
+                                "type": func_type,
+                                "context": "suid",
+                                "method": str(method),
+                            }
+                        )
             elif isinstance(methods, dict):
                 # Sometimes methods is a dict of {context: commands}
                 if "suid" in methods:
@@ -500,11 +526,13 @@ async def gtfo_scan(b):
                     console.print(f"[cyan]  SUID exploit: {func_type}[/cyan]")
 
                     gtfo_append.setdefault(b, [])
-                    gtfo_append[b].append({
-                        "type": func_type,
-                        "context": "suid",
-                        "method": str(methods["suid"])
-                    })
+                    gtfo_append[b].append(
+                        {
+                            "type": func_type,
+                            "context": "suid",
+                            "method": str(methods["suid"]),
+                        }
+                    )
     except Exception as e:
         console.print(f"[red]gtfo comp failure: {e}[/red]")
         traceback.print_exc()
@@ -528,9 +556,7 @@ async def timeouts():
 def strings_write(b):
     """Print this binary's strings; all JSON files are persisted once per run."""
     if args.output in ("terminal", "both"):
-        console.print(
-            f"[yellow]Strings Found for [/yellow][magenta] {b}:[/magenta] "
-        )
+        console.print(f"[yellow]Strings Found for [/yellow][magenta] {b}:[/magenta] ")
         for string in strings_append.get(b, []):
             console.print(f"    [green]{string}[/green]")
 
@@ -556,7 +582,9 @@ def flags_write(b):
                 }
                 flags_append[b].append(appendItem)
                 if args.output in ("terminal", "both"):
-                    console.print(f"[magenta]{flag['severity']}[/magenta]: {flag['string']}")
+                    console.print(
+                        f"[magenta]{flag['severity']}[/magenta]: {flag['string']}"
+                    )
 
     except Exception as e:
         console.print(f"[red]Flags dump failure: {e}[/red]")
@@ -590,7 +618,15 @@ def write_csv_report(results, output_path):
         writer.writeheader()
 
         for binary, binary_data in sorted(results.items()):
-            for finding_type in ("strings", "strace", "runtime_trace", "flags", "gtfo", "timeouts", "capabilities"):
+            for finding_type in (
+                "strings",
+                "strace",
+                "runtime_trace",
+                "flags",
+                "gtfo",
+                "timeouts",
+                "capabilities",
+            ):
                 findings = binary_data.get(finding_type)
                 if not findings:
                     continue
@@ -668,7 +704,9 @@ async def main():
         if args.runtime_trace:
             candidates = select_trace_candidates(agg_result, b_exp)
             if not candidates:
-                console.print("[yellow]No privileged binaries met the static-evidence criteria.[/yellow]")
+                console.print(
+                    "[yellow]No privileged binaries met the static-evidence criteria.[/yellow]"
+                )
             else:
                 console.print(
                     "[bold red]DANGER: runtime tracing EXECUTES each selected binary. "
@@ -687,7 +725,9 @@ async def main():
                     }
 
                 if not confirm_runtime_trace():
-                    console.print("[yellow]Runtime tracing cancelled; no selected binaries were executed.[/yellow]")
+                    console.print(
+                        "[yellow]Runtime tracing cancelled; no selected binaries were executed.[/yellow]"
+                    )
                     for candidate in candidates:
                         runtime_trace_plan[candidate]["status"] = "cancelled"
                 else:
@@ -778,8 +818,9 @@ async def main():
             with open(SCAN_OUT, "w", encoding="utf-8") as summary_file:
                 json.dump(scan_summary, summary_file, indent=2)
         if args.output in ("terminal", "both"):
-            console.print(f"[cyan]Total scan duration: {total_scan_seconds:.3f}s[/cyan]")
-
+            console.print(
+                f"[cyan]Total scan duration: {total_scan_seconds:.3f}s[/cyan]"
+            )
 
 
 asyncio.run(main())
