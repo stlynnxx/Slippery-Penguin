@@ -1,11 +1,22 @@
-import signal, subprocess, os, json, argparse, sys, shutil, urllib.request, tempfile, asyncio, traceback, time
-import tarfile, urllib.error, csv
+import argparse
+import asyncio
+import csv
+import json
+import os
+import shutil
+import signal
+import subprocess
+import sys
+import time
+import traceback
 from datetime import datetime
+
 from rich.console import Console
-from scan_helpers import collect_scan_inventory, normalise_path
-from runtime_tracing import confirm_runtime_trace, select_trace_candidates, trace_binary
-from htmlgenerator import generate_report, generate_PDF
 from weasyprint import HTML
+
+from htmlgenerator import generate_PDF, generate_report
+from runtime_tracing import confirm_runtime_trace, select_trace_candidates, trace_binary
+from scan_helpers import collect_scan_inventory, normalise_path
 
 try:
     import updatehelpers
@@ -107,8 +118,8 @@ timeout_var = 2
 STORAGE_ROOT = args.storage
 
 try:
-    from yattag import Doc
     from weasyprint import HTML
+    from yattag import Doc
 except ImportError as e:
     console.print(
         f"[red]Missing dependency: {e.name}. Run: pip install -r requirements.txt[/red]"
@@ -164,12 +175,12 @@ if args.cleanup:
     ## This removes the gtfobins data
     if os.path.exists(GTFO_FILE):
         os.unlink(GTFO_FILE)
-        console.print(f"[green]GTFOBins data removed.[/green]")
+        console.print("[green]GTFOBins data removed.[/green]")
 
     ## this removes the logs dir
     if os.path.exists(STORAGE_ROOT):
         shutil.rmtree(STORAGE_ROOT)
-        console.print(f"[green]Logs directory removed.[/green]")
+        console.print("[green]Logs directory removed.[/green]")
     sys.exit(0)
 
 
@@ -358,7 +369,7 @@ elif updatehelpers is None:
 
 
 if args.timeout:
-    timeout_var = int(input(f"[yellow]Enter custom timeout value: [/yellow]"))
+    timeout_var = int(input("[yellow]Enter custom timeout value: [/yellow]"))
 
 # Loading the gtfobins data
 gtfo_data = {}
@@ -419,7 +430,7 @@ for warning in inventory.warnings:
 try:
     with open("flags.json", "r") as file:
         flags = json.load(file)
-except FileNotFoundError as e:
+except FileNotFoundError:
     console.print("[red]Flags load failure: {e}[/red]")
     traceback.print_exc()
 if os.path.exists(STRACE_OUT):
@@ -438,9 +449,8 @@ semaphore = asyncio.Semaphore(5)
 
 
 async def append(target: dict, b, data):
-    async with semaphore:
-        async with lock:
-            target[b] = data
+    async with semaphore, lock:
+        target[b] = data
 
 
 # Scans
@@ -694,7 +704,6 @@ async def main():
                 except (asyncio.CancelledError, Exception) as e:
                     console.print(f"[red]scan failure: {e}[/red]")
                     traceback.print_exc()
-                    pass
 
         except Exception as e:
             console.print(f"[red]main failure: {e}[/red]")
@@ -824,4 +833,4 @@ async def main():
 
 
 asyncio.run(main())
-console.print(f"[bold bright_green]Done![/bold bright_green]")
+console.print("[bold bright_green]Done![/bold bright_green]")

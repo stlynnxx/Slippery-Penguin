@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
-from dataclasses import dataclass
 import os
 import re
 import stat
 import subprocess
 import time
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass
 from typing import Any
 
 Runner = Callable[..., subprocess.CompletedProcess[Any]]

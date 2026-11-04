@@ -1,6 +1,6 @@
-from yattag import Doc
-from rich.console import Console
 import json
+
+from yattag import Doc
 
 
 def generate_PDF(b_exp):
@@ -27,8 +27,8 @@ def generate_PDF(b_exp):
 """)
 
             with tag("style"):
-                doc.asis(f"""
-                    body::before {{
+                doc.asis("""
+                    body::before {
                         position: fixed;
                         bottom: 5px;
                         top: 50%;
@@ -43,16 +43,16 @@ def generate_PDF(b_exp):
                         pointer-events: none;
                         width: 100%;      
                         text-align: center; 
-                    }}
+                    }
 
-                    body {{
+                    body {
                         margin: 10;
                         padding: 20px;
                         background: #1a1a1a;
                         color: #00ff00;
-                    }}
+                    }
 
-                    .header {{
+                    .header {
                         text-align: center;
                         border: 2px solid green;
                         border-radius: 10px;
@@ -60,8 +60,8 @@ def generate_PDF(b_exp):
                         margin-bottom: 20px;
                         background: black;
                         page-break-after: avoid;
-                    }}
-                    .section {{
+                    }
+                    .section {
                         margin: 0;         
                         padding: 8px;    
                         background: #000;
@@ -73,16 +73,16 @@ def generate_PDF(b_exp):
                         border-radius: 10px;
                         page-break-after: always;  
                         page-break-inside: avoid;
-                    }}
+                    }
 
-                    .binary-title {{
+                    .binary-title {
                         color: #00ff00;
                         border-bottom: 1px solid #00ff00;
                         padding-bottom: 8px;
                         margin-top: 20px;
-                    }}
+                    }
 
-                    .result-block {{
+                    .result-block {
                         margin: 5px 0;
                         padding: 10px;
                         background: #111;
@@ -90,15 +90,15 @@ def generate_PDF(b_exp):
                         border-bottom: 1px dashed darkgreen;
                         border-radius: 4px;
                         page-break-inside: avoid;
-                    }}
+                    }
 
-                    .result-label {{
+                    .result-label {
                         font-weight: bold;
                         color: #00cc00;
                         margin-bottom: 5px;
-                    }}
+                    }
 
-                    pre {{
+                    pre {
                         background: #1a1a1a;
                         color: #00ff00;
                         padding: 10px;
@@ -107,11 +107,11 @@ def generate_PDF(b_exp):
                         overflow: hidden;   
                         margin: 0;
                         font-size: 10px;
-                    }}
+                    }
 
-                    h1, h2, h3 {{
+                    h1, h2, h3 {
                         color: #00ff00;
-                    }}
+                    }
                 """)
 
         with tag("body"):
