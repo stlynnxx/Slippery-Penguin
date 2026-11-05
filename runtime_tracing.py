@@ -221,11 +221,11 @@ def confirm_runtime_trace(input_func=input) -> bool:
     try:
         return (
             input_func(
-                "Type 'yes' to execute the listed runtime traces, or anything else to cancel: "
+                "Type 'y' and press enter to execute the listed runtime traces, or anything else to cancel: "
             )
             .strip()
             .lower()
-            == "yes"
+            == "y"
         )
     except (EOFError, KeyboardInterrupt):
         return False

@@ -60,6 +60,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--runtime-trace",
+    "-rt",
     action="store_true",
     help="Run evidence-selected runtime traces after explicit confirmation",
 )
@@ -423,7 +424,8 @@ if args.output in ("terminal", "both"):
         console.print(f"  [green]{capability_path}[/green]: {', '.join(expressions)}")
     console.print(f"[cyan]Inventory timings: {inventory.timings}[/cyan]")
 for warning in inventory.warnings:
-    console.print(f"[yellow]Scan warning: {warning}[/yellow]")
+    pass
+    # console.print(f"[yellow]Scan warning: {warning}[/yellow]")
 
 
 # loading the flags from json
@@ -506,9 +508,7 @@ async def gtfo_scan(b):
 
         entry = executables.get(binary_name)
         if not entry:
-            console.print(
-                f"[dim]ℹ No GTFOBins entry for {binary_name} (not in database)[/dim]"
-            )
+            # console.print(f"[dim]ℹ No GTFOBins entry for {binary_name} (not in database)[/dim]")
             return
 
         functions = entry.get("functions", {})
