@@ -3,6 +3,7 @@
 Tracing executes the selected binary. It is diagnostic instrumentation, not a
 sandbox and must only be used on systems the operator is authorised to assess.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -172,8 +173,12 @@ async def trace_binary(
                 diagnostics.extend(line for line in decoded.splitlines() if line)
 
         try:
-            with open(trace_path, "r", encoding="utf-8", errors="replace") as trace_file:
-                observations = [line.rstrip("\n") for line in trace_file if line.strip()]
+            with open(
+                trace_path, "r", encoding="utf-8", errors="replace"
+            ) as trace_file:
+                observations = [
+                    line.rstrip("\n") for line in trace_file if line.strip()
+                ]
         except OSError as exc:
             observations = []
             diagnostics.append(f"Could not read trace output: {exc}")
@@ -214,8 +219,13 @@ def confirm_runtime_trace(input_func=input) -> bool:
     EOF and every response other than the exact word 'yes' fail closed.
     """
     try:
-        return input_func(
-            "Type 'yes' to execute the listed runtime traces, or anything else to cancel: "
-        ).strip().lower() == "yes"
+        return (
+            input_func(
+                "Type 'y' and press enter to execute the listed runtime traces, or anything else to cancel: "
+            )
+            .strip()
+            .lower()
+            == "y"
+        )
     except (EOFError, KeyboardInterrupt):
         return False

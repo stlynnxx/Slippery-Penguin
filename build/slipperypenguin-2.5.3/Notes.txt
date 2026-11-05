@@ -398,3 +398,12 @@ I added a requirements.txt as well as a check in the program itself in order to 
 10/22/206-
 
 I haven't been journaling regularly like I do for my other projects, but, things are going well! I'm preparing v2.4.1 right now!
+
+11/05/2026-
+
+I've been in here myself today, cleaning up some of the stuff being printed to terminal during logs only runs and bug
+hunting. Yesterday I did some formatting and linting using Ruff.
+
+I also changed the runtime trace prompt to prompt for y instead of yes for simplicity's sake.
+
+

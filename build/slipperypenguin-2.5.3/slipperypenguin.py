@@ -1,10 +1,22 @@
-import signal, subprocess, os, json, argparse, sys, shutil, urllib.request, tempfile, hashlib, asyncio, traceback, time
-import tarfile, urllib.error, csv
+import argparse
+import asyncio
+import csv
+import json
+import os
+import shutil
+import signal
+import subprocess
+import sys
+import time
+import traceback
 from datetime import datetime
+
 from rich.console import Console
-from scan_helpers import collect_scan_inventory, normalise_path
-from htmlgenerator import generate_report, generate_PDF
 from weasyprint import HTML
+
+from htmlgenerator import generate_PDF, generate_report
+from runtime_tracing import confirm_runtime_trace, select_trace_candidates, trace_binary
+from scan_helpers import collect_scan_inventory, normalise_path
 
 try:
     import updatehelpers
@@ -12,7 +24,7 @@ except ImportError:
     updatehelpers = None
 console = Console()
 # Version
-__version__ = "2.5.1"
+__version__ = "2.5.3"
 
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
 with open("art.txt", "r") as file:
@@ -45,6 +57,12 @@ parser.add_argument(
     "-t",
     action="store_true",
     help="Used for changing timeout var, default is 10",
+)
+parser.add_argument(
+    "--runtime-trace",
+    "-rt",
+    action="store_true",
+    help="Run evidence-selected runtime traces after explicit confirmation",
 )
 parser.add_argument(
     "--cleanup",
@@ -83,6 +101,8 @@ parser.add_argument(
 strings_append = {}
 cap_append = {}
 strace_append = {}
+runtime_trace_plan = {}
+runtime_trace_results = {}
 timeout_append = {}
 gtfo_append = {}
 find_append = {"results": []}
@@ -99,8 +119,8 @@ timeout_var = 2
 STORAGE_ROOT = args.storage
 
 try:
-    from yattag import Doc
     from weasyprint import HTML
+    from yattag import Doc
 except ImportError as e:
     console.print(
         f"[red]Missing dependency: {e.name}. Run: pip install -r requirements.txt[/red]"
@@ -156,12 +176,12 @@ if args.cleanup:
     ## This removes the gtfobins data
     if os.path.exists(GTFO_FILE):
         os.unlink(GTFO_FILE)
-        console.print(f"[green]GTFOBins data removed.[/green]")
+        console.print("[green]GTFOBins data removed.[/green]")
 
     ## this removes the logs dir
     if os.path.exists(STORAGE_ROOT):
         shutil.rmtree(STORAGE_ROOT)
-        console.print(f"[green]Logs directory removed.[/green]")
+        console.print("[green]Logs directory removed.[/green]")
     sys.exit(0)
 
 
@@ -204,7 +224,9 @@ except Exception as e:
 # afterwards (with the old code, still in memory), "close" exits.
 if args.update in ("run", "close"):
     if updatehelpers is None:
-        console.print("[red]Error: updatehelpers.py not found next to slipperypenguin.py[/red]")
+        console.print(
+            "[red]Error: updatehelpers.py not found next to slipperypenguin.py[/red]"
+        )
         sys.exit(1)
 
     update_info = updatehelpers.check_for_update(__version__)
@@ -219,7 +241,9 @@ if args.update in ("run", "close"):
     if updatehelpers.parse_version(latest) <= updatehelpers.parse_version(__version__):
         console.print(f"[purple]No update available (running {__version__}).[/purple]")
     else:
-        console.print(f"[magenta]Update available: {latest} (you are running {__version__})[/magenta]")
+        console.print(
+            f"[magenta]Update available: {latest} (you are running {__version__})[/magenta]"
+        )
 
         # GTFOBins refresh, as before
         try:
@@ -231,7 +255,9 @@ if args.update in ("run", "close"):
         url = update_info.get("url")
         sha = update_info.get("sha256")
         if not url or not sha:
-            console.print("[red]Update server supplied no 'url'/'sha256'; aborting.[/red]")
+            console.print(
+                "[red]Update server supplied no 'url'/'sha256'; aborting.[/red]"
+            )
             sys.exit(1)
 
         tarball = updatehelpers.download_release(url, sha)
@@ -243,20 +269,26 @@ if args.update in ("run", "close"):
             sys.exit(1)
 
         if not updatehelpers.install_release(extract_dir):
-            console.print("[red]Package contained no recognised files; nothing replaced.[/red]")
+            console.print(
+                "[red]Package contained no recognised files; nothing replaced.[/red]"
+            )
             sys.exit(1)
 
         console.print("[green]Update Successful![/green]")
 
     if args.update == "close":
         sys.exit(0)
-    console.print("[yellow]Continuing with the currently loaded version; restart to run the new code.[/yellow]")
+    console.print(
+        "[yellow]Continuing with the currently loaded version; restart to run the new code.[/yellow]"
+    )
 
 
 # --check: report status only, no install.
 if args.check:
     if updatehelpers is None:
-        console.print("[red]Error: updatehelpers.py not found next to slipperypenguin.py[/red]")
+        console.print(
+            "[red]Error: updatehelpers.py not found next to slipperypenguin.py[/red]"
+        )
         sys.exit(1)
 
     update_info = updatehelpers.check_for_update(__version__)
@@ -265,7 +297,9 @@ if args.check:
 
     latest = str(update_info.get("latest", "")).strip()
     if updatehelpers.parse_version(latest) > updatehelpers.parse_version(__version__):
-        console.print(f"[magenta]Update available: {latest} (you are running {__version__})[/magenta]")
+        console.print(
+            f"[magenta]Update available: {latest} (you are running {__version__})[/magenta]"
+        )
     else:
         # Covers both "equal" and "dev build ahead of the published release".
         console.print(f"[green]No update available ({__version__}).[/green]")
@@ -287,7 +321,9 @@ if args.update is None and not args.skip_update_check and updatehelpers is not N
         # release) and matching versions both fall through silently -
         # same as the old `if latest < __version__: pass` and the
         # `if latest == __version__: pass`, but now '2.3.10' > '2.3.9'.
-        if updatehelpers.parse_version(latest) > updatehelpers.parse_version(__version__):
+        if updatehelpers.parse_version(latest) > updatehelpers.parse_version(
+            __version__
+        ):
             console.print(
                 f"[magenta] Update available: {latest} (you are running {__version__}) [/magenta]"
             )
@@ -302,7 +338,9 @@ if args.update is None and not args.skip_update_check and updatehelpers is not N
             else:
                 # Updating gtfobins logic
                 try:
-                    subprocess.run(["curl", "https://gtfobins.org/api.json", "-o", GTFO_FILE])
+                    subprocess.run(
+                        ["curl", "https://gtfobins.org/api.json", "-o", GTFO_FILE]
+                    )
                     print(f"GTFOBins updated at {GTFO_FILE}")
                 except Exception as e:
                     console.print(f"[red]Could not update GTFOBins, {e}[/red]")
@@ -310,7 +348,9 @@ if args.update is None and not args.skip_update_check and updatehelpers is not N
                 url = update_info.get("url")
                 sha = update_info.get("sha256")
                 if not url or not sha:
-                    console.print("[red]Update server supplied no 'url'/'sha256'.[/red]")
+                    console.print(
+                        "[red]Update server supplied no 'url'/'sha256'.[/red]"
+                    )
                 else:
                     tarball = updatehelpers.download_release(url, sha)
                     if tarball is not None:
@@ -318,15 +358,19 @@ if args.update is None and not args.skip_update_check and updatehelpers is not N
                         if extract_dir is not None:
                             if updatehelpers.install_release(extract_dir):
                                 console.print("[green]Update Successful![/green]")
-                                console.print("[yellow]Restart to run the new version.[/yellow]")
+                                console.print(
+                                    "[yellow]Restart to run the new version.[/yellow]"
+                                )
                             else:
-                                console.print("[red]Package contained no recognised files; nothing replaced.[/red]")
+                                console.print(
+                                    "[red]Package contained no recognised files; nothing replaced.[/red]"
+                                )
 elif updatehelpers is None:
     console.print("[yellow]updatehelpers.py not found; skipping update check.[/yellow]")
 
 
 if args.timeout:
-    timeout_var = int(input(f"[yellow]Enter custom timeout value: [/yellow]"))
+    timeout_var = int(input("[yellow]Enter custom timeout value: [/yellow]"))
 
 # Loading the gtfobins data
 gtfo_data = {}
@@ -346,6 +390,8 @@ STR_OUT = os.path.join(RUN_DIR, "str-out.json")
 CAP_OUT = os.path.join(RUN_DIR, "cap-out.json")
 FIND_OUT = os.path.join(RUN_DIR, "find-out.json")
 STRACE_OUT = os.path.join(RUN_DIR, "strace-out.json")
+RUNTIME_TRACE_PLAN_OUT = os.path.join(RUN_DIR, "runtime-trace-plan.json")
+RUNTIME_TRACE_RESULTS_OUT = os.path.join(RUN_DIR, "runtime-trace-results.json")
 TIMEOUT_OUT = os.path.join(RUN_DIR, "timeout-out.json")
 GTFO_OUT = os.path.join(RUN_DIR, "gfto-out.json")
 FLAGS_OUT = os.path.join(RUN_DIR, "flags-out.json")
@@ -355,8 +401,6 @@ SCAN_OUT = os.path.join(RUN_DIR, "scan-out.json")
 
 
 border = "-----"
-
-
 
 
 # Build reusable filesystem and capability inventories once per run.
@@ -380,14 +424,15 @@ if args.output in ("terminal", "both"):
         console.print(f"  [green]{capability_path}[/green]: {', '.join(expressions)}")
     console.print(f"[cyan]Inventory timings: {inventory.timings}[/cyan]")
 for warning in inventory.warnings:
-    console.print(f"[yellow]Scan warning: {warning}[/yellow]")
+    pass
+    # console.print(f"[yellow]Scan warning: {warning}[/yellow]")
 
 
 # loading the flags from json
 try:
     with open("flags.json", "r") as file:
         flags = json.load(file)
-except FileNotFoundError as e:
+except FileNotFoundError:
     console.print("[red]Flags load failure: {e}[/red]")
     traceback.print_exc()
 if os.path.exists(STRACE_OUT):
@@ -406,9 +451,8 @@ semaphore = asyncio.Semaphore(5)
 
 
 async def append(target: dict, b, data):
-    async with semaphore:
-        async with lock:
-            target[b] = data
+    async with semaphore, lock:
+        target[b] = data
 
 
 # Scans
@@ -447,38 +491,7 @@ async def strings_scan(b):
         traceback.print_exc()
 
 
-# strace scanning
-async def strace_scan(b):
-    global strace_append, timeout_append
-    try:
-        process = await asyncio.create_subprocess_exec(
-            "timeout",
-            str(timeout_var),
-            "strace",
-            "-e",
-            "execve",
-            b,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            stdin=asyncio.subprocess.DEVNULL,
-        )
-        try:
-            stdout, stderr = await asyncio.wait_for(
-                process.communicate(), timeout=timeout_var
-            )
-            await append(strace_append, b, stderr.decode().splitlines())
-        except TimeoutError:
-            try:
-                os.killpg(os.getpgid(process.pid), signal.SIGKILL)
-            except (ProcessLookupError, PermissionError):
-                pass
-            await process.wait()
-            await append(timeout_append, b, "timeout")
-        if args.output in ("terminal", "both"):
-            print(f"\nStrace for {b}: {strace_append.get(b, [])}")
-    except Exception as e:
-        console.print(f"[red]strace_scan failure: {e}[/red]")
-        traceback.print_exc()
+# Runtime trace commands are prepared only after static analysis.
 
 
 # gtfobins comp
@@ -495,7 +508,7 @@ async def gtfo_scan(b):
 
         entry = executables.get(binary_name)
         if not entry:
-            console.print(f"[dim]ℹ No GTFOBins entry for {binary_name} (not in database)[/dim]")
+            # console.print(f"[dim]ℹ No GTFOBins entry for {binary_name} (not in database)[/dim]")
             return
 
         functions = entry.get("functions", {})
@@ -509,11 +522,13 @@ async def gtfo_scan(b):
                         console.print(f"[cyan]  SUID exploit: {func_type}[/cyan]")
 
                         gtfo_append.setdefault(b, [])
-                        gtfo_append[b].append({
-                            "type": func_type,
-                            "context": "suid",
-                            "method": str(method)
-                        })
+                        gtfo_append[b].append(
+                            {
+                                "type": func_type,
+                                "context": "suid",
+                                "method": str(method),
+                            }
+                        )
             elif isinstance(methods, dict):
                 # Sometimes methods is a dict of {context: commands}
                 if "suid" in methods:
@@ -521,11 +536,13 @@ async def gtfo_scan(b):
                     console.print(f"[cyan]  SUID exploit: {func_type}[/cyan]")
 
                     gtfo_append.setdefault(b, [])
-                    gtfo_append[b].append({
-                        "type": func_type,
-                        "context": "suid",
-                        "method": str(methods["suid"])
-                    })
+                    gtfo_append[b].append(
+                        {
+                            "type": func_type,
+                            "context": "suid",
+                            "method": str(methods["suid"]),
+                        }
+                    )
     except Exception as e:
         console.print(f"[red]gtfo comp failure: {e}[/red]")
         traceback.print_exc()
@@ -549,9 +566,7 @@ async def timeouts():
 def strings_write(b):
     """Print this binary's strings; all JSON files are persisted once per run."""
     if args.output in ("terminal", "both"):
-        console.print(
-            f"[yellow]Strings Found for [/yellow][magenta] {b}:[/magenta] "
-        )
+        console.print(f"[yellow]Strings Found for [/yellow][magenta] {b}:[/magenta] ")
         for string in strings_append.get(b, []):
             console.print(f"    [green]{string}[/green]")
 
@@ -577,7 +592,9 @@ def flags_write(b):
                 }
                 flags_append[b].append(appendItem)
                 if args.output in ("terminal", "both"):
-                    console.print(f"[magenta]{flag['severity']}[/magenta]: {flag['string']}")
+                    console.print(
+                        f"[magenta]{flag['severity']}[/magenta]: {flag['string']}"
+                    )
 
     except Exception as e:
         console.print(f"[red]Flags dump failure: {e}[/red]")
@@ -593,6 +610,8 @@ def write_scan_outputs():
         (CAP_OUT, cap_append),
         (STR_OUT, strings_append),
         (STRACE_OUT, strace_append),
+        (RUNTIME_TRACE_PLAN_OUT, runtime_trace_plan),
+        (RUNTIME_TRACE_RESULTS_OUT, runtime_trace_results),
         (TIMEOUT_OUT, timeout_append),
         (GTFO_OUT, gtfo_append),
         (FLAGS_OUT, flags_append),
@@ -609,7 +628,15 @@ def write_csv_report(results, output_path):
         writer.writeheader()
 
         for binary, binary_data in sorted(results.items()):
-            for finding_type in ("strings", "strace", "flags", "gtfo", "timeouts", "capabilities"):
+            for finding_type in (
+                "strings",
+                "strace",
+                "runtime_trace",
+                "flags",
+                "gtfo",
+                "timeouts",
+                "capabilities",
+            ):
                 findings = binary_data.get(finding_type)
                 if not findings:
                     continue
@@ -630,7 +657,9 @@ def write_csv_report(results, output_path):
                         "severity": "",
                         "context": "",
                     }
-                    if finding_type == "flags" and isinstance(finding, dict):
+                    if finding_type == "runtime_trace" and isinstance(finding, dict):
+                        row["finding"] = json.dumps(finding, sort_keys=True)
+                    elif finding_type == "flags" and isinstance(finding, dict):
                         row["finding"] = str(finding.get("string") or "").strip()
                         row["severity"] = str(finding.get("severity") or "").strip()
                         row["context"] = str(finding.get("context") or "").strip()
@@ -653,9 +682,8 @@ async def main():
                     # FIXED: strings_scan MUST complete BEFORE flags_write runs
                     # flags_write matches flag strings against strings_append[binary]
                     # If run concurrently via gather(), flags_write executes first and sees empty list
-                    results = await asyncio.gather(
+                    await asyncio.gather(
                         strings_scan(binary),
-                        strace_scan(binary),
                         gtfo_scan(binary),
                         return_exceptions=True,
                     )
@@ -676,11 +704,76 @@ async def main():
                 except (asyncio.CancelledError, Exception) as e:
                     console.print(f"[red]scan failure: {e}[/red]")
                     traceback.print_exc()
-                    pass
 
         except Exception as e:
             console.print(f"[red]main failure: {e}[/red]")
             traceback.print_exc()
+
+        # Runtime tracing is deliberately a second, opt-in phase after static analysis.
+        if args.runtime_trace:
+            candidates = select_trace_candidates(agg_result, b_exp)
+            if not candidates:
+                console.print(
+                    "[yellow]No privileged binaries met the static-evidence criteria.[/yellow]"
+                )
+            else:
+                console.print(
+                    "[bold red]DANGER: runtime tracing EXECUTES each selected binary. "
+                    "Targets may modify files, access resources, or cause other side effects. "
+                    "strace is NOT a sandbox. Only continue on systems and binaries you are "
+                    "authorised to execute.[/bold red]"
+                )
+                for candidate, reasons in candidates.items():
+                    console.print(f"[cyan]{candidate}[/cyan]")
+                    for reason in reasons:
+                        console.print(f"  [dim]- {reason}[/dim]")
+                    runtime_trace_plan[candidate] = {
+                        "selection_reasons": reasons,
+                        "timeout_seconds": timeout_var,
+                        "status": "awaiting_confirmation",
+                    }
+
+                if not confirm_runtime_trace():
+                    console.print(
+                        "[yellow]Runtime tracing cancelled; no selected binaries were executed.[/yellow]"
+                    )
+                    for candidate in candidates:
+                        runtime_trace_plan[candidate]["status"] = "cancelled"
+                else:
+                    for candidate in candidates:
+                        runtime_trace_plan[candidate]["status"] = "running"
+                        try:
+                            result = await trace_binary(candidate, timeout=timeout_var)
+                            result_data = result.to_dict()
+                        except asyncio.CancelledError:
+                            runtime_trace_plan[candidate]["status"] = "cancelled"
+                            raise
+                        except Exception as exc:
+                            result_data = {
+                                "status": "failed",
+                                "returncode": None,
+                                "observations": [],
+                                "diagnostics": [f"Runtime tracing failed: {exc}"],
+                                "timed_out": False,
+                            }
+
+                        runtime_trace_results[candidate] = result_data
+                        strace_append[candidate] = result_data["observations"]
+                        runtime_trace_plan[candidate]["status"] = result_data["status"]
+                        binary_report = b_exp.setdefault(candidate, {})
+                        binary_report["strace"] = result_data["observations"]
+                        binary_report["runtime_trace"] = {
+                            "status": result_data["status"],
+                            "returncode": result_data["returncode"],
+                            "timed_out": result_data["timed_out"],
+                            "diagnostics": result_data["diagnostics"],
+                        }
+                        console.print(
+                            f"[cyan]{candidate}[/cyan]: runtime trace {result_data['status']} "
+                            f"({len(result_data['observations'])} observations)"
+                        )
+                        for diagnostic in result_data["diagnostics"]:
+                            console.print(f"[yellow]  {diagnostic}[/yellow]")
 
         # Include every capability-bearing file in reports, even when it is
         # outside the existing /usr/bin analysis scope.
@@ -734,9 +827,10 @@ async def main():
             with open(SCAN_OUT, "w", encoding="utf-8") as summary_file:
                 json.dump(scan_summary, summary_file, indent=2)
         if args.output in ("terminal", "both"):
-            console.print(f"[cyan]Total scan duration: {total_scan_seconds:.3f}s[/cyan]")
-
+            console.print(
+                f"[cyan]Total scan duration: {total_scan_seconds:.3f}s[/cyan]"
+            )
 
 
 asyncio.run(main())
-console.print(f"[bold bright_green]Done![/bold bright_green]")
+console.print("[bold bright_green]Done![/bold bright_green]")

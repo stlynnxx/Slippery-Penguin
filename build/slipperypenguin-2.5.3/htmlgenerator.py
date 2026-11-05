@@ -1,6 +1,6 @@
-from yattag import Doc
-from rich.console import Console
 import json
+
+from yattag import Doc
 
 
 def generate_PDF(b_exp):
@@ -27,8 +27,8 @@ def generate_PDF(b_exp):
 """)
 
             with tag("style"):
-                doc.asis(f"""
-                    body::before {{
+                doc.asis("""
+                    body::before {
                         position: fixed;
                         bottom: 5px;
                         top: 50%;
@@ -43,16 +43,16 @@ def generate_PDF(b_exp):
                         pointer-events: none;
                         width: 100%;      
                         text-align: center; 
-                    }}
+                    }
 
-                    body {{
+                    body {
                         margin: 10;
                         padding: 20px;
                         background: #1a1a1a;
                         color: #00ff00;
-                    }}
+                    }
 
-                    .header {{
+                    .header {
                         text-align: center;
                         border: 2px solid green;
                         border-radius: 10px;
@@ -60,8 +60,8 @@ def generate_PDF(b_exp):
                         margin-bottom: 20px;
                         background: black;
                         page-break-after: avoid;
-                    }}
-                    .section {{
+                    }
+                    .section {
                         margin: 0;         
                         padding: 8px;    
                         background: #000;
@@ -73,16 +73,16 @@ def generate_PDF(b_exp):
                         border-radius: 10px;
                         page-break-after: always;  
                         page-break-inside: avoid;
-                    }}
+                    }
 
-                    .binary-title {{
+                    .binary-title {
                         color: #00ff00;
                         border-bottom: 1px solid #00ff00;
                         padding-bottom: 8px;
                         margin-top: 20px;
-                    }}
+                    }
 
-                    .result-block {{
+                    .result-block {
                         margin: 5px 0;
                         padding: 10px;
                         background: #111;
@@ -90,15 +90,15 @@ def generate_PDF(b_exp):
                         border-bottom: 1px dashed darkgreen;
                         border-radius: 4px;
                         page-break-inside: avoid;
-                    }}
+                    }
 
-                    .result-label {{
+                    .result-label {
                         font-weight: bold;
                         color: #00cc00;
                         margin-bottom: 5px;
-                    }}
+                    }
 
-                    pre {{
+                    pre {
                         background: #1a1a1a;
                         color: #00ff00;
                         padding: 10px;
@@ -107,11 +107,11 @@ def generate_PDF(b_exp):
                         overflow: hidden;   
                         margin: 0;
                         font-size: 10px;
-                    }}
+                    }
 
-                    h1, h2, h3 {{
+                    h1, h2, h3 {
                         color: #00ff00;
-                    }}
+                    }
                 """)
 
         with tag("body"):
@@ -143,7 +143,7 @@ def generate_PDF(b_exp):
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
-                            text("Flags:")
+                            text("Static analysis: Flags:")
                         with tag("pre"):
                             flags = binary_data.get("flags", [])
                             if not flags:
@@ -163,17 +163,31 @@ def generate_PDF(b_exp):
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
-                            text("Capabilities:")
+                            text("Static analysis: Capabilities:")
                         with tag("pre"):
                             capabilities = binary_data.get("capabilities", [])
                             if not capabilities:
                                 text("No file capabilities found")
                             else:
-                                text("\n".join(str(value) for value in capabilities[:50]))
+                                text(
+                                    "\n".join(str(value) for value in capabilities[:50])
+                                )
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
-                            text("Strace:")
+                            text("Runtime trace execution status and diagnostics:")
+                        with tag("pre"):
+                            runtime_trace = binary_data.get("runtime_trace", {})
+                            if not runtime_trace:
+                                text("Not executed")
+                            else:
+                                text(
+                                    json.dumps(runtime_trace, indent=2, sort_keys=True)
+                                )
+
+                    with tag("div", klass="result-block"):
+                        with tag("div", klass="result-label"):
+                            text("Runtime observations (strace):")
                         with tag("pre"):
                             strace = binary_data.get("strace", [])
                             if not strace:
@@ -185,7 +199,7 @@ def generate_PDF(b_exp):
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
-                            text("GTFOBins Matches:")
+                            text("Static analysis: GTFOBins Matches:")
                         with tag("pre"):
                             gtfo = binary_data.get("gtfo", [])
                             if not gtfo:
@@ -357,6 +371,10 @@ def generate_report(b_exp, default_binary=None):
                     }
 
 
+                    if (type === 'runtime_trace' && typeof raw === 'object') {
+                        return JSON.stringify(raw, null, 2);
+                    }
+
                     if (type === 'timeouts') {
                         // Stored as a bare string ("timeout") for a single hit,
                         // or as an array when multiple scans timed out.
@@ -379,12 +397,21 @@ def generate_report(b_exp, default_binary=None):
                     const data = allData[binary] || {};
                     resultsDiv.innerHTML = '';
 
-                    ['strings', 'strace', 'flags', 'gtfo', 'timeouts', 'capabilities'].forEach(function(type) {
+                    ['strings', 'flags', 'gtfo', 'capabilities', 'runtime_trace', 'strace', 'timeouts'].forEach(function(type) {
                         const section = document.createElement('div');
                         section.className = 'section';
 
                         const heading = document.createElement('h3');
-                        heading.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+                        const labels = {
+                            strings: 'Static analysis: Strings',
+                            flags: 'Static analysis: Flags',
+                            gtfo: 'Static analysis: GTFOBins matches',
+                            capabilities: 'Static analysis: Linux capabilities',
+                            runtime_trace: 'Runtime trace execution status and diagnostics',
+                            strace: 'Runtime observations (strace)',
+                            timeouts: 'Analysis timeouts'
+                        };
+                        heading.textContent = labels[type] || type;
                         section.appendChild(heading);
 
                         const displayText = formatContent(type, data[type]);

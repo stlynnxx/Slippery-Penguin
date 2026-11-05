@@ -1,13 +1,14 @@
 """Reusable filesystem inventory helpers for Slippery Penguin."""
+
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
-from dataclasses import dataclass
 import os
 import re
 import stat
 import subprocess
 import time
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass
 from typing import Any
 
 Runner = Callable[..., subprocess.CompletedProcess[Any]]
@@ -123,8 +124,18 @@ def discover_privileged_files(
     """Find regular SUID and SGID files in a single filesystem traversal."""
     run = runner or subprocess.run
     command = [
-        "find", root, "-type", "f", "(", "-perm", "-4000", "-o",
-        "-perm", "-2000", ")", "-print0",
+        "find",
+        root,
+        "-type",
+        "f",
+        "(",
+        "-perm",
+        "-4000",
+        "-o",
+        "-perm",
+        "-2000",
+        ")",
+        "-print0",
     ]
     stdout, _stderr, _returncode, warning = _run_command(
         command, runner=run, timeout=timeout

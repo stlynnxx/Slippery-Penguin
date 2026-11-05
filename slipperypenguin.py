@@ -24,7 +24,7 @@ except ImportError:
     updatehelpers = None
 console = Console()
 # Version
-__version__ = "2.5.3"
+__version__ = "2.5.4"
 
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
 with open("art.txt", "r") as file:

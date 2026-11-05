@@ -27,18 +27,22 @@ import tempfile
 import urllib.error
 import urllib.request
 from pathlib import Path
+
 from rich.console import Console
+
 console = Console()
 UPDATE_URL = "https://eclecticelectronics.fly.dev/api/check-update/"
 
 # Only these may be written into the install directory by an update.
 # Everything else in the tarball is ignored. This is the primary defence
 # against a compromised or malformed release package.
-ALLOWED_FILES = frozenset({
-    "slipperypenguin.py",
-    "art.txt",
-    "flags.json",
-})
+ALLOWED_FILES = frozenset(
+    {
+        "slipperypenguin.py",
+        "art.txt",
+        "flags.json",
+    }
+)
 
 # Must be present in the tarball or the package is rejected as incomplete.
 REQUIRED_FILES = ("slipperypenguin.py", "art.txt", "flags.json")
@@ -87,8 +91,10 @@ def download_release(url, expected_hash):
     hasher = hashlib.sha256()
 
     try:
-        with urllib.request.urlopen(url, timeout=_TIMEOUT) as response, \
-                open(tmp_path, "wb") as out:
+        with (
+            urllib.request.urlopen(url, timeout=_TIMEOUT) as response,
+            open(tmp_path, "wb") as out,
+        ):
             while True:
                 chunk = response.read(_CHUNK)
                 if not chunk:
@@ -141,7 +147,9 @@ def extract_release(tarball_path):
     missing = [name for name in REQUIRED_FILES if name not in present]
     if missing:
         shutil.rmtree(extract_dir, ignore_errors=True)
-        console.print(f"[red]Incomplete package (missing: {', '.join(missing)}); aborting.[/red]")
+        console.print(
+            f"[red]Incomplete package (missing: {', '.join(missing)}); aborting.[/red]"
+        )
         return None
 
     return extract_dir
@@ -194,11 +202,14 @@ def run_update(current_version, assume_yes=False):
     latest_t = parse_version(latest)
 
     if latest_t == current_t:
-        console.print(f"[purple]Already on the latest version ({current_version}).[/purple]")
+        console.print(
+            f"[purple]Already on the latest version ({current_version}).[/purple]"
+        )
         return False
 
-
-    console.print(f"[purple]Update available: {latest} (you are running {current_version})[/purple]")
+    console.print(
+        f"[purple]Update available: {latest} (you are running {current_version})[/purple]"
+    )
 
     if not assume_yes:
         answer = input("Update now? [y/N] ").strip().lower()
@@ -227,9 +238,10 @@ def run_update(current_version, assume_yes=False):
 
     replaced = install_release(extract_dir)
     if not replaced:
-        console.print("[red]Package contained no recognised files; nothing replaced.[/red]")
+        console.print(
+            "[red]Package contained no recognised files; nothing replaced.[/red]"
+        )
         return False
 
     console.print(f"[red]Updated to {latest}. Replaced: {', '.join(replaced)}[/red]")
     return True
-
