@@ -258,3 +258,14 @@ If you find a bug in the current master release, I would check the dev
 version to see if it's been fixed but not yet released on master
 before submitting a PR. I really prefer for contributions to come 
 on the dev branch, but will not automatically reject them on master. 
+
+
+## Running the test suite
+
+The scanner regression tests use temporary fixture data and mocked command execution. They do not scan the host filesystem or require `find`, `getcap`, `strings`, root privileges, or a particular Linux security configuration.
+
+Run them from the repository root with Python 3.10 or later:
+
+```bash
+python3 -m unittest discover -s tests -v
+```
