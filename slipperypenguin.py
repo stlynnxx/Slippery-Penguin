@@ -16,7 +16,13 @@ from weasyprint import HTML
 
 from htmlgenerator import generate_PDF, generate_report
 from runtime_tracing import confirm_runtime_trace, select_trace_candidates, trace_binary
-from scan_helpers import collect_scan_inventory, normalise_path
+from scan_helpers import (
+    collect_scan_inventory,
+    match_flags,
+    normalise_path,
+    parse_flag_config,
+    parse_strings_output,
+)
 
 try:
     import updatehelpers
@@ -430,11 +436,11 @@ for warning in inventory.warnings:
 
 # loading the flags from json
 try:
-    with open("flags.json", "r") as file:
-        flags = json.load(file)
-except FileNotFoundError:
-    console.print("[red]Flags load failure: {e}[/red]")
-    traceback.print_exc()
+    with open("flags.json", "r", encoding="utf-8") as file:
+        flags = parse_flag_config(json.load(file))
+except (FileNotFoundError, json.JSONDecodeError, ValueError) as e:
+    console.print(f"[red]Flags load failure: {e}[/red]")
+    flags = []
 if os.path.exists(STRACE_OUT):
     with open(STRACE_OUT, "r") as f:
         strace_append = json.loads(f.read())
@@ -477,7 +483,7 @@ async def strings_scan(b):
                 process.communicate(), timeout=timeout_var
             )
             # strings_append[b] = stdout.decode().splitlines()
-            await append(strings_append, b, stdout.decode().splitlines())
+            await append(strings_append, b, parse_strings_output(stdout))
         except TimeoutError:
             try:
                 os.killpg(os.getpgid(process.pid), signal.SIGKILL)
@@ -582,20 +588,13 @@ def flags_write(b):
     global flags_append
     global strings_append
     try:
-        for flag in flags:
-            if flag["string"] in strings_append.get(b, []):
-                flags_append.setdefault(b, [])
-                appendItem = {
-                    "string": flag["string"],
-                    "severity": flag["severity"],
-                    "context": flag.get("context", ""),
-                }
-                flags_append[b].append(appendItem)
-                if args.output in ("terminal", "both"):
-                    console.print(
-                        f"[magenta]{flag['severity']}[/magenta]: {flag['string']}"
-                    )
-
+        for finding in match_flags(strings_append.get(b, []), flags):
+            flags_append.setdefault(b, [])
+            flags_append[b].append(finding)
+            if args.output in ("terminal", "both"):
+                console.print(
+                    f"[magenta]{finding['severity']}[/magenta]: {finding['string']}"
+                )
     except Exception as e:
         console.print(f"[red]Flags dump failure: {e}[/red]")
         traceback.print_exc()
