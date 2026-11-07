@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import stat
@@ -229,3 +230,58 @@ def collect_scan_inventory(
         warnings=find_warnings + getcap_warnings + metadata_warnings,
         timings=timings,
     )
+
+
+def parse_strings_output(output: str | bytes | None) -> list[str]:
+    """Decode strings-command output into non-empty lines."""
+    return [line for line in _decode_output(output).splitlines() if line]
+
+
+def parse_flag_config(data: Any) -> list[dict[str, str]]:
+    """Validate the flag configuration before it is used by the scanner."""
+    if not isinstance(data, list):
+        raise ValueError("Flag configuration must be a JSON array")
+
+    validated: list[dict[str, str]] = []
+    for index, item in enumerate(data):
+        if not isinstance(item, dict):
+            raise ValueError(f"Flag entry {index} must be an object")
+
+        marker = item.get("string")
+        severity = item.get("severity")
+        context = item.get("context", "")
+        if not isinstance(marker, str) or not marker.strip():
+            raise ValueError(f"Flag entry {index} must contain a non-empty string")
+        if not isinstance(severity, str) or not severity.strip():
+            raise ValueError(f"Flag entry {index} must contain a non-empty severity")
+        if not isinstance(context, str):
+            raise ValueError(f"Flag entry {index} context must be a string")
+
+        validated.append(
+            {"string": marker, "severity": severity, "context": context}
+        )
+
+    return validated
+
+
+def match_flags(
+    extracted_strings: Iterable[str], configured_flags: Iterable[dict[str, str]]
+) -> list[dict[str, str]]:
+    """Return exact configured-string matches without duplicate findings."""
+    available = set(extracted_strings)
+    matches: list[dict[str, str]] = []
+    seen: set[str] = set()
+
+    for flag in configured_flags:
+        marker = flag["string"]
+        if marker in available and marker not in seen:
+            matches.append(
+                {
+                    "string": marker,
+                    "severity": flag["severity"],
+                    "context": flag.get("context", ""),
+                }
+            )
+            seen.add(marker)
+
+    return matches
