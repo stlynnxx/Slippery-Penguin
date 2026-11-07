@@ -257,9 +257,7 @@ def parse_flag_config(data: Any) -> list[dict[str, str]]:
         if not isinstance(context, str):
             raise ValueError(f"Flag entry {index} context must be a string")
 
-        validated.append(
-            {"string": marker, "severity": severity, "context": context}
-        )
+        validated.append({"string": marker, "severity": severity, "context": context})
 
     return validated
 
