@@ -30,7 +30,7 @@ except ImportError:
     updatehelpers = None
 console = Console()
 # Version
-__version__ = "2.5.3"
+__version__ = "2.5.5"
 
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
 with open("art.txt", "r") as file:
@@ -145,24 +145,41 @@ if args.del_logs == "run":
                     os.unlink(file_path)
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
-            except Exception as e:
-                print("Failed to delete %s. Reason: %s" % (file_path, e))
+            except OSError as e:
+                # print("Failed to delete %s. Reason: %s" % (file_path, e))
+                print(f"Failed to delete {file_path}. Reason: {e}")
     print("Logs Deleted!")
 
 if args.del_logs == "close":
     if not os.path.exists(STORAGE_ROOT):
         print(f"[-] No logs directory found at {STORAGE_ROOT}")
     else:
-        for filename in os.listdir(STORAGE_ROOT):
-            file_path = os.path.join(STORAGE_ROOT, filename)
-            try:
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-            except Exception as e:
-                print("Failed to delete %s. Reason: %s" % (file_path, e))
-    print("Logs Deleted!")
+        errors = 0
+
+        try:
+            for filename in os.listdir(STORAGE_ROOT):
+                file_path = os.path.join(STORAGE_ROOT, filename)
+
+                try:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+
+                except OSError as e:
+                    errors += 1
+                    print(f"[-] Failed to delete {file_path}: {e}")
+
+        except OSError as e:
+            errors += 1
+            print(f"[-] Failed to read logs directory: {e}")
+
+        if errors == 0:
+            print("[+] Logs deleted successfully!")
+        else:
+            print(f"[-] Log cleanup completed with {errors} error(s).")
+
     sys.exit(0)
 
 if args.cleanup:
@@ -176,10 +193,10 @@ if args.cleanup:
                     os.unlink(file_path)
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
-            except Exception as e:
-                print("Failed to delete %s. Reason: %s" % (file_path, e))
+            except OSError as e:
+                print("Failed to delete {}. Reason: {}".format(file_path, e))
 
-    ## This removes the gtfobins data
+                ## This removes the gtfobins data
     if os.path.exists(GTFO_FILE):
         os.unlink(GTFO_FILE)
         console.print("[green]GTFOBins data removed.[/green]")
@@ -218,10 +235,12 @@ if args.manual:
 # Updating gtfobins logic
 try:
     if args.update_gtfobins:
-        subprocess.run(["curl", "https://gtfobins.org/api.json", "-o", GTFO_FILE])
+        subprocess.run(
+            ["curl", "https://gtfobins.org/api.json", "-o", GTFO_FILE], check=False
+        )
         print(f"GTFOBins updated at {GTFO_FILE}")
         sys.exit(0)
-except Exception as e:
+except OSError as e:
     console.print(f"[red]Updating GTFObins failed, {e}[/red]")
 
 
@@ -253,9 +272,11 @@ if args.update in ("run", "close"):
 
         # GTFOBins refresh, as before
         try:
-            subprocess.run(["curl", "https://gtfobins.org/api.json", "-o", GTFO_FILE])
+            subprocess.run(
+                ["curl", "https://gtfobins.org/api.json", "-o", GTFO_FILE], check=False
+            )
             console.print(f"[green]GTFOBins updated at {GTFO_FILE}[/green]")
-        except Exception as e:
+        except OSError as e:
             console.print(f"[red]Could not update GTFOBins, {e}[/red]")
 
         url = update_info.get("url")
@@ -345,10 +366,11 @@ if args.update is None and not args.skip_update_check and updatehelpers is not N
                 # Updating gtfobins logic
                 try:
                     subprocess.run(
-                        ["curl", "https://gtfobins.org/api.json", "-o", GTFO_FILE]
+                        ["curl", "https://gtfobins.org/api.json", "-o", GTFO_FILE],
+                        check=False,
                     )
                     print(f"GTFOBins updated at {GTFO_FILE}")
-                except Exception as e:
+                except OSError as e:
                     console.print(f"[red]Could not update GTFOBins, {e}[/red]")
 
                 url = update_info.get("url")
@@ -467,8 +489,6 @@ async def strings_scan(b):
     # Debug
     # if args.output in ("logs"):
     #    print("strings scan started")
-    global strings_append
-    global timeout_append
     try:
         process = await asyncio.create_subprocess_exec(
             "strings",
@@ -479,7 +499,7 @@ async def strings_scan(b):
             stdin=asyncio.subprocess.DEVNULL,
         )
         try:
-            stdout, stderr = await asyncio.wait_for(
+            stdout, _stderr = await asyncio.wait_for(
                 process.communicate(), timeout=timeout_var
             )
             # strings_append[b] = stdout.decode().splitlines()
@@ -492,7 +512,7 @@ async def strings_scan(b):
             await process.wait()
             await append(timeout_append, b, "timeout")
             # return stdout.decode().splitlines()
-    except Exception as e:
+    except OSError as e:
         console.print(f"[red]strings_scan failure: {e}[/red]")
         traceback.print_exc()
 
@@ -502,7 +522,7 @@ async def strings_scan(b):
 
 # gtfobins comp
 async def gtfo_scan(b):
-    global gtfo_append
+    # global gtfo_append
     try:
         binary_name = os.path.basename(b)
 
@@ -549,7 +569,7 @@ async def gtfo_scan(b):
                             "method": str(methods["suid"]),
                         }
                     )
-    except Exception as e:
+    except OSError as e:
         console.print(f"[red]gtfo comp failure: {e}[/red]")
         traceback.print_exc()
 
@@ -561,7 +581,7 @@ async def timeouts():
             console.print("[yellow]Timeouts:[/yellow]")
             for t in timeout_append:
                 console.print(f"\n[green] {t}[/green]")
-    except Exception as e:
+    except OSError as e:
         console.print(f"[red]timeouts failure: {e}[/red]")
         traceback.print_exc()
 
@@ -578,9 +598,6 @@ def strings_write(b):
 
 
 # flags writing - no longer in gather(), called AFTER strings_scan completes
-def flags_write_print():
-    global flags_append
-    global strings_append
 
 
 # flags writing - REMOVED await keyword, kept sync to match original style
@@ -595,7 +612,7 @@ def flags_write(b):
                 console.print(
                     f"[magenta]{finding['severity']}[/magenta]: {finding['string']}"
                 )
-    except Exception as e:
+    except OSerror as e:
         console.print(f"[red]Flags dump failure: {e}[/red]")
         traceback.print_exc()
 
@@ -798,7 +815,7 @@ async def main():
 
         try:
             await timeouts()
-        except Exception as e:
+        except OSError as e:
             console.print(f"[red]Timeout summary failed: {e}[/red]")
 
         write_scan_outputs()

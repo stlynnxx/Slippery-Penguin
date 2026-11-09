@@ -10,8 +10,9 @@ import asyncio
 import os
 import signal
 import tempfile
+from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -87,16 +88,21 @@ def _signal_process_group(process: asyncio.subprocess.Process, sig: int) -> None
 
 async def _stop_process_group(
     process: asyncio.subprocess.Process,
-    communicate_task: "asyncio.Task[tuple[bytes, bytes]]",
+    communicate_task: asyncio.Task[tuple[bytes, bytes]],
     grace_period: float,
 ) -> None:
     """Terminate the isolated trace session and reap the strace process."""
     _signal_process_group(process, signal.SIGTERM)
     try:
         await asyncio.wait_for(asyncio.shield(communicate_task), timeout=grace_period)
-    except asyncio.TimeoutError:
+    except TimeoutError:
         _signal_process_group(process, signal.SIGKILL)
         await communicate_task
+
+
+def read_trace_output(trace_path: str) -> list[str]:
+    with open(trace_path, "r", encoding="utf-8", errors="replace") as trace_file:
+        return [line.rstrip("\n") for line in trace_file if line.strip()]
 
 
 async def trace_binary(
@@ -155,14 +161,14 @@ async def trace_binary(
             _stdout, stderr = await asyncio.wait_for(
                 asyncio.shield(communicate_task), timeout=timeout
             )
-        except asyncio.TimeoutError:
+        except TimeoutError:
             timed_out = True
             await _stop_process_group(process, communicate_task, grace_period)
             _stdout, stderr = communicate_task.result()
         except asyncio.CancelledError:
             await _stop_process_group(process, communicate_task, grace_period)
             raise
-        except Exception as exc:
+        except OSError as exc:
             await _stop_process_group(process, communicate_task, grace_period)
             diagnostics.append(f"Trace communication failed: {exc}")
             stderr = b""
@@ -173,12 +179,7 @@ async def trace_binary(
                 diagnostics.extend(line for line in decoded.splitlines() if line)
 
         try:
-            with open(
-                trace_path, "r", encoding="utf-8", errors="replace"
-            ) as trace_file:
-                observations = [
-                    line.rstrip("\n") for line in trace_file if line.strip()
-                ]
+            observations = await asyncio.to_thread(read_trace_output, trace_path)
         except OSError as exc:
             observations = []
             diagnostics.append(f"Could not read trace output: {exc}")
