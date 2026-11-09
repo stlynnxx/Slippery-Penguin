@@ -6,9 +6,9 @@ from yattag import Doc
 def generate_PDF(b_exp):
     try:
         with open("art.txt", "r") as f:
-            ascii_art = f.read()
+            f.read()
     except FileNotFoundError:
-        ascii_art = ""
+        pass
     doc, tag, text = Doc().tagtext()
     with tag("html", lang="en"):
         with tag("head"):

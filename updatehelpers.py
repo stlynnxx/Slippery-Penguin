@@ -109,7 +109,7 @@ def download_release(url, expected_hash):
             )
         return tmp_path
 
-    except Exception as exc:
+    except OSError as exc:
         print(f"Download failed: {exc}")
         if os.path.exists(tmp_path):
             os.unlink(tmp_path)

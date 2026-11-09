@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import os
 import re
 import stat
@@ -240,22 +239,22 @@ def parse_strings_output(output: str | bytes | None) -> list[str]:
 def parse_flag_config(data: Any) -> list[dict[str, str]]:
     """Validate the flag configuration before it is used by the scanner."""
     if not isinstance(data, list):
-        raise ValueError("Flag configuration must be a JSON array")
+        raise TypeError("Flag configuration must be a JSON array")
 
     validated: list[dict[str, str]] = []
     for index, item in enumerate(data):
         if not isinstance(item, dict):
-            raise ValueError(f"Flag entry {index} must be an object")
+            raise TypeError(f"Flag entry {index} must be an object")
 
         marker = item.get("string")
         severity = item.get("severity")
         context = item.get("context", "")
         if not isinstance(marker, str) or not marker.strip():
-            raise ValueError(f"Flag entry {index} must contain a non-empty string")
+            raise TypeError(f"Flag entry {index} must contain a non-empty string")
         if not isinstance(severity, str) or not severity.strip():
-            raise ValueError(f"Flag entry {index} must contain a non-empty severity")
+            raise TypeError(f"Flag entry {index} must contain a non-empty severity")
         if not isinstance(context, str):
-            raise ValueError(f"Flag entry {index} context must be a string")
+            raise TypeError(f"Flag entry {index} context must be a string")
 
         validated.append({"string": marker, "severity": severity, "context": context})
 
