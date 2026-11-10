@@ -6,8 +6,6 @@ Use responsibly and in accordance with all applicable local, state, and federal 
 
 # Slippery Penguin
 
-**This is the development branch, where new work gets pushed to as the next release is built. It may have features not present in the current release, and may be less stable than the latest release.**
-
 **SUID/SGID Enumeration and Vulnerability Scanning Tool**
 
 Slippery Penguin is a security auditing tool designed to enumerate SUID binaries, scan for dangerous capabilities, and cross-reference findings against the GTFOBins database to identify potential privilege escalation vectors.
