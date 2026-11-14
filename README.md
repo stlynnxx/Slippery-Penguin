@@ -72,6 +72,8 @@ can afford to do so, every penny helps out!
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H5F5269IH4)
 
+You can also sponsor us through Github Sponsors to help with server costs!
+
 
 ## Usage
 
