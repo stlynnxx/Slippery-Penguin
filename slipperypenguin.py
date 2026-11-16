@@ -101,6 +101,9 @@ parser.add_argument(
 parser.add_argument(
     "--csvreport", "-cr", action="store_true", help="Save findings in a CSV file"
 )
+parser.add_argument(
+    "--filepathwalk", "-fw", action="store_true", help="Walking a given filepath"
+)
 
 
 # Globals for passing data between functions
@@ -426,6 +429,7 @@ FLAGS_OUT = os.path.join(RUN_DIR, "flags-out.json")
 HTML_OUT = os.path.join(RUN_DIR, "html-out.html")
 CSV_OUT = os.path.join(RUN_DIR, "report.csv")
 SCAN_OUT = os.path.join(RUN_DIR, "scan-out.json")
+FILE_WALK_OUT = os.path.join(RUN_DIR, "file-walk-out.json")
 
 
 border = "-----"
@@ -438,6 +442,7 @@ agg_result = inventory.privileged_files
 cap_append = inventory.capabilities_by_file
 file_metadata = inventory.file_metadata
 find_append["results"] = agg_result
+file_dict = {}
 
 if args.output in ("terminal", "both"):
     console.print("[yellow]SUID/SGID files found:[/yellow]")
@@ -612,7 +617,7 @@ def flags_write(b):
                 console.print(
                     f"[magenta]{finding['severity']}[/magenta]: {finding['string']}"
                 )
-    except OSerror as e:
+    except OSError as e:
         console.print(f"[red]Flags dump failure: {e}[/red]")
         traceback.print_exc()
 
@@ -631,6 +636,7 @@ def write_scan_outputs():
         (TIMEOUT_OUT, timeout_append),
         (GTFO_OUT, gtfo_append),
         (FLAGS_OUT, flags_append),
+        (FILE_WALK_OUT, file_dict),
     )
     for output_path, payload in outputs:
         with open(output_path, "w", encoding="utf-8") as output_file:
@@ -686,9 +692,56 @@ def write_csv_report(results, output_path):
                         writer.writerow(row)
 
 
+# Filesystem Operations
+def filepath_walk():
+    dir_chk = False
+    global file_dict
+    print("Enter filepath (x/y/z): ")
+    filepath = input()
+
+    if not os.path.isdir(filepath):
+        console.print(f"[red]Invalid directory: {filepath}[/red]")
+        return
+    print(f"Path: {filepath!r}")
+    print(f"Directory check: {os.path.isdir(filepath)}")
+    if (os.path.isdir(filepath)):
+        dir_chk = True
+
+    for root, directories, files in os.walk(filepath):
+        match args.output:
+            case "terminal":
+                print(f"Current directory: {root}")
+                print(f"Subdirectories: {directories}")
+                print(f"Files: {files}")
+            case "logs":
+                file_dict[root] = {
+                    "Subdirectories": directories,
+                    "Files": files
+                }
+            case "both":
+                print(f"Current directory: {root}")
+                print(f"Subdirectories: {directories}")
+                print(f"Files: {files}")
+                file_dict[root] = {
+                    "Subdirectories": directories,
+                    "Files": files
+                }
+    if dir_chk == True:
+        print(f"Finished! Stored {len(file_dict)} directories")
+
+
 async def main():
     global b_exp
     global agg_result
+
+    # filepath walking
+    try:
+        if args.filepathwalk:
+            filepath_walk()
+    except OSError as e:
+        console.print(f"[red]Filepath walk failure: {e}[/red]")
+        traceback.print_exc()
+
     with console.status("[blue]Sliding Around... [/blue]"):
         try:
             for binary in agg_result:
