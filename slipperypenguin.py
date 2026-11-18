@@ -102,7 +102,10 @@ parser.add_argument(
     "--csvreport", "-cr", action="store_true", help="Save findings in a CSV file"
 )
 parser.add_argument(
-    "--filepathwalk", "-fw", action="store_true", help="Walking a given filepath"
+    "--filepathwalk", "-fw",
+    type=str,
+    metavar="PATH",
+    help="Recursively walk the specified directory"
 )
 
 
@@ -693,42 +696,38 @@ def write_csv_report(results, output_path):
 
 
 # Filesystem Operations
-def filepath_walk():
-    dir_chk = False
-    global file_dict
-    print("Enter filepath (x/y/z): ")
-    filepath = input()
 
+def filepath_walk():
+    global file_dict
+    filepath = args.filepathwalk
     if not os.path.isdir(filepath):
         console.print(f"[red]Invalid directory: {filepath}[/red]")
         return
-    print(f"Path: {filepath!r}")
-    print(f"Directory check: {os.path.isdir(filepath)}")
-    if (os.path.isdir(filepath)):
-        dir_chk = True
 
-    for root, directories, files in os.walk(filepath):
-        match args.output:
-            case "terminal":
-                print(f"Current directory: {root}")
-                print(f"Subdirectories: {directories}")
-                print(f"Files: {files}")
-            case "logs":
-                file_dict[root] = {
-                    "Subdirectories": directories,
-                    "Files": files
-                }
-            case "both":
-                print(f"Current directory: {root}")
-                print(f"Subdirectories: {directories}")
-                print(f"Files: {files}")
-                file_dict[root] = {
-                    "Subdirectories": directories,
-                    "Files": files
-                }
-    if dir_chk == True:
-        print(f"Finished! Stored {len(file_dict)} directories")
+    directory_count = 0
+    if args.output in ("logs", "both"):
+        file_dict.clear()
 
+    def walk_error(error):
+        console.print(f"[red]Directory access error: {error}[/red]")
+
+    for root, directories, files in os.walk(
+        filepath, onerror=walk_error
+    ):
+        directory_count += 1
+
+        if args.output in ("terminal", "both"):
+            print(f"Current directory: {root}")
+            print(f"Subdirectories: {directories}")
+            print(f"Files: {files}")
+
+        if args.output in ("logs", "both"):
+            file_dict[root] = {
+                "Subdirectories": directories,
+                "Files": files
+            }
+
+    print(f"Finished! Scanned {directory_count} directories")
 
 async def main():
     global b_exp
