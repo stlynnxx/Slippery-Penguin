@@ -10,6 +10,7 @@ import sys
 import time
 import traceback
 from datetime import datetime
+import stat
 
 from rich.console import Console
 from weasyprint import HTML
@@ -122,6 +123,7 @@ flags_append = {}
 flags = {}
 b_exp = {}
 agg_result = []
+file_security_findings = []
 
 args = parser.parse_args()
 # sys.stdin = open('/dev/tty')
@@ -433,6 +435,7 @@ HTML_OUT = os.path.join(RUN_DIR, "html-out.html")
 CSV_OUT = os.path.join(RUN_DIR, "report.csv")
 SCAN_OUT = os.path.join(RUN_DIR, "scan-out.json")
 FILE_WALK_OUT = os.path.join(RUN_DIR, "file-walk-out.json")
+FILE_SECURITY_FINDINGS = os.path.join(RUN_DIR, "security-findings.json")
 
 
 border = "-----"
@@ -640,6 +643,7 @@ def write_scan_outputs():
         (GTFO_OUT, gtfo_append),
         (FLAGS_OUT, flags_append),
         (FILE_WALK_OUT, file_dict),
+        (FILE_SECURITY_FINDINGS, file_security_findings)
     )
     for output_path, payload in outputs:
         with open(output_path, "w", encoding="utf-8") as output_file:
@@ -697,30 +701,51 @@ def write_csv_report(results, output_path):
 
 # Filesystem Operations
 
+def check_world_writable(filepath, stat_info):
+    global file_security_findings
+    if not stat.S_ISREG(stat_info.st_mode):
+        return None
+
+    permissions = stat.S_IMODE(stat_info.st_mode)
+
+    if permissions & stat.S_IWOTH:
+        file_security_findings.append({
+            "path": full_path,
+            "check": "world_writable",
+            "severity": "Needs manual review",
+            "permissions": oct(permissions),
+            "description": "File is writable by other users"
+        })
+    return None
 def filepath_walk():
     global file_dict
     filepath = args.filepathwalk
+    directory_count = 0
     if not os.path.isdir(filepath):
         console.print(f"[red]Invalid directory: {filepath}[/red]")
         return
-
-    directory_count = 0
     if args.output in ("logs", "both"):
         file_dict.clear()
-
     def walk_error(error):
         console.print(f"[red]Directory access error: {error}[/red]")
 
     for root, directories, files in os.walk(
         filepath, onerror=walk_error
     ):
-        directory_count += 1
-
+        directory_count = directory_count + 1
+        for filename in files:
+            full_path = os.path.join(root, filename)
+            try:
+                stat_info = os.lstat(full_path)
+                check_world_writable(filepath,stat_info)
+            except OSError as error:
+                console.print(
+                    f"[red]Unable to inspect {full_path}: {error}[/red]"
+                )
         if args.output in ("terminal", "both"):
             print(f"Current directory: {root}")
             print(f"Subdirectories: {directories}")
             print(f"Files: {files}")
-
         if args.output in ("logs", "both"):
             file_dict[root] = {
                 "Subdirectories": directories,
@@ -732,7 +757,6 @@ def filepath_walk():
 async def main():
     global b_exp
     global agg_result
-
     # filepath walking
     try:
         if args.filepathwalk:
