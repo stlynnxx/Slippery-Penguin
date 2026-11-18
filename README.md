@@ -59,8 +59,8 @@ python3 slipperypenguin.py --update-gtfobins
 Downloading the .tar.gz from www.eclecticelectrionics.com (https://github.com/stlynnxx/EclecticElectronics)
 Note: **This installs the latest release, not the development branch**
 ```bash
-curl -L https://eclecticelectronics.fly.dev/api/download/2.5.3 -o slipperypenguin-2.5.3.tar.gz
-sha256sum slipperypenguin-2.5.3.tar.gz
+curl -L https://eclecticelectronics.fly.dev/api/download/2.5.5 -o slipperypenguin-2.5.5.tar.gz
+sha256sum slipperypenguin-2.5.5.tar.gz
 
 pip install -r requirements.txt
 
@@ -94,6 +94,7 @@ can afford to do so, every penny helps out!
 | `--htmlreport` | `-hr` | flag | Save results in HTML file |
 | `--pdfreport` | `-pdf` | flag | Save results in PDF file |
 | `--csvreport` | `-cr` | flag | Save findings in CSV file |
+| `--filepathwalk` | `-fw` | `x/y/z` | Run Directory traversal |
 
 ---
 
