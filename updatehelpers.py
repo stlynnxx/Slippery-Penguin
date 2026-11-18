@@ -12,8 +12,7 @@ Responds with JSON:
       "sha256": "<sha256 hex digest of that tarball>"
     }
 
-Any network failure or malformed payload is treated as "no update available"
-rather than a fatal error.
+
 """
 
 from __future__ import annotations

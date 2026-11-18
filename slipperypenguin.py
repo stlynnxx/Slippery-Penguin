@@ -701,7 +701,7 @@ def write_csv_report(results, output_path):
 
 # Filesystem Operations
 
-def check_world_writable(filepath, stat_info):
+def check_world_writable(full_path, stat_info):
     global file_security_findings
     if not stat.S_ISREG(stat_info.st_mode):
         return None
@@ -710,7 +710,7 @@ def check_world_writable(filepath, stat_info):
 
     if permissions & stat.S_IWOTH:
         file_security_findings.append({
-            "path": full_path,
+            "path": filepath,
             "check": "world_writable",
             "severity": "Needs manual review",
             "permissions": oct(permissions),
@@ -737,7 +737,7 @@ def filepath_walk():
             full_path = os.path.join(root, filename)
             try:
                 stat_info = os.lstat(full_path)
-                check_world_writable(filepath,stat_info)
+                check_world_writable(full_path,stat_info)
             except OSError as error:
                 console.print(
                     f"[red]Unable to inspect {full_path}: {error}[/red]"
@@ -757,6 +757,7 @@ def filepath_walk():
 async def main():
     global b_exp
     global agg_result
+
     # filepath walking
     try:
         if args.filepathwalk:
