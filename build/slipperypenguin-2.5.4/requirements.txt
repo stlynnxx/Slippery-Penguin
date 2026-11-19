@@ -1,3 +1,0 @@
-yattag
-weasyprint
-rich

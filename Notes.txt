@@ -407,3 +407,17 @@ hunting. Yesterday I did some formatting and linting using Ruff.
 I also changed the runtime trace prompt to prompt for y instead of yes for simplicity's sake.
 
 
+11/16/2026-
+
+I don't journal in here often anymore, but i'm adding a new feature so I figure that I would.
+
+I worked on intoducing filepath walking today using os.walk. I wrote a basic function to carry out the walking itself,
+and integrated the results into the existing json logs functionality. I set up the call to the function in main and it ran.
+however, the json log returned empty. I'm sure it's something small that I have yet to think of/see but I'm sure the core
+functionality is there.
+
+Got it printing!
+
+I'm not finished with this yet overall so I'm only going to push to dev and not release on master, but, it is a working
+start!
+
