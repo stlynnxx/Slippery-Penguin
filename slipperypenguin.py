@@ -651,7 +651,12 @@ def write_scan_outputs():
             json.dump(payload, output_file, indent=2)
 
 
-def write_csv_report(results, output_path):
+def write_csv_report(
+    results,
+    output_path,
+    filepath_walk_results=None,
+    filepath_security_findings=None,
+):
     fieldnames = ["binary", "finding_type", "finding", "severity", "context"]
     with open(output_path, "w", newline="", encoding="utf-8") as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
@@ -699,6 +704,42 @@ def write_csv_report(results, output_path):
                     if row["finding"] or row["severity"] or row["context"]:
                         writer.writerow(row)
 
+        # Keep directory traversal in its own clearly separated CSV section.
+        if filepath_walk_results or filepath_security_findings:
+            writer.writerow({})
+            writer.writerow({"binary": "Directory Traversal Results"})
+
+            for directory, contents in sorted((filepath_walk_results or {}).items()):
+                subdirectories = contents.get("Subdirectories", [])
+                files = contents.get("Files", [])
+                writer.writerow(
+                    {
+                        "binary": directory,
+                        "finding_type": "filepath_walk",
+                        "finding": (
+                            f"Subdirectories: {', '.join(subdirectories)}; "
+                            f"Files: {', '.join(files)}"
+                        ),
+                        "severity": "",
+                        "context": (
+                            f"{len(subdirectories)} subdirectories; {len(files)} files"
+                        ),
+                    }
+                )
+
+            for finding in filepath_security_findings or []:
+                if not finding:
+                    continue
+                writer.writerow(
+                    {
+                        "binary": finding.get("path", ""),
+                        "finding_type": "filepath_walk_security",
+                        "finding": finding.get("description") or finding.get("check", ""),
+                        "severity": finding.get("severity", ""),
+                        "context": finding.get("permissions", ""),
+                    }
+                )
+
 
 # Filesystem Operations
 
@@ -727,8 +768,7 @@ def filepath_walk():
     if not os.path.isdir(filepath):
         console.print(f"[red]Invalid directory: {filepath}[/red]")
         return
-    if args.output in ("logs", "both"):
-        file_dict.clear()
+    file_dict.clear()
 
     def walk_error(error):
         console.print(f"[red]Directory access error: {error}[/red]")
@@ -746,8 +786,7 @@ def filepath_walk():
             print(f"Current directory: {root}")
             print(f"Subdirectories: {directories}")
             print(f"Files: {files}")
-        if args.output in ("logs", "both"):
-            file_dict[root] = {"Subdirectories": directories, "Files": files}
+        file_dict[root] = {"Subdirectories": directories, "Files": files}
 
     print(f"Finished! Scanned {directory_count} directories")
     print(f"Security findings: {len(file_security_findings)}")
@@ -894,7 +933,7 @@ async def main():
             pdf = generate_PDF(b_exp)
             HTML(string=pdf).write_pdf(f"{RUN_DIR}/report_{RUN_ID}.pdf")
         if args.csvreport:
-            write_csv_report(b_exp, CSV_OUT)
+            write_csv_report(b_exp, CSV_OUT, file_dict, file_security_findings)
 
         try:
             await timeouts()

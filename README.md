@@ -17,14 +17,42 @@ Now featured in the Xerj Corpus! Check Xerj out at https://github.com/xerj-org/x
 ##  Features
 
 **SUID/SGID Enumeration**: Recursively scans filesystem for privileged binaries (`-perm -4000` or `-perm -2000`) 
+
 **Capability Scanning**: Detects Linux capabilities on binaries via `getcap` 
+
 **Strings Analysis**: Extracts strings from binaries for hidden credentials/paths 
+
 **Opt-in Runtime Trace Planning**: Selects privileged binaries with strong static findings and prepares bounded strace commands for operator review 
+
 **GTFOBins Matching**: Cross-references binaries against GTFOBins exploit database 
+
 **Report Generation**: Export results as HTML or PDF 
+
 **Auto-Updates**: Built-in update checker and installer 
+
 **Concurrent Scanning**: Async architecture with configurable concurrency (5 workers) 
-**Multiple Output Modes**:" Terminal, logs, or both 
+
+**Multiple Output Modes**: Terminal, logs, or both 
+
+**Filesystem Scanning & Security Analysis**:
+- Recursive Directory Scanning: Traverses directories and subdirectories, collecting file and directory information.
+- World-Writable File Detection: Identifies regular files with permissions that allow modification by other users.
+- Permission Analysis: Uses filesystem metadata to inspect Unix permission bits.
+- Symbolic Link Handling: Uses os.lstat() to inspect filesystem entries without following symbolic links during metadata inspection.
+- Error Handling: Reports inaccessible directories and files without terminating the entire scan.
+- Configurable Output: Supports terminal output, structured filesystem logging, or both.
+- Security Findings
+- Detected world-writable files are recorded with:
+- File path
+- Security check identifier
+- Permission bits in octal notation
+- Severity classification
+- Description of the finding
+- World-writable files are flagged as Needs manual review rather than automatically classified as vulnerabilities. Their security implications depend on the file's purpose, location, and access requirements.
+
+Notes:
+- Filesystem scanning is read-only and does not modify file permissions or filesystem contents.
+- As of 2.6.0, filesystem operation results are not yet written into the reports other than JSON. 
 
 
 ## Requirements
@@ -57,8 +85,8 @@ python3 slipperypenguin.py --update-gtfobins
 Downloading the .tar.gz from www.eclecticelectrionics.com (https://github.com/stlynnxx/EclecticElectronics)
 Note: **This installs the latest release, not the development branch**
 ```bash
-curl -L https://eclecticelectronics.fly.dev/api/download/2.5.5 -o slipperypenguin-2.5.5.tar.gz
-sha256sum slipperypenguin-2.5.5.tar.gz
+curl -L https://eclecticelectronics.fly.dev/api/download/2.6.0 -o slipperypenguin-2.6.0.tar.gz
+sha256sum slipperypenguin-2.6.0.tar.gz
 
 pip install -r requirements.txt
 
@@ -97,6 +125,7 @@ All of the infrastructure is open source at https://github.com/stlynnxx/Eclectic
 | `--htmlreport` | `-hr` | flag | Save results in HTML file |
 | `--pdfreport` | `-pdf` | flag | Save results in PDF file |
 | `--csvreport` | `-cr` | flag | Save findings in CSV file |
+| `--filepathwalk` | `-fw` | `'x/y/z/'` | Run operations on given filepath
 
 ---
 
