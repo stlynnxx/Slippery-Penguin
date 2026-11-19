@@ -5,12 +5,12 @@ import json
 import os
 import shutil
 import signal
+import stat
 import subprocess
 import sys
 import time
 import traceback
 from datetime import datetime
-import stat
 
 from rich.console import Console
 from weasyprint import HTML
@@ -103,10 +103,11 @@ parser.add_argument(
     "--csvreport", "-cr", action="store_true", help="Save findings in a CSV file"
 )
 parser.add_argument(
-    "--filepathwalk", "-fw",
+    "--filepathwalk",
+    "-fw",
     type=str,
     metavar="PATH",
-    help="Recursively walk the specified directory"
+    help="Recursively walk the specified directory",
 )
 
 
@@ -202,7 +203,7 @@ if args.cleanup:
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
             except OSError as e:
-                print("Failed to delete {}. Reason: {}".format(file_path, e))
+                print(f"Failed to delete {file_path}. Reason: {e}")
 
                 ## This removes the gtfobins data
     if os.path.exists(GTFO_FILE):
@@ -643,7 +644,7 @@ def write_scan_outputs():
         (GTFO_OUT, gtfo_append),
         (FLAGS_OUT, flags_append),
         (FILE_WALK_OUT, file_dict),
-        (FILE_SECURITY_FINDINGS, file_security_findings)
+        (FILE_SECURITY_FINDINGS, file_security_findings),
     )
     for output_path, payload in outputs:
         with open(output_path, "w", encoding="utf-8") as output_file:
@@ -701,24 +702,26 @@ def write_csv_report(results, output_path):
 
 # Filesystem Operations
 
+
 def check_world_writable(full_path, stat_info):
-    global file_security_findings
     if not stat.S_ISREG(stat_info.st_mode):
-        return None
-
+        return
     permissions = stat.S_IMODE(stat_info.st_mode)
-
     if permissions & stat.S_IWOTH:
-        file_security_findings.append({
-            "path": filepath,
-            "check": "world_writable",
-            "severity": "Needs manual review",
-            "permissions": oct(permissions),
-            "description": "File is writable by other users"
-        })
-    return None
+        file_security_findings.append(
+            {
+                "path": full_path,
+                "check": "world_writable",
+                "severity": "Needs manual review",
+                "permissions": oct(permissions),
+                "description": "File is writable by other users",
+            }
+        )
+
+
 def filepath_walk():
     global file_dict
+    file_security_findings.clear()
     filepath = args.filepathwalk
     directory_count = 0
     if not os.path.isdir(filepath):
@@ -726,33 +729,36 @@ def filepath_walk():
         return
     if args.output in ("logs", "both"):
         file_dict.clear()
+
     def walk_error(error):
         console.print(f"[red]Directory access error: {error}[/red]")
 
-    for root, directories, files in os.walk(
-        filepath, onerror=walk_error
-    ):
+    for root, directories, files in os.walk(filepath, onerror=walk_error):
         directory_count = directory_count + 1
         for filename in files:
             full_path = os.path.join(root, filename)
             try:
                 stat_info = os.lstat(full_path)
-                check_world_writable(full_path,stat_info)
+                check_world_writable(full_path, stat_info)
             except OSError as error:
-                console.print(
-                    f"[red]Unable to inspect {full_path}: {error}[/red]"
-                )
+                console.print(f"[red]Unable to inspect {full_path}: {error}[/red]")
         if args.output in ("terminal", "both"):
             print(f"Current directory: {root}")
             print(f"Subdirectories: {directories}")
             print(f"Files: {files}")
         if args.output in ("logs", "both"):
-            file_dict[root] = {
-                "Subdirectories": directories,
-                "Files": files
-            }
+            file_dict[root] = {"Subdirectories": directories, "Files": files}
 
     print(f"Finished! Scanned {directory_count} directories")
+    print(f"Security findings: {len(file_security_findings)}")
+    if args.output in ("terminal", "both"):
+        for finding in file_security_findings:
+            console.print(
+                f"[yellow]{finding['check']}[/yellow]: "
+                f"{finding['path']} "
+                f"({finding['permissions']})"
+            )
+
 
 async def main():
     global b_exp
