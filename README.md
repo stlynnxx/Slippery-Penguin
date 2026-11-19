@@ -52,7 +52,7 @@ Now featured in the Xerj Corpus! Check Xerj out at https://github.com/xerj-org/x
 
 Notes:
 - Filesystem scanning is read-only and does not modify file permissions or filesystem contents.
-- As of 2.6.0, filesystem operation results are not yet written into the reports other than JSON. 
+- As of 2.6.1, filesystem operation results are only reported via JSON and CSV. 
 
 
 ## Requirements
