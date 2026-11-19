@@ -768,8 +768,7 @@ def filepath_walk():
     if not os.path.isdir(filepath):
         console.print(f"[red]Invalid directory: {filepath}[/red]")
         return
-    if args.output in ("logs", "both"):
-        file_dict.clear()
+    file_dict.clear()
 
     def walk_error(error):
         console.print(f"[red]Directory access error: {error}[/red]")
@@ -787,8 +786,7 @@ def filepath_walk():
             print(f"Current directory: {root}")
             print(f"Subdirectories: {directories}")
             print(f"Files: {files}")
-        if args.output in ("logs", "both"):
-            file_dict[root] = {"Subdirectories": directories, "Files": files}
+        file_dict[root] = {"Subdirectories": directories, "Files": files}
 
     print(f"Finished! Scanned {directory_count} directories")
     print(f"Security findings: {len(file_security_findings)}")
