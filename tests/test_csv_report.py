@@ -67,6 +67,59 @@ class CsvReportTests(unittest.TestCase):
             self.assertEqual(rows[0]["finding_type"], "strings")
             self.assertEqual(rows[0]["finding"], "sample")
 
+    def test_canonical_findings_replace_raw_security_rows(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "report.csv"
+            findings = [
+                {
+                    "binary_path": "/usr/bin/example",
+                    "finding_type": "flag",
+                    "rule": "unsafe",
+                    "evidence": "unsafe",
+                    "severity": "HIGH",
+                    "context": "command",
+                },
+                {
+                    "binary_path": "/usr/bin/example",
+                    "finding_type": "gtfobins",
+                    "rule": "shell",
+                    "evidence": "python -c ...",
+                    "severity": "",
+                    "context": "suid",
+                },
+                {
+                    "binary_path": "/usr/bin/example",
+                    "finding_type": "capability",
+                    "rule": "Linux file capability",
+                    "evidence": "cap_net_raw=ep",
+                    "severity": "",
+                    "context": "",
+                },
+            ]
+            self.write_csv_report(
+                {
+                    "/usr/bin/example": {
+                        "flags": [{"string": "unsafe", "severity": "HIGH", "context": "command"}],
+                        "gtfo": [{"type": "shell", "context": "suid", "method": "python -c ..."}],
+                        "capabilities": ["cap_net_raw=ep"],
+                    }
+                },
+                output,
+                findings=findings,
+            )
+
+            rows = self.read_rows(output)
+            self.assertEqual(len(rows), 3)
+            self.assertEqual(
+                {row["finding_type"] for row in rows},
+                {"flag", "gtfobins", "capability"},
+            )
+            self.assertTrue(all(row["binary"] == "/usr/bin/example" for row in rows))
+            self.assertEqual(
+                next(row for row in rows if row["finding_type"] == "flag")["finding"],
+                "unsafe",
+            )
+
     def test_empty_traversal_does_not_add_an_empty_section(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "report.csv"

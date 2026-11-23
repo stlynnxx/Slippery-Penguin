@@ -24,6 +24,7 @@ from scan_helpers import (
     parse_flag_config,
     parse_strings_output,
 )
+from finding_helpers import collect_findings
 
 try:
     import updatehelpers
@@ -125,6 +126,7 @@ flags = {}
 b_exp = {}
 agg_result = []
 file_security_findings = []
+findings_append = []
 
 args = parser.parse_args()
 # sys.stdin = open('/dev/tty')
@@ -437,6 +439,7 @@ CSV_OUT = os.path.join(RUN_DIR, "report.csv")
 SCAN_OUT = os.path.join(RUN_DIR, "scan-out.json")
 FILE_WALK_OUT = os.path.join(RUN_DIR, "file-walk-out.json")
 FILE_SECURITY_FINDINGS = os.path.join(RUN_DIR, "security-findings.json")
+FINDINGS_OUT = os.path.join(RUN_DIR, "findings.json")
 
 
 border = "-----"
@@ -556,9 +559,6 @@ async def gtfo_scan(b):
                 for method in methods:
                     contexts = method.get("contexts", [])
                     if "suid" in contexts:
-                        console.print(f"[magenta]--Results for: {b}--[/magenta]")
-                        console.print(f"[cyan]  SUID exploit: {func_type}[/cyan]")
-
                         gtfo_append.setdefault(b, [])
                         gtfo_append[b].append(
                             {
@@ -570,9 +570,6 @@ async def gtfo_scan(b):
             elif isinstance(methods, dict):
                 # Sometimes methods is a dict of {context: commands}
                 if "suid" in methods:
-                    console.print(f"[magenta]--Results for: {b}--[/magenta]")
-                    console.print(f"[cyan]  SUID exploit: {func_type}[/cyan]")
-
                     gtfo_append.setdefault(b, [])
                     gtfo_append[b].append(
                         {
@@ -620,10 +617,6 @@ def flags_write(b):
         for finding in match_flags(strings_append.get(b, []), flags):
             flags_append.setdefault(b, [])
             flags_append[b].append(finding)
-            if args.output in ("terminal", "both"):
-                console.print(
-                    f"[magenta]{finding['severity']}[/magenta]: {finding['string']}"
-                )
     except OSError as e:
         console.print(f"[red]Flags dump failure: {e}[/red]")
         traceback.print_exc()
@@ -645,6 +638,7 @@ def write_scan_outputs():
         (FLAGS_OUT, flags_append),
         (FILE_WALK_OUT, file_dict),
         (FILE_SECURITY_FINDINGS, file_security_findings),
+        (FINDINGS_OUT, findings_append),
     )
     for output_path, payload in outputs:
         with open(output_path, "w", encoding="utf-8") as output_file:
@@ -656,6 +650,7 @@ def write_csv_report(
     output_path,
     filepath_walk_results=None,
     filepath_security_findings=None,
+    findings=None,
 ):
     fieldnames = ["binary", "finding_type", "finding", "severity", "context"]
     with open(output_path, "w", newline="", encoding="utf-8") as csv_file:
@@ -672,16 +667,18 @@ def write_csv_report(
                 "timeouts",
                 "capabilities",
             ):
-                findings = binary_data.get(finding_type)
-                if not findings:
+                if findings is not None and finding_type in ("flags", "gtfo", "capabilities"):
+                    continue
+                finding_items = binary_data.get(finding_type)
+                if not finding_items:
                     continue
 
-                if isinstance(findings, (str, bytes)):
-                    findings = [findings]
-                elif isinstance(findings, dict):
-                    findings = list(findings.values())
+                if isinstance(finding_items, (str, bytes)):
+                    finding_items = [finding_items]
+                elif isinstance(finding_items, dict):
+                    finding_items = list(finding_items.values())
 
-                for finding in findings:
+                for finding in finding_items:
                     if not finding:
                         continue
 
@@ -703,6 +700,21 @@ def write_csv_report(
 
                     if row["finding"] or row["severity"] or row["context"]:
                         writer.writerow(row)
+
+        if findings is not None:
+            for finding in findings:
+                context_parts = [f"rule: {finding['rule']}"]
+                if finding.get("context"):
+                    context_parts.append(f"context: {finding['context']}")
+                writer.writerow(
+                    {
+                        "binary": finding["binary_path"],
+                        "finding_type": finding["finding_type"],
+                        "finding": finding["evidence"],
+                        "severity": finding.get("severity", ""),
+                        "context": "; ".join(context_parts),
+                    }
+                )
 
         # Keep directory traversal in its own clearly separated CSV section.
         if filepath_walk_results or filepath_security_findings:
@@ -802,6 +814,7 @@ def filepath_walk():
 async def main():
     global b_exp
     global agg_result
+    global findings_append
 
     # filepath walking
     try:
@@ -925,6 +938,25 @@ async def main():
             report_data["capabilities"] = expressions
             report_data["file_metadata"] = file_metadata.get(capability_path, {})
 
+        findings_append = collect_findings(b_exp)
+        for binary_path, binary_data in b_exp.items():
+            binary_data["findings"] = [
+                finding
+                for finding in findings_append
+                if finding["binary_path"] == binary_path
+            ]
+
+        if args.output in ("terminal", "both"):
+            console.print("[yellow]Deduplicated findings:[/yellow]")
+            for finding in findings_append:
+                severity = f" [{finding['severity']}]" if finding["severity"] else ""
+                context = f" ({finding['context']})" if finding["context"] else ""
+                console.print(
+                    f"[cyan]{finding['binary_path']}[/cyan]{severity} "
+                    f"{finding['finding_type']}: {finding['rule']}{context} "
+                    f"-> {finding['evidence']}"
+                )
+
         if args.htmlreport and b_exp:
             html = generate_report(b_exp, default_binary=next(iter(b_exp.keys()), None))
             with open(HTML_OUT, "w", encoding="utf-8") as f:
@@ -933,7 +965,9 @@ async def main():
             pdf = generate_PDF(b_exp)
             HTML(string=pdf).write_pdf(f"{RUN_DIR}/report_{RUN_ID}.pdf")
         if args.csvreport:
-            write_csv_report(b_exp, CSV_OUT, file_dict, file_security_findings)
+            write_csv_report(
+                b_exp, CSV_OUT, file_dict, file_security_findings, findings_append
+            )
 
         try:
             await timeouts()

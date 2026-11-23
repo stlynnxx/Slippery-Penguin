@@ -143,38 +143,6 @@ def generate_PDF(b_exp):
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
-                            text("Static analysis: Flags:")
-                        with tag("pre"):
-                            flags = binary_data.get("flags", [])
-                            if not flags:
-                                text("No results available")
-                            elif isinstance(flags, list):
-                                for flag in flags[:20]:
-                                    if isinstance(flag, dict):
-                                        display = flag.get("string", "N/A") + flag.get(
-                                            "severity", "N/A"
-                                        )
-                                        if display:
-                                            text(
-                                                f"{flag.get('string', 'N/A')} ({flag.get('severity', 'N/A')})-{flag.get('context', 'N/A')}\n"
-                                            )
-                                        else:
-                                            text(flags if flags else "No data")
-
-                    with tag("div", klass="result-block"):
-                        with tag("div", klass="result-label"):
-                            text("Static analysis: Capabilities:")
-                        with tag("pre"):
-                            capabilities = binary_data.get("capabilities", [])
-                            if not capabilities:
-                                text("No file capabilities found")
-                            else:
-                                text(
-                                    "\n".join(str(value) for value in capabilities[:50])
-                                )
-
-                    with tag("div", klass="result-block"):
-                        with tag("div", klass="result-label"):
                             text("Runtime trace execution status and diagnostics:")
                         with tag("pre"):
                             runtime_trace = binary_data.get("runtime_trace", {})
@@ -199,15 +167,18 @@ def generate_PDF(b_exp):
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
-                            text("Static analysis: GTFOBins Matches:")
+                            text("Deduplicated Findings:")
                         with tag("pre"):
-                            gtfo = binary_data.get("gtfo", [])
-                            if not gtfo:
-                                text("No matches found")
-                            elif isinstance(gtfo, list):
-                                text("\n".join(str(s) for s in gtfo[:50]))
+                            findings = binary_data.get("findings", [])
+                            if not findings:
+                                text("No findings")
                             else:
-                                text(gtfo if gtfo else "No data")
+                                for finding in findings:
+                                    severity = f" ({finding.get('severity')})" if finding.get("severity") else ""
+                                    context = f" [{finding.get('context')}]" if finding.get("context") else ""
+                                    text(
+                                        f"{finding.get('finding_type')}: {finding.get('rule')}{severity}{context} -> {finding.get('evidence')}\n"
+                                    )
 
                     with tag("div", klass="result-block"):
                         with tag("div", klass="result-label"):
@@ -371,6 +342,14 @@ def generate_report(b_exp, default_binary=None):
                     }
 
 
+                    if (type === 'findings' && Array.isArray(raw)) {
+                        return raw.map(function(f) {
+                            var severity = f.severity ? ' (' + f.severity + ')' : '';
+                            var context = f.context ? ' [' + f.context + ']' : '';
+                            return f.finding_type + ': ' + f.rule + severity + context + ' -> ' + f.evidence;
+                        }).join('\\n');
+                    }
+
                     if (type === 'runtime_trace' && typeof raw === 'object') {
                         return JSON.stringify(raw, null, 2);
                     }
@@ -397,7 +376,7 @@ def generate_report(b_exp, default_binary=None):
                     const data = allData[binary] || {};
                     resultsDiv.innerHTML = '';
 
-                    ['strings', 'flags', 'gtfo', 'capabilities', 'runtime_trace', 'strace', 'timeouts'].forEach(function(type) {
+                    ['strings', 'findings', 'runtime_trace', 'strace', 'timeouts'].forEach(function(type) {
                         const section = document.createElement('div');
                         section.className = 'section';
 
@@ -406,6 +385,7 @@ def generate_report(b_exp, default_binary=None):
                             strings: 'Static analysis: Strings',
                             flags: 'Static analysis: Flags',
                             gtfo: 'Static analysis: GTFOBins matches',
+                            findings: 'Deduplicated Findings',
                             capabilities: 'Static analysis: Linux capabilities',
                             runtime_trace: 'Runtime trace execution status and diagnostics',
                             strace: 'Runtime observations (strace)',
