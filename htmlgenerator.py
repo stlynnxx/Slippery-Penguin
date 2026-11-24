@@ -193,9 +193,12 @@ def generate_PDF(b_exp):
                                 text(timeouts if timeouts else "No data")
 
     return doc.getvalue()
-
-
-def generate_report(b_exp, default_binary=None):
+def generate_report(
+    b_exp,
+    default_binary=None,
+    filepath_walk_results=None,
+    filepath_security_findings=None
+):
     try:
         with open("art.txt", "r") as f:
             ascii_art = f.read()
@@ -301,6 +304,22 @@ def generate_report(b_exp, default_binary=None):
 
             with tag("div", id="results"):
                 pass
+            if filepath_walk_results:
+                with tag("div", klass="section"):
+                    with tag("h2"):
+                        text("Directory Traversal Results")
+
+                    for directory, contents in filepath_walk_results.items():
+                        with tag("h3"):
+                            text(directory)
+            if filepath_security_findings:
+                with tag("div", klass="section"):
+                    with tag("h2"):
+                        text("Filesystem Security Findings")
+
+                    for finding in filepath_security_findings:
+                        with tag("h3"):
+                            text(finding["path"])
             with tag("script", id="all-data", type="application/json"):
                 doc.asis(json.dumps(b_exp))
 

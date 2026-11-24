@@ -956,9 +956,15 @@ async def main():
                     f"{finding['finding_type']}: {finding['rule']}{context} "
                     f"-> {finding['evidence']}"
                 )
-
-        if args.htmlreport and b_exp:
-            html = generate_report(b_exp, default_binary=next(iter(b_exp.keys()), None))
+        if args.htmlreport and (
+                b_exp or file_dict or file_security_findings
+        ):
+            html = generate_report(
+                b_exp,
+                default_binary=next(iter(b_exp.keys()), None),
+                filepath_walk_results=file_dict,
+                filepath_security_findings=file_security_findings
+            )
             with open(HTML_OUT, "w", encoding="utf-8") as f:
                 f.write(html)
         if args.pdfreport:
