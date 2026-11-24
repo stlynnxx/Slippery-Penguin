@@ -32,7 +32,7 @@ except ImportError:
     updatehelpers = None
 console = Console()
 # Version
-__version__ = "2.6.2"
+__version__ = "2.6.3"
 
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
 with open("art.txt", "r") as file:
