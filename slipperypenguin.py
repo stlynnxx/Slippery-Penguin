@@ -968,7 +968,11 @@ async def main():
             with open(HTML_OUT, "w", encoding="utf-8") as f:
                 f.write(html)
         if args.pdfreport:
-            pdf = generate_PDF(b_exp)
+            pdf = generate_PDF(
+                b_exp,
+                filepath_walk_results=file_dict,
+                filepath_security_findings=file_security_findings
+            )
             HTML(string=pdf).write_pdf(f"{RUN_DIR}/report_{RUN_ID}.pdf")
         if args.csvreport:
             write_csv_report(

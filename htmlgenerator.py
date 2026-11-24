@@ -3,7 +3,11 @@ import json
 from yattag import Doc
 
 
-def generate_PDF(b_exp):
+def generate_PDF(
+    b_exp,
+    filepath_walk_results=None,
+    filepath_security_findings=None
+):
     try:
         with open("art.txt", "r") as f:
             f.read()
@@ -179,10 +183,9 @@ def generate_PDF(b_exp):
                                     text(
                                         f"{finding.get('finding_type')}: {finding.get('rule')}{severity}{context} -> {finding.get('evidence')}\n"
                                     )
-
-                    with tag("div", klass="result-block"):
-                        with tag("div", klass="result-label"):
-                            text("Timeouts:")
+                with tag("div", klass="result-block"):
+                    with tag("div", klass="result-label"):
+                        text("Timeouts:")
                         with tag("pre"):
                             timeouts = binary_data.get("timeouts", [])
                             if not timeouts:
@@ -191,6 +194,23 @@ def generate_PDF(b_exp):
                                 text("\n".join(str(t) for t in timeouts[:50]))
                             else:
                                 text(timeouts if timeouts else "No data")
+            # File stuffs
+            if filepath_walk_results:
+                with tag("div", klass="section"):
+                    with tag("h2"):
+                        text("Directory Traversal Results")
+
+                    for directory, contents in filepath_walk_results.items():
+                        with tag("h3"):
+                            text(directory)
+            if filepath_security_findings:
+                with tag("div", klass="section"):
+                    with tag("h2"):
+                        text("Filesystem Security Findings")
+
+                    for finding in filepath_security_findings:
+                        with tag("h3"):
+                            text(finding["path"])
 
     return doc.getvalue()
 def generate_report(
