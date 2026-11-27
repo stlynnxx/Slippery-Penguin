@@ -49,10 +49,10 @@ Now featured in the Xerj Corpus! Check Xerj out at https://github.com/xerj-org/x
 - Severity classification
 - Description of the finding
 - World-writable files are flagged as Needs manual review rather than automatically classified as vulnerabilities. Their security implications depend on the file's purpose, location, and access requirements.
+- Sticky bit detection
 
 Notes:
 - Filesystem scanning is read-only and does not modify file permissions or filesystem contents.
-- As of 2.6.1, filesystem operation results are only reported via JSON and CSV. 
 
 
 ## Requirements
@@ -85,8 +85,8 @@ python3 slipperypenguin.py --update-gtfobins
 Downloading the .tar.gz from www.eclecticelectrionics.com (https://github.com/stlynnxx/EclecticElectronics)
 Note: **This installs the latest release, not the development branch**
 ```bash
-curl -L https://eclecticelectronics.fly.dev/api/download/2.6.1 -o slipperypenguin-2.6.1.tar.gz
-sha256sum slipperypenguin-2.6.1.tar.gz
+curl -L https://eclecticelectronics.fly.dev/api/download/2.6.4 -o slipperypenguin-2.6.4.tar.gz
+sha256sum slipperypenguin-2.6.4.tar.gz
 
 pip install -r requirements.txt
 
