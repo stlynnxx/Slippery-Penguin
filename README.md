@@ -126,6 +126,7 @@ All of the infrastructure is open source at https://github.com/stlynnxx/Eclectic
 | `--pdfreport` | `-pdf` | flag | Save results in PDF file |
 | `--csvreport` | `-cr` | flag | Save findings in CSV file |
 | `--filepathwalk` | `-fw` | `'x/y/z/'` | Run operations on given filepath
+| `--sticky` | `-st` | Used alongside filepathwalk to examine sticky bit
 
 ---
 
