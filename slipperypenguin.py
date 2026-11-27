@@ -15,6 +15,7 @@ from datetime import datetime
 from rich.console import Console
 from weasyprint import HTML
 
+from finding_helpers import collect_findings
 from htmlgenerator import generate_PDF, generate_report
 from runtime_tracing import confirm_runtime_trace, select_trace_candidates, trace_binary
 from scan_helpers import (
@@ -24,7 +25,6 @@ from scan_helpers import (
     parse_flag_config,
     parse_strings_output,
 )
-from finding_helpers import collect_findings
 
 try:
     import updatehelpers
@@ -32,7 +32,7 @@ except ImportError:
     updatehelpers = None
 console = Console()
 # Version
-__version__ = "2.6.3"
+__version__ = "2.6.4"
 
 # art is from https://www.asciiart.eu/art/2e5ef0982cbcf027
 with open("art.txt", "r") as file:
@@ -110,6 +110,7 @@ parser.add_argument(
     metavar="PATH",
     help="Recursively walk the specified directory",
 )
+parser.add_argument("--sticky", "-st", action="store_true", help="Check sticky bit")
 
 
 # Globals for passing data between functions
@@ -667,7 +668,11 @@ def write_csv_report(
                 "timeouts",
                 "capabilities",
             ):
-                if findings is not None and finding_type in ("flags", "gtfo", "capabilities"):
+                if findings is not None and finding_type in (
+                    "flags",
+                    "gtfo",
+                    "capabilities",
+                ):
                     continue
                 finding_items = binary_data.get(finding_type)
                 if not finding_items:
@@ -746,7 +751,8 @@ def write_csv_report(
                     {
                         "binary": finding.get("path", ""),
                         "finding_type": "filepath_walk_security",
-                        "finding": finding.get("description") or finding.get("check", ""),
+                        "finding": finding.get("description")
+                        or finding.get("check", ""),
                         "severity": finding.get("severity", ""),
                         "context": finding.get("permissions", ""),
                     }
@@ -811,6 +817,25 @@ def filepath_walk():
             )
 
 
+def check_sticky_bit():
+    filepath = args.filepathwalk
+
+    try:
+        bit_check = bool(os.stat(filepath).st_mode & stat.S_ISVTX)
+    except OSError as e:
+        console.print(f"[red]{e}[/red]")
+        return
+
+    if args.output in ("terminal", "both"):
+        if bit_check:
+            console.print(f"[yellow]Sticky bit detected: {filepath}[/yellow]")
+        else:
+            console.print(f"[red]Sticky bit not detected: {filepath}[/red]")
+
+    if filepath in file_dict:
+        file_dict[filepath]["Sticky Bit"] = bit_check
+
+
 async def main():
     global b_exp
     global agg_result
@@ -820,6 +845,8 @@ async def main():
     try:
         if args.filepathwalk:
             filepath_walk()
+            if args.sticky:
+                check_sticky_bit()
     except OSError as e:
         console.print(f"[red]Filepath walk failure: {e}[/red]")
         traceback.print_exc()
@@ -956,14 +983,12 @@ async def main():
                     f"{finding['finding_type']}: {finding['rule']}{context} "
                     f"-> {finding['evidence']}"
                 )
-        if args.htmlreport and (
-                b_exp or file_dict or file_security_findings
-        ):
+        if args.htmlreport and (b_exp or file_dict or file_security_findings):
             html = generate_report(
                 b_exp,
                 default_binary=next(iter(b_exp.keys()), None),
                 filepath_walk_results=file_dict,
-                filepath_security_findings=file_security_findings
+                filepath_security_findings=file_security_findings,
             )
             with open(HTML_OUT, "w", encoding="utf-8") as f:
                 f.write(html)
@@ -971,7 +996,7 @@ async def main():
             pdf = generate_PDF(
                 b_exp,
                 filepath_walk_results=file_dict,
-                filepath_security_findings=file_security_findings
+                filepath_security_findings=file_security_findings,
             )
             HTML(string=pdf).write_pdf(f"{RUN_DIR}/report_{RUN_ID}.pdf")
         if args.csvreport:

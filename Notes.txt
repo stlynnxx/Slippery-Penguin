@@ -421,3 +421,9 @@ Got it printing!
 I'm not finished with this yet overall so I'm only going to push to dev and not release on master, but, it is a working
 start!
 
+11/27/2026-
+
+Today I've added support for sticky bit detection and added the result to the file-walk-out json file!
+
+It still needs to be added to the other reports, i'll probably put up issues for those first and
+see if anyone wants easy contributions.
